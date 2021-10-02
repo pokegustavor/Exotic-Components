@@ -26,7 +26,7 @@ namespace Exotic_Components
 
             public override int NumberOfChargesPerFuel => 3;
 
-            public override float MaxPowerUsage_Watts => 15000f;
+            //public override float MaxPowerUsage_Watts => 15000f;
 			public override string GetStatLineLeft(PLShipComponent InComp)
 			{
 				return string.Concat(new string[]
@@ -41,6 +41,7 @@ namespace Exotic_Components
 			public override string GetStatLineRight(PLShipComponent InComp)
             {
 				PLWarpDrive me = InComp as PLWarpDrive;
+				me.CalculatedMaxPowerUsage_Watts = 15000f;
 				return string.Concat(new string[]
 				{
 				(me.ChargeSpeed * me.LevelMultiplier(0.25f, 1f)).ToString("0"),

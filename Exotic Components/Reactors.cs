@@ -29,5 +29,17 @@ namespace Exotic_Components
                 (InComp as PLReactor).EnergyOutputMax = 68000f * (1f - Mathf.Clamp((InComp as PLReactor).ShipStats.ReactorTempCurrent / (InComp as PLReactor).ShipStats.ReactorTempMax, 0f, 0.95f));
             }
         }
+        [HarmonyLib.HarmonyPatch(typeof(PLReactor), "Tick")]
+        class ManualTick
+        {
+            static void Postfix(PLReactor __instance)
+            {
+                int subtypeformodded = __instance.SubType - ReactorModManager.Instance.VanillaReactorMaxType;
+                if (subtypeformodded > -1 && subtypeformodded < ReactorModManager.Instance.ReactorTypes.Count && __instance.ShipStats != null)
+                {
+                    ReactorModManager.Instance.ReactorTypes[subtypeformodded].Tick(__instance);
+                }
+            }
+        }
     }
 }

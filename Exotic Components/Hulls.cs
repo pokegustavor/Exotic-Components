@@ -62,11 +62,12 @@ namespace Exotic_Components
 
             public override string GetStatLineRight(PLShipComponent InComp)
             {
+                PLHull me = InComp as PLHull;
                 return string.Concat(new string[]
                 {
-                (this.HullMax * InComp.LevelMultiplier(0.2f, 1f)).ToString("0"),
+                (me.Max * InComp.LevelMultiplier(0.2f, 1f)).ToString("0"),
                 "\n",
-                (this.Armor * 250f * InComp.LevelMultiplier(0.15f, 1f)).ToString("0"),
+                (me.Armor * 250f * InComp.LevelMultiplier(0.15f, 1f)).ToString("0"),
                 "\n",
                 (200f * InComp.LevelMultiplier(0.15f, 1f)).ToString("0")
                 });
@@ -83,6 +84,18 @@ namespace Exotic_Components
                     {
                         me.ShipStats.Ship.AcidicAtmoBoostAlpha += me.ShipStats.HullCurrent / me.ShipStats.HullMax * 0.05f;
                     }
+                }
+            }
+        }
+        [HarmonyLib.HarmonyPatch(typeof(PLHull), "Tick")]
+        class ManualTick
+        {
+            static void Postfix(PLHull __instance)
+            {
+                int subtypeformodded = __instance.SubType - HullModManager.Instance.VanillaHullMaxType;
+                if (subtypeformodded > -1 && subtypeformodded < HullModManager.Instance.HullTypes.Count && __instance.ShipStats != null)
+                {
+                    HullModManager.Instance.HullTypes[subtypeformodded].Tick(__instance);
                 }
             }
         }

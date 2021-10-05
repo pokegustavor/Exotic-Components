@@ -62,6 +62,11 @@ namespace Exotic_Components
     {
         static bool Prefix(float inDmg, EDamageType dmgType, float DT_ShieldBoost, float shieldDamageMod, PLTurret turret, ref float __result, PLShipStats __instance)
         {
+            if(turret is AntiShield) 
+            {
+                __result = inDmg;
+                return false;
+            }
             __instance.GetComponentsOfType(ESlotType.E_COMP_SHLD, false);
             PLShieldGenerator shipComponent = __instance.GetShipComponent<PLShieldGenerator>(ESlotType.E_COMP_SHLD, false);
             if (shipComponent == null || inDmg <= 0f)

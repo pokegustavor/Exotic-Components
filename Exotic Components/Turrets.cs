@@ -84,12 +84,14 @@ namespace Exotic_Components
             base.Level = inLevel;
             base.SubTypeData = (short)inSubTypeData;
             this.TurretRange = 8000f;
+            this.m_MaxPowerUsage_Watts = 5500f;
             base.CargoVisualPrefabID = 3;
             base.Experimental = true;
             this.PlayShootSFX = "play_ship_generic_external_weapon_laser_shoot";
             this.StopShootSFX = "";
             this.PlayProjSFX = "play_ship_generic_external_weapon_laser_projectile";
             this.StopProjSFX = "stop_ship_generic_external_weapon_laser_projectile";
+            this.LaserDamageType = EDamageType.E_PHASE;
             this.UpdateMaxPowerUsageWatts();
         }
     }
@@ -110,6 +112,7 @@ namespace Exotic_Components
             this.TurretRange = 5000f;
             base.Level = inLevel;
         }
+
         protected override void InnerCheckFire()
         {
             base.InnerCheckFire();

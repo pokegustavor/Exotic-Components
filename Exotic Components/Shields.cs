@@ -62,7 +62,12 @@ namespace Exotic_Components
     {
         static bool Prefix(float inDmg, EDamageType dmgType, float DT_ShieldBoost, float shieldDamageMod, PLTurret turret, ref float __result, PLShipStats __instance)
         {
-            if(turret is AntiShield) 
+            if(turret is AntiShield && __instance.Ship.ShieldFreqMode != 0 && !__instance.Ship.IsSensorWeaknessActive(ESensorWeakness.SHLD_WEAKPOINT)) 
+            {
+                __result = inDmg;
+                return false;
+            }
+            if (turret is HullSmasher && __instance.Ship.ShieldFreqMode != 1 && !__instance.Ship.IsSensorWeaknessActive(ESensorWeakness.SHLD_WEAKPOINT))
             {
                 __result = inDmg;
                 return false;
@@ -108,6 +113,10 @@ namespace Exotic_Components
                 else if (shipComponent.SubType == 16)
                 {
                     num2 = 1.1764705f;
+                }
+                if(turret is HullSmasher || turret is AntiShield) 
+                {
+                    num2 += 0.3f;
                 }
                 num2 *= 1f / DT_ShieldBoost * (1f / shieldDamageMod);
                 num2 += (__instance.ShieldsDeflection - (0.6f * __instance.Ship.MyShieldGenerator.LevelMultiplier(0.1f, 1f))) * 1.5f;

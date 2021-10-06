@@ -8,7 +8,7 @@ namespace Exotic_Components
         {
             public override string Name => "Nano Active MK2";
 
-            public override string Description => "An upgrade version of the Nano Active Hull that allows healling even during combat. However the resistence was heavily affected due to the increassed amount of nano bots";
+            public override string Description => "An upgraded version of the Nano Active Hull that allows healling even during combat. However the resistence was heavily affected due to the increassed amount of nano bots";
 
             public override int MarketPrice => 12000;
 
@@ -82,7 +82,7 @@ namespace Exotic_Components
                     me.ShipStats.Ship.MyHull.Armor = (me.ShipStats.HullCurrent*0.8f) / me.ShipStats.HullMax ;
                     if (me.ShipStats.HullCurrent < me.ShipStats.HullMax * 0.75f)
                     {
-                        me.ShipStats.Ship.AcidicAtmoBoostAlpha += me.ShipStats.HullCurrent / me.ShipStats.HullMax * 0.05f;
+                        me.ShipStats.Ship.AcidicAtmoBoostAlpha += Mathf.Min(me.ShipStats.HullMax / (me.ShipStats.HullCurrent*100) * 0.05f,0.7f);
                     }
                 }
             }

@@ -106,7 +106,7 @@ namespace Exotic_Components
 				if ((InComp as PLWarpDrive).Name != "Ultimate Explorer MK2") return;
 				PLSectorInfo current = PLServer.GetCurrentSector();
 				PLSectorInfo destiny = PLGlobal.Instance.Galaxy.AllSectorInfos.GetValueSafe(PLEncounterManager.Instance.PlayerShip.WarpTargetID);
-				if (UnityEngine.Random.Range(0, 100) <= Mathf.Min(1 * Vector2.Distance(current.Position,destiny.Position),25) && Time.time - LastFailure > 20f) 
+				if (UnityEngine.Random.Range(0, 100) <= Mathf.Min(1000 * Vector2.Distance(current.Position,destiny.Position),35) && Time.time - LastFailure > 20f) 
 				{
 					if(PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>() == null) 
 					{
@@ -191,6 +191,10 @@ namespace Exotic_Components
 		static void Postfix() 
 		{
 			Heart.failing = false;
+			if (PLServer.GetCurrentSector().Name == "The Core(MOD)")
+			{
+				InitialStore.UpdateCore();
+			}
 		}
 	}
     [HarmonyPatch(typeof(PLShipInfo),"Update")]

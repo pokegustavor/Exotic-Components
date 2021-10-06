@@ -17,6 +17,12 @@ namespace Exotic_Components
 
             public override PLShipComponent PLTurret => new AntiShield();
         }
+        class HullSmasherMod : TurretMod
+        {
+            public override string Name => "HullSmasher";
+
+            public override PLShipComponent PLTurret => new HullSmasher();
+        }
         class InfectedTurretMod : TurretMod
         {
             public override string Name => "Infected Turret";
@@ -27,7 +33,7 @@ namespace Exotic_Components
 
     class SupremeRailGun : PLBasicTurret
     {
-        public SupremeRailGun(int inLevel = 0, int inSubTypeData = 0)
+        public SupremeRailGun(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
         {
             this.Name = "Supreme RailGun";
             this.Desc = "Recovered Acient Human technology, this Railgun is the strongest of its kind, even if not as powerfull as the original";
@@ -76,8 +82,8 @@ namespace Exotic_Components
         public AntiShield(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
         {
             this.Name = "Anti-Shield Turret";
-            this.Desc = "A weak but special turret that fires a laser at the exact frequency to ignore the target's shield.";
-            this.m_Damage = 29f;
+            this.Desc = "A weak but special turret that fires a laser at the exact frequency to ignore the target's shield if they are on static.";
+            this.m_Damage = 30f;
             this.FireDelay = 2.4f;
             base.SubType = TurretModManager.Instance.GetTurretIDFromName("Anti-Shield");
             this.m_MarketPrice = 15000;
@@ -91,14 +97,14 @@ namespace Exotic_Components
             this.StopShootSFX = "";
             this.PlayProjSFX = "play_ship_generic_external_weapon_laser_projectile";
             this.StopProjSFX = "stop_ship_generic_external_weapon_laser_projectile";
-            this.LaserDamageType = EDamageType.E_PHASE;
+            this.LaserDamageType = EDamageType.E_BEAM;
             this.UpdateMaxPowerUsageWatts();
         }
     }
 
     class InfectedTurret : PLSporeTurret
     {
-        public InfectedTurret(int inLevel = 0, int inSubTypeData = 0)
+        public InfectedTurret(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
         {
             this.Name = "Infected Turret";
             this.Desc = "A dangerous and questionable experiment at using the infected as weapons. Just be carreful with possible subjects escaping the ammo sile";
@@ -142,6 +148,25 @@ namespace Exotic_Components
                 }
             }
 
+        }
+    }
+    class HullSmasher : PLBasicTurret
+    {
+        public HullSmasher(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
+        {
+            this.Name = "Hull Smasher";
+            this.Desc = "A special Railgun that deals extra damage to hulls and can ignore shields if on modulate, however it has almost no effect against static shields";
+            this.m_Damage = 250f;
+            base.SubType = TurretModManager.Instance.GetTurretIDFromName("HullSmasher");
+            this.m_MarketPrice = 12000;
+            this.Experimental = true;
+            this.TurretRange = 5000f;
+            this.m_MaxPowerUsage_Watts = 6500f;
+            this.FireDelay = 4f;
+            base.CargoVisualPrefabID = 3;
+            base.Level = inLevel;
+            this.OnFire_CameraShakeAmt = 0.8f;
+            this.FireTurretSoundSFX = "play_ship_generic_external_weapon_railgun_shoot";
         }
     }
 

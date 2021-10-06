@@ -125,24 +125,28 @@ namespace Exotic_Components
             PLPathfinderGraphEntity pgeforShip = PLPathfinder.GetInstance().GetPGEforShip(this.ShipStats.Ship as PLShipInfo);
             if (pgeforShip != null)
             {
-                NNConstraint nnconstraint = new NNConstraint();
-                nnconstraint.constrainWalkability = true;
-                nnconstraint.walkable = true;
-                nnconstraint.graphMask = PLBot.GetContraintForPGE(ref nnconstraint, pgeforShip).graphMask;
-                nnconstraint.area = (int)pgeforShip.LargestAreaIndex;
-                nnconstraint.constrainArea = true;
-                Vector3 position = new Vector3(UnityEngine.Random.Range(pgeforShip.Graph.forcedBounds.min.x, pgeforShip.Graph.forcedBounds.max.x), UnityEngine.Random.Range(pgeforShip.Graph.forcedBounds.min.y, pgeforShip.Graph.forcedBounds.max.y), UnityEngine.Random.Range(pgeforShip.Graph.forcedBounds.min.z, pgeforShip.Graph.forcedBounds.max.z));
-                NNInfoInternal nearest = pgeforShip.Graph.GetNearest(position, nnconstraint);
-                if (nearest.node != null && nearest.node.Area == pgeforShip.LargestAreaIndex)
+                for (int i = 0; i < 3; i++)
                 {
-                    Ray ray = new Ray((Vector3)nearest.node.position, Vector3.up);
-                    RaycastHit raycastHit = default(RaycastHit);
-                    if (Physics.Raycast(ray, out raycastHit, 15f, 2048) && Vector3.Dot(raycastHit.normal, Vector3.up) < 0f)
+
+                    NNConstraint nnconstraint = new NNConstraint();
+                    nnconstraint.constrainWalkability = true;
+                    nnconstraint.walkable = true;
+                    nnconstraint.graphMask = PLBot.GetContraintForPGE(ref nnconstraint, pgeforShip).graphMask;
+                    nnconstraint.area = (int)pgeforShip.LargestAreaIndex;
+                    nnconstraint.constrainArea = true;
+                    Vector3 position = new Vector3(UnityEngine.Random.Range(pgeforShip.Graph.forcedBounds.min.x, pgeforShip.Graph.forcedBounds.max.x), UnityEngine.Random.Range(pgeforShip.Graph.forcedBounds.min.y, pgeforShip.Graph.forcedBounds.max.y), UnityEngine.Random.Range(pgeforShip.Graph.forcedBounds.min.z, pgeforShip.Graph.forcedBounds.max.z));
+                    NNInfoInternal nearest = pgeforShip.Graph.GetNearest(position, nnconstraint);
+                    if (nearest.node != null && nearest.node.Area == pgeforShip.LargestAreaIndex)
                     {
-                        PLInfectedSpider component = PhotonNetwork.Instantiate("NetworkPrefabs/Infected_Spider_01", raycastHit.point + Vector3.up, Quaternion.identity, 0, null).GetComponent<PLInfectedSpider>();
-                        if (component != null)
+                        Ray ray = new Ray((Vector3)nearest.node.position, Vector3.up);
+                        RaycastHit raycastHit = default(RaycastHit);
+                        if (Physics.Raycast(ray, out raycastHit, 15f, 2048) && Vector3.Dot(raycastHit.normal, Vector3.up) < 0f)
                         {
-                            component.MyCurrentTLI = this.ShipStats.Ship.MyTLI;
+                            PLInfectedSpider component = PhotonNetwork.Instantiate("NetworkPrefabs/Infected_Spider_01", raycastHit.point + Vector3.up, Quaternion.identity, 0, null).GetComponent<PLInfectedSpider>();
+                            if (component != null)
+                            {
+                                component.MyCurrentTLI = this.ShipStats.Ship.MyTLI;
+                            }
                         }
                     }
                 }
@@ -175,6 +179,7 @@ namespace Exotic_Components
     {
         private static void Postfix(PLInfectedSporeProj __instance, ref Rigidbody ___MyRigidbody)
         {
+            if (PLEncounterManager.Instance.PlayerShip == null) return;
             float d = 1f;
             if (PLEncounterManager.Instance.GetShipFromID(__instance.OwnerShipID).MyStats.Ship.TargetShip != null && PLEncounterManager.Instance.GetShipFromID(__instance.OwnerShipID).GetTurretAtID(__instance.TurretID).Name == "Infected Turret")
             {

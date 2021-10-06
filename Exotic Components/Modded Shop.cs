@@ -64,7 +64,7 @@ namespace Exotic_Components
             plsectorInfo3.MySPI = SectorProceduralInfo.Create(PLGlobal.Instance.Galaxy, ref plsectorInfo3, plsectorInfo3.ID);
             plsectorInfo3.MySPI.Faction = 5;
             plsectorInfo3.VisualIndication = ESectorVisualIndication.GENERAL_STORE;
-            plsectorInfo3.Position = new UnityEngine.Vector3(0, 0, 0);
+            plsectorInfo3.Position = new Vector3(0, 0, 0.0001f);
             plsectorInfo3.FactionStrength = 0.5f;
             plsectorInfo3.Name = "The Core(MOD)";
         }
@@ -321,7 +321,7 @@ namespace Exotic_Components
         {
             if (local)
             {
-                currentText = "My components? I found them during the years talking with exotic dealers from multiple galaxies, still didn't have time to buy from the dealers from this galaxy, I have hearded about this Thermocore and the Corbin's Wall, maybe I will buy them before the intergalatic warp network is activated again." +
+                currentText = "My components? I found them during the years talking with exotic dealers from multiple galaxies, still didn't have time to buy from the dealers from this galaxy, I have hearded about this Thermocore and the Corbin's Wall, maybe I will buy them before the intergalatic warp network is activated again. If you bring them I will buy... And that's it." +
                     "If you think I don't sell enough components, maybe visit me in another timeline, at least that is what Skarg said.";
             }
         }

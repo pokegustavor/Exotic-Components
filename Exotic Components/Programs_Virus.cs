@@ -42,14 +42,30 @@ namespace Exotic_Components
         {
             public override string Name => "Blind Fold";
 
-            public override string Description => "Makes the target blind to any EMP signal for 60 seconds";
+            public override string Description => "Disables EMP detection for 60 seconds";
 
-            public override int InfectionTimeLimitMs => 6000;
+            public override int InfectionTimeLimitMs => 60000;
 
             public override void FinalLateAddStats(PLShipComponent InComp)
             {
                 PLShipStats mystats = InComp.ShipStats;
                 mystats.EMDetection *= 0f;
+            }
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(VirusModManager), "CreateVirus")]
+    class ManualFixVirus 
+    {
+        static void Postfix(int Subtype, ref PLVirus __result) 
+        {
+            if (Subtype >= VirusModManager.Instance.VanillaVirusMaxType)
+            {
+                int subtypeformodded = Subtype - VirusModManager.Instance.VanillaVirusMaxType;
+                if (subtypeformodded <= VirusModManager.Instance.VirusTypes.Count && subtypeformodded > -1)
+                {
+                    VirusMod VirusType = VirusModManager.Instance.VirusTypes[Subtype - VirusModManager.Instance.VanillaVirusMaxType];
+                    __result.InfectionTimeLimitMs = VirusType.InfectionTimeLimitMs;
+                }
             }
         }
     }

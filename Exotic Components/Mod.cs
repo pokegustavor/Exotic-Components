@@ -12,6 +12,8 @@ namespace Exotic_Components
 
         public override string Name => "Exotic Components";
 
+        public override int MPFunctionality => (int)MPFunction.All;
+
         public override string HarmonyIdentifier()
         {
             return "Pokegustavo.ExoticComponents";

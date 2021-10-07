@@ -11,7 +11,7 @@ namespace Exotic_Components
     {
         static void Postfix()
         {
-            if (PLServer.GetCurrentSector().Name == "The Core(MOD)")
+            if (PLServer.GetCurrentSector().Name == "The Core(MOD)" && !PLEncounterManager.Instance.PlayerShip.Get_IsInWarpMode())
             {
                 InitialStore.UpdateCore();
             }

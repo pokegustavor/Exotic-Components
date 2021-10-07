@@ -171,6 +171,23 @@ namespace Exotic_Components
 			Warp_Drive.UltimateExplorerMK2.LastFailure = Time.time;
 			yield break;
 		}
+
+		public IEnumerator UpdateTimeLine() 
+		{
+			foreach (PLShipInfoBase ship in FindObjectsOfType(typeof(PLShipInfoBase)))
+			{
+				if (!ship.GetIsPlayerShip()) PhotonNetwork.Destroy(ship.gameObject);
+			}
+			yield return new WaitForEndOfFrame();
+			foreach (PLPersistantShipInfo ship in CPUS.The_Premonition.others)
+			{
+				ship.CreateShipInstance(PLEncounterManager.Instance.GetCPEI());
+				yield return new WaitForSeconds(0.2f);
+				ship.ShipInstance.MyHull.Current = ship.ShipInstance.MyStats.HullMax;
+				ship.ShipInstance.MyShieldGenerator.Current = ship.ShipInstance.MyStats.ShieldsMax;
+			}
+			yield break;
+		}
 	}
 
 	[HarmonyPatch(typeof(PLWarpDrive), "OnWarpTo")]
@@ -185,15 +202,34 @@ namespace Exotic_Components
 			}
 		}
 	}
-	[HarmonyPatch(typeof(PLGameProgressManager), "OnWarpCompleted")]
+	[HarmonyPatch(typeof(PLShipInfoBase), "SetInWarp")]
 	class updateFailure 
 	{
-		static void Postfix() 
+		static void Postfix(bool inWarp) 
 		{
+			if (inWarp) return;
 			Heart.failing = false;
-			if (PLServer.GetCurrentSector().Name == "The Core(MOD)")
+			CPUS.The_Premonition.lastLive++;
+			if (CPUS.The_Premonition.lastLive <= 0) 
 			{
-				InitialStore.UpdateCore();
+				if (PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>() == null)
+				{
+					PLEncounterManager.Instance.PlayerShip.gameObject.AddComponent<Heart>();
+				}
+				Heart heart = PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>();
+				heart.StartCoroutine(heart.UpdateTimeLine());
+			}
+            else 
+			{
+				CPUS.The_Premonition.lastHull = PLEncounterManager.Instance.PlayerShip.MyStats.HullCurrent;
+				CPUS.The_Premonition.others.Clear();
+				foreach (PLShipInfoBase ship in UnityEngine.Object.FindObjectsOfType(typeof(PLShipInfoBase)))
+				{
+					if (!ship.GetIsPlayerShip() && !CPUS.The_Premonition.others.Contains(ship.PersistantShipInfo))
+					{
+						CPUS.The_Premonition.others.Add(ship.PersistantShipInfo);
+					}
+				}
 			}
 		}
 	}

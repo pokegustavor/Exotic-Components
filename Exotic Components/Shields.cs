@@ -1,6 +1,7 @@
 ﻿using PulsarModLoader.Content.Components.Shield;
 using UnityEngine;
 using System.Collections.Generic;
+using HarmonyLib;
 namespace Exotic_Components
 {
     internal class Shields
@@ -43,7 +44,30 @@ namespace Exotic_Components
                 }
             }
         }
-        [HarmonyLib.HarmonyPatch(typeof(PLShieldGenerator), "Tick")]
+
+        class EletricWall : ShieldMod
+        {
+            public override string Name => "Eletric Wall";
+
+            public override string Description => "A modified version of the Second Hull that not only has 10% resistance against energy attacks, it also can emit an EMP pulse if turned off while above 90% integrity, just be careful with the recoil. It was marked as contraband because of this.";
+
+            public override int MarketPrice => 18000;
+
+            public override bool Contraband => true;
+
+            public override float ShieldMax => 1500f;
+
+            public override float ChargeRateMax => 3f;
+
+            public override float RecoveryRate => 1.2f;
+
+            public override float MinIntegrityPercentForQuantumShield => 0.65f;
+
+            public override float MaxPowerUsage_Watts => 10200f;
+
+            public override int MinIntegrityAfterDamage => 550;
+        }
+        [HarmonyPatch(typeof(PLShieldGenerator), "Tick")]
         class ManualTick
         {
             static void Postfix(PLShieldGenerator __instance)
@@ -57,7 +81,7 @@ namespace Exotic_Components
         }
     }
 
-    [HarmonyLib.HarmonyPatch(typeof(PLShipStats), "TakeShieldDamage")]
+    [HarmonyPatch(typeof(PLShipStats), "TakeShieldDamage")]
     class ShieldDamage
     {
         static bool Prefix(float inDmg, EDamageType dmgType, float DT_ShieldBoost, float shieldDamageMod, PLTurret turret, ref float __result, PLShipStats __instance)
@@ -93,6 +117,10 @@ namespace Exotic_Components
                     if (shipComponent.SubType == 12)
                     {
                         num2 = 1.4285715f;
+                    }
+                    if (shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("Eletric Wall")) 
+                    {
+                        num2 = 1.1145238f;
                     }
                 }
                 else if (PLShipInfoBase.IsDamageTypePhysical(dmgType))
@@ -154,4 +182,33 @@ namespace Exotic_Components
         }
     }
 
+    [HarmonyPatch(typeof(PLServer), "SetStartupSwitchStatus")]
+    class EMPPulse 
+    {
+        static void Postfix(int shipID, bool status) 
+        {
+            if (!PhotonNetwork.isMasterClient) return;
+            PLShipStats mystats = PLEncounterManager.Instance.GetShipFromID(shipID).MyStats;
+            if (PLEncounterManager.Instance.GetShipFromID(shipID).MyShieldGenerator.Name == "Eletric Wall" && !status &&  mystats.ShieldsCurrent/mystats.ShieldsMax >= 0.9f)
+            {
+                PhotonNetwork.Instantiate("Assets/PrefabInstance/EMPExplosion", PLEncounterManager.Instance.PlayerShip.GetCurrentSensorPosition(), new Quaternion(), 0);
+                Object.Instantiate(PLGlobal.Instance.EMPExplosionPrefab, PLEncounterManager.Instance.PlayerShip.Exterior.transform.position, Quaternion.identity);
+                foreach (PLShipInfoBase ship in Object.FindObjectsOfType(typeof(PLShipInfoBase)))
+                {
+                    if (ship as PLShipInfo != null && !ship.GetIsPlayerShip())
+                    {
+                        (ship as PLShipInfo).EndGameSequenceActive = true;
+                    }
+                    if (!ship.GetIsPlayerShip()) ship.photonView.RPC("Overcharged", PhotonTargets.All, new object[0]);
+                }
+                PLEncounterManager.Instance.PlayerShip.EngineeringSystem.TakeDamage(Random.Range(0, 20));
+                PLEncounterManager.Instance.PlayerShip.ComputerSystem.TakeDamage(Random.Range(0, 20));
+                PLEncounterManager.Instance.PlayerShip.WeaponsSystem.TakeDamage(Random.Range(0, 20));
+                PLEncounterManager.Instance.PlayerShip.LifeSupportSystem.TakeDamage(Random.Range(0, 20));
+                PLEncounterManager.Instance.GetShipFromID(shipID).MyShieldGenerator.Current = 0f;
+                if (Random.Range(0,20) == 4) PLEncounterManager.Instance.PlayerShip.photonView.RPC("Overcharged", PhotonTargets.All, new object[0]);
+            }
+        }
+    }
 }
+

@@ -179,12 +179,16 @@ namespace Exotic_Components
 				if (!ship.GetIsPlayerShip()) PhotonNetwork.Destroy(ship.gameObject);
 			}
 			yield return new WaitForEndOfFrame();
+			PulsarModLoader.Utilities.Logger.Info("Enemies: " + CPUS.The_Premonition.others.Count);
 			foreach (PLPersistantShipInfo ship in CPUS.The_Premonition.others)
 			{
+				PulsarModLoader.Utilities.Logger.Info("Pre-Spawn");
+				ship.m_IsShipDestroyed = false;
 				ship.CreateShipInstance(PLEncounterManager.Instance.GetCPEI());
-				yield return new WaitForSeconds(0.2f);
+				PulsarModLoader.Utilities.Logger.Info("Spawned: " + ship.Type);
+				yield return new WaitForSeconds(1f);
 				ship.ShipInstance.MyHull.Current = ship.ShipInstance.MyStats.HullMax;
-				ship.ShipInstance.MyShieldGenerator.Current = ship.ShipInstance.MyStats.ShieldsMax;
+				if(ship.ShipInstance.MyShieldGenerator != null)ship.ShipInstance.MyShieldGenerator.Current = ship.ShipInstance.MyStats.ShieldsMax;
 			}
 			yield break;
 		}
@@ -210,7 +214,7 @@ namespace Exotic_Components
 			if (inWarp) return;
 			Heart.failing = false;
 			CPUS.The_Premonition.lastLive++;
-			if (CPUS.The_Premonition.lastLive <= 0) 
+			if (CPUS.The_Premonition.lastLive <= -1) 
 			{
 				if (PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>() == null)
 				{
@@ -219,7 +223,7 @@ namespace Exotic_Components
 				Heart heart = PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>();
 				heart.StartCoroutine(heart.UpdateTimeLine());
 			}
-            else 
+            else if(CPUS.The_Premonition.lastLive > 0)
 			{
 				CPUS.The_Premonition.lastHull = PLEncounterManager.Instance.PlayerShip.MyStats.HullCurrent;
 				CPUS.The_Premonition.others.Clear();

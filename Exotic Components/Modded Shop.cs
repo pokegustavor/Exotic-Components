@@ -74,7 +74,7 @@ namespace Exotic_Components
     {
         static void Postfix(PLShop_General __instance, TraderPersistantDataEntry inPDE)
         {
-            if (PLServer.GetCurrentSector().Name == "The Core(MOD)")
+            if (PLServer.GetCurrentSector().Name == "The Core(MOD)" || (PLEncounterManager.Instance.PlayerShip.WarpTargetID != -1 && PLGlobal.Instance.Galaxy.AllSectorInfos.GetValueSafe(PLEncounterManager.Instance.PlayerShip.WarpTargetID).Name == "The Core(MOD)"))
             {
                 int currentID = inPDE.ServerWareIDCounter;
                 foreach (PLWare ware in inPDE.Wares.Values)

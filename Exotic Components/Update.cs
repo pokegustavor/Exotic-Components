@@ -11,10 +11,14 @@ namespace Exotic_Components
     {
         static void Postfix()
         {
-            if (PLServer.GetCurrentSector().Name == "The Core(MOD)" && !PLEncounterManager.Instance.PlayerShip.Get_IsInWarpMode())
+            try
             {
-                InitialStore.UpdateCore();
+                if (PLServer.GetCurrentSector().Name == "The Core(MOD)" && !PLEncounterManager.Instance.PlayerShip.Get_IsInWarpMode())
+                {
+                    InitialStore.UpdateCore();
+                }
             }
+            catch { }
         }
 }
 }

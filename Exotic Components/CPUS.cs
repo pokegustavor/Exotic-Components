@@ -38,7 +38,12 @@ namespace Exotic_Components
 
             public override string GetStatLineRight(PLShipComponent InComp)
             {
-                if (lastLive > 20) return "charged";
+                if (PLServer.GetCurrentSector().VisualIndication == ESectorVisualIndication.LCWBATTLE || PLServer.GetCurrentSector().VisualIndication == ESectorVisualIndication.TOPSEC || PLServer.GetCurrentSector().VisualIndication == ESectorVisualIndication.UNSEEN_MS)
+                {
+                    lastLive = 1;
+                    return "Unkown Error!";
+                }
+                if (lastLive >= 20) return "charged";
                 return ((20-lastLive)/2) + " jumps remains";
             }
         }
@@ -59,14 +64,15 @@ namespace Exotic_Components
                 bool found = false;
                 foreach (PLShipComponent plshipComponent in componentsOfType2)
                 {
-                    if (plshipComponent != null && plshipComponent.SubType == CPUModManager.Instance.GetCPUIDFromName("The Premonition") && !plshipComponent.IsFlaggedForSelfDestruction() && CPUS.The_Premonition.lastLive > 20)
+                    if (plshipComponent != null && plshipComponent.SubType == CPUModManager.Instance.GetCPUIDFromName("The Premonition") && !plshipComponent.IsFlaggedForSelfDestruction() && CPUS.The_Premonition.lastLive >= 20 &&
+                        PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.LCWBATTLE && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.TOPSEC && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.UNSEEN_MS)
                     {
                         found = true;
                         if (PhotonNetwork.isMasterClient)
                         {
                             PLServer.Instance.photonView.RPC("AddNotification_OneString_LocalizedString", PhotonTargets.All, new object[]
                             {
-                                        "[STR0] Death detected! Ending timeline visualisation!",
+                                        "[STR0] detected a death! Ending timeline visualisation!",
                                         -1,
                                         PLServer.Instance.GetEstimatedServerMs() + 8000,
                                         true,
@@ -114,7 +120,12 @@ namespace Exotic_Components
                     ship.EngineeringSystem.Health = ship.EngineeringSystem.MaxHealth;
                     ship.WeaponsSystem.Health = ship.WeaponsSystem.MaxHealth;
                     ship.ComputerSystem.Health = ship.ComputerSystem.MaxHealth;
-                    ship.LifeSupportSystem.Health = ship.LifeSupportSystem.MaxHealth;
+                    if(ship.LifeSupportSystem != null)ship.LifeSupportSystem.Health = ship.LifeSupportSystem.MaxHealth;
+                    ship.NewShipController(-1);
+                    ship.NewSensorDishController(-1);
+                    ship.NewTurretController(0, -1);
+                    ship.NewTurretController(1, -1);
+                    ship.NewTurretController(2, -1);
                 }
             }
         }

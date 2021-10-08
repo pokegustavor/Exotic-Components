@@ -220,7 +220,7 @@ namespace Exotic_Components
                     " sec\n",
                     (me.GetDisplayedEnergyOutputMax() * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
                     " MW\n",
-                    (Mathf.Clamp(BiscuitBoost/5f + 1f, 1f, 4f) * 100).ToString("0"),
+                    (Mathf.Clamp(BiscuitBoost/5f, 0f, 3f) * 100).ToString("0"),
                     " %"
                 });
             }

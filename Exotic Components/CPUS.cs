@@ -9,7 +9,7 @@ namespace Exotic_Components
     {
         public class The_Premonition : CPUMod
         {
-            public static int lastLive = 20;
+            public static int lastLive = 0;
 
             public static float lastHull = 5000;
 
@@ -139,13 +139,13 @@ namespace Exotic_Components
             for(int i = 0; i < 5; i++) 
             {
                 PLPlayer player = PLEncounterManager.Instance.PlayerShip.GetRelevantCrewMember(i, false);
-                if (player == null)
-                {
-                    CPUS.The_Premonition.crewPosition[i] = new Vector3(0, 0, 0);
-                }
-                else if(player.GetPawn() != null && !player.GetPawn().IsDead)
+                if (player != null && player.GetPawn() != null && !player.GetPawn().IsDead)
                 {
                     CPUS.The_Premonition.crewPosition[i] = player.GetPawn().gameObject.transform.position;
+                }
+                else
+                {
+                    CPUS.The_Premonition.crewPosition[i] = new Vector3(0, 0, 0);
                 }
             }
         }

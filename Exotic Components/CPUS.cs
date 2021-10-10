@@ -3,6 +3,7 @@ using PulsarModLoader.Content.Components.CPU;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 namespace Exotic_Components
 {
     public class CPUS
@@ -45,6 +46,92 @@ namespace Exotic_Components
                 }
                 if (lastLive >= 20) return "charged";
                 return ((20-lastLive)/2) + " jumps remains";
+            }
+        }
+
+        public class ThermoBoost : CPUMod 
+        {
+            public static float MaxHeat = 1.1f;
+
+            public override string Name => "Turret Thermo Boost";
+
+            public override string Description => "This processor adds extra heat limit for all turrets in the ship. That is what I call efficient cooling!";
+
+            public override int MarketPrice => 20000;
+
+            public override bool Experimental => true;
+
+            public override float MaxPowerUsage_Watts => 1f;
+
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return "Turret extra Heat:";
+            }
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLCPU me = InComp as PLCPU;
+                return (0.3f * InComp.LevelMultiplier(0.31f, 1) * 100) + " %";
+            }
+
+            public override void AddStats(PLShipComponent InComp)
+            {
+                MaxHeat = 1.1f + 0.3f * InComp.LevelMultiplier(0.31f, 1);
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(PLTurret),"Tick")]
+    class HeatMax 
+    {
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> Instructions)
+        {
+            List<CodeInstruction> instructionsList = Instructions.ToList();
+            instructionsList[105].opcode = OpCodes.Ldsfld;
+            instructionsList[105].operand = AccessTools.Field(typeof(CPUS.ThermoBoost), "MaxHeat");
+            instructionsList[166].opcode = OpCodes.Ldsfld;
+            instructionsList[166].operand = AccessTools.Field(typeof(CPUS.ThermoBoost), "MaxHeat");
+            return instructionsList.AsEnumerable();
+        }
+    }
+    [HarmonyPatch(typeof(PLUITurretUI),"Update")]
+    class HeatUIUpdate 
+    {
+        static void Postfix(PLUITurretUI __instance) 
+        {
+            PLTurret plturret = null;
+            PLShipInfoBase plshipInfoBase = null;
+            if (PLEncounterManager.Instance.PlayerShip == null) return;
+            if (PLNetworkManager.Instance.MyLocalPawn != null)
+            {
+                if (PLNetworkManager.Instance.MyLocalPawn.IsDead) return;
+                plshipInfoBase = PLNetworkManager.Instance.MyLocalPawn.CurrentShip;
+            }
+            if (plshipInfoBase == null && PLCameraSystem.Instance.GetModeString() == "Turret" && PLCameraSystem.Instance.CurrentCameraMode != null)
+            {
+                PLCameraMode_Turret plcameraMode_Turret = PLCameraSystem.Instance.CurrentCameraMode as PLCameraMode_Turret;
+                if (plcameraMode_Turret != null)
+                {
+                    plshipInfoBase = plcameraMode_Turret.ShipInfo;
+                }
+            }
+            if (plshipInfoBase != PLEncounterManager.Instance.PlayerShip) return;
+            if (PLNetworkManager.Instance.MyLocalPawn != null && plshipInfoBase != null)
+            {
+                for (int i = 0; i < plshipInfoBase.GetCurrentTurretControllerMaxTurretIndex(); i++)
+                {
+                    if (plshipInfoBase.GetCurrentTurretControllerPlayerID(i) == PLNetworkManager.Instance.LocalPlayerID)
+                    {
+                        plturret = plshipInfoBase.GetTurretAtID(i);
+                        break;
+                    }
+                }
+            }
+            if (plturret != null) 
+            {
+                float value = plturret.Heat / CPUS.ThermoBoost.MaxHeat;
+                __instance.RightUI_Fill.fillAmount = value * 0.25f;
+                __instance.RightUI_FillOut.fillAmount = value * 0.25f;
             }
         }
     }
@@ -91,6 +178,7 @@ namespace Exotic_Components
                 if (found) 
                 {
                     PLShipInfo ship = PLEncounterManager.Instance.PlayerShip;
+                    ship.NumberOfFuelCapsules++;
                     PLMusic.PostEvent("play_sx_env_ship_powerdownslow", ship.gameObject);
                     ship.WarpTargetID = PLServer.GetCurrentSector().ID;
                     ship.SetInWarp(true);

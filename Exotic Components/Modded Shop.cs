@@ -250,8 +250,8 @@ namespace Exotic_Components
                 Object.Destroy(old);
             }
             PLShopkeeper keep = Object.FindObjectOfType<PLShopkeeper>();
-            keep.Name = "Davy";
-            keep.ActorInstance.DisplayName = "Davy";
+            keep.Name = "Davey";
+            keep.ActorInstance.DisplayName = "Davey";
         }
     }
     [HarmonyPatch(typeof(PLDialogueActorInstance), "BeginDialogue")]
@@ -259,12 +259,13 @@ namespace Exotic_Components
     {
         static void Postfix(PLDialogueActorInstance __instance)
         {
-            if (__instance.DisplayName == "Davy" && __instance.GetCurrentLine() != null)
+            if (__instance.DisplayName == "Davey" && __instance.GetCurrentLine() != null)
             {
                 LineData data = __instance.GetCurrentLine();
                 data.TextOptions = new List<string>() { "How you doing? Please buy stuff, I need energy :(." };
                 __instance.SetCurrentLine(data);
             }
+            if (__instance.DisplayName == "AUTOMATED SALES UNIT" && PLServer.GetCurrentSector().Name == "The Core(MOD)") __instance.DisplayName = "Biscuit Davey";
         }
     }
 
@@ -378,6 +379,11 @@ namespace Exotic_Components
             {
                 defaultText = "Welcome to the core, you... sold me the Flagship Intergalactic Warp Schematics? Thanks, how did you get that? Doesn't matter, I should be able to build this in the next month with Davy's help. In the time being, I have the most exotic components of all the galaxy, the other shops have no chance against me." +
                     " Also Ignore the big shiny center of the galaxy and buy something!";
+                currentText = defaultText;
+            }
+            if(currentText == defaultText && PLServer.Instance.IsFragmentCollected(1) && !currentText.Contains("lower price")) 
+            {
+                defaultText += " I have a strange felling, that I should sell you some things for a lower price, I am not sure why.";
                 currentText = defaultText;
             }
             if (currentText == null) currentText = defaultText;

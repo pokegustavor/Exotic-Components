@@ -239,6 +239,53 @@ namespace Exotic_Components
                 });
             }
         }
+        class PipeReactor : ReactorMod
+        {
+            public override string Name => "Pipe Reactor";
+
+            public override string Description => "This reactor has extended internal cooling system that leaks into space when hull is damaged, causing it to cool faster at lower hull integrity.";
+
+            public override int MarketPrice => 14300;
+
+            public override bool Experimental => true;
+
+            public override float EnergyOutputMax => 24000f;
+
+            public override float EnergySignatureAmount => 9f;
+
+            public override float MaxTemp => 2100f;
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                PLReactor me = InComp as PLReactor;
+                me.HeatOutput = Mathf.Clamp(me.ShipStats.HullCurrent / me.ShipStats.HullMax, 0.65f, 1f);
+            }
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLReactor me = InComp as PLReactor;
+                return string.Concat(new string[]
+                {
+                    (me.TempMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
+                    " kP\n",
+                    me.EmergencyCooldownTime.ToString("0.0"),
+                    " sec\n",
+                    (me.OriginalEnergyOutputMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
+                    " MW\n",
+                });
+            }
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return string.Concat(new string[]
+                {
+                   PLLocalize.Localize("Max Temp", false),
+                    "\n",
+                    PLLocalize.Localize("Emer. Cooldown", false),
+                    "\n",
+                    PLLocalize.Localize("Output", false),
+                });
+            }
+        }
+
         [HarmonyPatch(typeof(PLReactor), "GetStatLineLeft")]
         class LeftDescFix
         {

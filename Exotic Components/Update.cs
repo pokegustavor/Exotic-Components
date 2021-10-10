@@ -17,6 +17,16 @@ namespace Exotic_Components
                 {
                     InitialStore.UpdateCore();
                 }
+                bool found = false;
+                foreach(PLCPU cpu in PLEncounterManager.Instance.PlayerShip.MyStats.GetComponentsOfType(ESlotType.E_COMP_CPU,false)) 
+                {
+                    if (cpu.Name == "Turret Thermo Boost")
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) CPUS.ThermoBoost.MaxHeat = 1.1f;
             }
             catch { }
         }

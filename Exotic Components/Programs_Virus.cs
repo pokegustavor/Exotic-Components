@@ -6,6 +6,36 @@ namespace Exotic_Components
 {
     internal class Programs_Virus
     {
+        class AntiLiveProgram : WarpDriveProgramMod
+        {
+            public override string Name => "Anti-Life Pulse";
+
+            public override string Description => "This pulse system recovered from some aliens by a polytech crew will kill EVERY organic in the sector. It can only be used 3 times.";
+
+            public override int MarketPrice => 70000;
+
+            public override bool Contraband => true;
+
+            public override string ShortName => "ALP";
+
+            public override float ActiveTime => 0.1f;
+
+            public override int MaxLevelCharges => -1;
+
+            public override void Execute(PLWarpDriveProgram InWarpDriveProgram)
+            {
+                if (InWarpDriveProgram.MaxLevelCharges < -3) return;
+                foreach (PLPlayer player in PLServer.Instance.AllPlayers)
+                {
+                    if (player.GetPawn() != null && !player.GetPawn().IsDead && player.RaceID != 2)
+                    {
+                        player.GetPawn().TakeDamage(500000, false, -1);
+                    }
+                }
+                InWarpDriveProgram.MaxLevelCharges--;
+                if (InWarpDriveProgram.MaxLevelCharges < -3) InWarpDriveProgram.FlagForSelfDestruction();
+            }
+        }
         class BlindFoldProgram : WarpDriveProgramMod
         {
             public override string Name => "BlindFold [VIRUS]";
@@ -37,7 +67,6 @@ namespace Exotic_Components
                 */
             }
         }
-
         class BlindFoldVirus : VirusMod
         {
             public override string Name => "Blind Fold";
@@ -54,9 +83,9 @@ namespace Exotic_Components
         }
     }
     [HarmonyLib.HarmonyPatch(typeof(VirusModManager), "CreateVirus")]
-    class ManualFixVirus 
+    class ManualFixVirus
     {
-        static void Postfix(int Subtype, ref PLVirus __result) 
+        static void Postfix(int Subtype, ref PLVirus __result)
         {
             if (Subtype >= VirusModManager.Instance.VanillaVirusMaxType)
             {

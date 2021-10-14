@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Collections;
 namespace Exotic_Components
 {
-	internal class Main_Turrets
+	public class Main_Turrets
 	{
 		class MachineTurretMod : MegaTurretMod
 		{
@@ -18,6 +18,13 @@ namespace Exotic_Components
 
 			public override PLShipComponent PLMegaTurret => new SilentDeath();
 		}
+
+		public class TweakedMachineTurretMod : MegaTurretMod
+		{
+			public override string Name => "TweakedMachineGunMainTurret";
+
+			public override PLShipComponent PLMegaTurret => new TweakedMachineGunTurret();
+		}
 	}
 
 	class MachineGunTurret : PLMegaTurret_Proj
@@ -26,7 +33,7 @@ namespace Exotic_Components
 		{
 			this.Name = "Machine Gun Turret";
 			this.Desc = "This old turret is designed for extreme firerate but with extremely low damage, time to melt some enemies";
-			this.m_Damage = 11f;
+			this.m_Damage = 25f;
 			this.MinFireDelay = 0.009f;
 			this.FireDelay = 0.009f;
 			this.HeatGeneratedOnFire = 0.024f;
@@ -45,7 +52,31 @@ namespace Exotic_Components
 			this.HasPulseLaser = true;
 		}
 	}
-
+	class TweakedMachineGunTurret : PLMegaTurret_Proj
+	{
+		public TweakedMachineGunTurret(int inLevel = 0, int inSubTypeData = 1) : base(inLevel, inSubTypeData)
+		{
+			this.Name = "Machine Gun Turret";
+			this.Desc = "This old turret is designed for extreme firerate but with extremely low damage, time to melt some enemies. This version was upgraded for more damage and less heat generated";
+			this.m_Damage = 75f;
+			this.MinFireDelay = 0.009f;
+			this.FireDelay = 0.009f;
+			this.HeatGeneratedOnFire = 0.0024f;
+			this.m_MaxPowerUsage_Watts = 7500f;
+			this.m_ProjSpeed = 5000f;
+			base.SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("MachineGunMainTurret"); ;
+			this.m_MarketPrice = 24600;
+			base.CargoVisualPrefabID = 5;
+			this.m_SlotType = ESlotType.E_COMP_MAINTURRET;
+			this.m_KickbackForceMultiplier = 0.002f;
+			this.OnFire_CameraShakeAmt = 0.002f;
+			this.m_AutoAimMinDotPrd = 0.99f;
+			this.AutoAimEnabled = true;
+			this.IsMainTurret = true;
+			this.HasTrackingMissileCapability = true;
+			this.HasPulseLaser = true;
+		}
+	}
 	class SilentDeath : PLMegaTurret_RapidFire
 	{
 		public SilentDeath(int inLevel = 0, int inSubTypeData = 1) : base(0)

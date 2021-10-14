@@ -79,6 +79,36 @@ namespace Exotic_Components
                 MaxHeat = 1.1f + 0.3f * InComp.LevelMultiplier(0.31f, 1);
             }
         }
+
+        public class Researcher : CPUMod
+        {
+            public override string Name => "Research Processor";
+
+            public override string Description => "A processor that creates a random research material every jump to an unvisited sector. Again, don't ask how it creates chemicals from nothing.";
+
+            public override int MarketPrice => 25000;
+
+            public override float MaxPowerUsage_Watts => 1f;
+
+            public override void OnWarp(PLShipComponent InComp)
+            {
+                int targetId = PLEncounterManager.Instance.PlayerShip.WarpTargetID;
+                if (targetId == -1 || !InComp.IsEquipped) return;
+                if (!PLGlobal.Instance.Galaxy.AllSectorInfos[targetId].Visited)
+                {
+                    int researchID = Random.Range(0, 5);
+                    PLServer.Instance.photonView.RPC("AddNotification_OneString_LocalizedString", PhotonTargets.All, new object[]
+                                {
+                                        "+1 [STR0] added due to the Research Processor!",
+                                        -1,
+                                        PLServer.Instance.GetEstimatedServerMs() + 3000,
+                                        true,
+                                        PLPawnItem_ResearchMaterial.GetResearchTypeString(researchID)
+                                });
+                    PLServer.Instance.ResearchMaterials[researchID]++;
+                }
+            }
+        }
     }
 
     [HarmonyPatch(typeof(PLTurret),"Tick")]
@@ -235,6 +265,19 @@ namespace Exotic_Components
                 {
                     CPUS.The_Premonition.crewPosition[i] = new Vector3(0, 0, 0);
                 }
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(PLCPU), "OnWarp")]
+    class ManualOnWarp
+    {
+        static void Postfix(PLCPU __instance)
+        {
+            int subtypeformodded = __instance.SubType - CPUModManager.Instance.VanillaCPUMaxType;
+            if (subtypeformodded > -1 && subtypeformodded < CPUModManager.Instance.CPUTypes.Count && __instance.ShipStats != null)
+            {
+               CPUModManager.Instance.CPUTypes[subtypeformodded].OnWarp(__instance);
             }
         }
     }

@@ -22,15 +22,59 @@ namespace Exotic_Components
             }
         }
     }
+    [HarmonyPatch(typeof(PLTraderInfo), "SellComponent")]
+    class SellMissionComp
+    {
+        static bool Prefix(int inShipID, int inNetID)
+        {
+            if (PLServer.GetCurrentSector().Name != "The Core(MOD)") return true;
+            PLShipInfo ship = PLEncounterManager.Instance.GetShipFromID(inShipID) as PLShipInfo;
+            if (ship != null)
+            {
+                PLShipComponent target = ship.MyStats.GetComponentFromNetID(inNetID);
+                if (target.Name_NoTranslation == "Intergalatic Jump Processor Core")
+                {
+                    /*
+                    foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
+                    {
+                        if (mission.MissionTypeID == 700)
+                        {
+                            mission.Ended = true;
+                        }
+                    }
+                    PLEncounterManager.Instance.PlayerShip.MyStats.AddShipComponent(PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(7, PulsarModLoader.Content.Components.CPU.CPUModManager.Instance.GetCPUIDFromName("Research Processor"), 0, 0, 12), null), -1, ESlotType.E_COMP_CARGO);
+                    ship.MyStats.RemoveShipComponentByNetID(inNetID);
+                    PLServer.Instance.photonView.RPC("AddCrewWarning", PhotonTargets.All, new object[]
+                    {
+                        "MISSION COMPLETED",
+                         Color.yellow,
+                        2,
+                        "MSN"
+                    });
+                    */
+                    foreach(PLMissionBase mission in PLServer.Instance.AllMissions) 
+                    {
+                        if(mission != null && mission.MissionTypeID == 700 && !mission.Ended) 
+                        {
+                            mission.Objectives[2].IsCompleted = true;
+                        }
+                    }
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
     [HarmonyPatch(typeof(PLTraderInfo), "ServerAddWare")]
-    class DeleteIntergalatic
+    class SellItem
     {
         static void Postfix(PLTraderInfo __instance, int wareType, int wareHash)
         {
+            if (PLServer.GetCurrentSector().Name != "The Core(MOD)") return;
             PLWare maybeFlag = PLWare.CreateFromHash(wareType, wareHash);
-            if (maybeFlag.GetItemName(true) == "Flagship Intergalactic Warp Schematics" && PLServer.GetCurrentSector().Name == "The Core(MOD)")
+            if (maybeFlag.GetItemName(true) == "Flagship Intergalactic Warp Schematics")
             {
-                foreach (KeyValuePair<int,PLWare> items in __instance.MyPDE.Wares)
+                foreach (KeyValuePair<int, PLWare> items in __instance.MyPDE.Wares)
                 {
                     if (items.Value.GetItemName(true) == "Flagship Intergalactic Warp Schematics")
                     {
@@ -44,6 +88,28 @@ namespace Exotic_Components
                 }
                 //PulsarModLoader.Utilities.Messaging.Notification("Nothing Removed");
             }
+            /*
+            if(maybeFlag.GetItemName(true) == "Intergalatic Jump Processor Core") 
+            {
+                PLServer.Instance.photonView.RPC("AttemptForceEndMissionOfTypeID", PhotonTargets.MasterClient, new object[]
+                            {
+                                700,
+                            });
+                PLEncounterManager.Instance.PlayerShip.MyStats.AddShipComponent(PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(23, PulsarModLoader.Content.Components.CPU.CPUModManager.Instance.GetCPUIDFromName("Research Processor"), 0, 0, 12), null), -1, ESlotType.E_COMP_CARGO);
+                foreach (KeyValuePair<int, PLWare> items in __instance.MyPDE.Wares)
+                {
+                    if (items.Value.GetItemName(true) == "Intergalatic Jump Processor Core")
+                    {
+                        //PulsarModLoader.Utilities.Messaging.Notification("Removing");
+                        __instance.photonView.RPC("RemoveWare", PhotonTargets.All, new object[]
+                        {
+                        items.Key
+                        });
+                        return;
+                    }
+                }
+            }
+            */
         }
     }
     [HarmonyPatch(typeof(PLServer), "StartPlayer")]
@@ -168,6 +234,7 @@ namespace Exotic_Components
                 }
                 foreach (PulsarModLoader.Content.Components.CPU.CPUMod CPU in PulsarModLoader.Content.Components.CPU.CPUModManager.Instance.CPUTypes)
                 {
+                    if (CPU is CPUS.Researcher) continue;
                     PLShipComponent component = PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(7, PulsarModLoader.Content.Components.CPU.CPUModManager.Instance.GetCPUIDFromName(CPU.Name), 0, 0, 12), null);
                     component.NetID = inPDE.ServerWareIDCounter;
                     inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
@@ -175,6 +242,7 @@ namespace Exotic_Components
                 }
                 foreach (PulsarModLoader.Content.Components.MegaTurret.MegaTurretMod MainTurret in PulsarModLoader.Content.Components.MegaTurret.MegaTurretModManager.Instance.MegaTurretTypes)
                 {
+                    if (MainTurret is Main_Turrets.TweakedMachineTurretMod) continue;
                     PLShipComponent component = PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(11, PulsarModLoader.Content.Components.MegaTurret.MegaTurretModManager.Instance.GetMegaTurretIDFromName(MainTurret.Name), 0, 0, 12), null);
                     component.NetID = inPDE.ServerWareIDCounter;
                     inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
@@ -215,6 +283,7 @@ namespace Exotic_Components
                 {
                     foreach (PulsarModLoader.Content.Components.Turret.TurretMod Turret in PulsarModLoader.Content.Components.Turret.TurretModManager.Instance.TurretTypes)
                     {
+                        if (Turret is Turrets.TweakedAntiShieldMod) continue;
                         PLShipComponent component = PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(10, PulsarModLoader.Content.Components.Turret.TurretModManager.Instance.GetTurretIDFromName(Turret.Name), 0, 0, 12), null);
                         component.NetID = inPDE.ServerWareIDCounter;
                         inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
@@ -271,6 +340,7 @@ namespace Exotic_Components
 
     class TheCoreComms : PLHailTarget_CustomGeneralShop
     {
+        private int missionID = -1;
         public static bool soldIntergalatic = false;
         private string defaultText = "Welcome to the core, not sure how you found me in here, but doesn't matter. I have the most exotic components of all the galaxy, the other shops have no chance against me. Also Ignore the big shiny center of the galaxy and buy something!";
         public override void Start()
@@ -280,6 +350,7 @@ namespace Exotic_Components
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Browse Goods", false), new PLHailChoiceDelegate(this.OnSelectBrowseGoods)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Install Ship Components", false), new PLHailChoiceDelegate(this.OnSelectInstallComp)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Tell me more about you", new PLHailChoiceDelegate(this.OnTalkWith)));
+            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Missions", new PLHailChoiceDelegate(this.Mission)));
         }
         private void OnSelectInstallComp(bool authority, bool local)
         {
@@ -310,6 +381,68 @@ namespace Exotic_Components
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Nevermind, just want to go back to buying", new PLHailChoiceDelegate(this.BackToBuy)));
             }
         }
+        private void Mission(bool authority, bool local)
+        {
+            if (local)
+            {
+                missionID = -1;
+                m_AllChoices.Clear();
+                currentText = "\n\nWant some money? I guess I have some jobs for you.";
+                if (!PLServer.Instance.HasMissionWithID(700))
+                {
+                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Recover a jump processor", new PLHailChoiceDelegate(this.RetriveCPU)));
+                }
+                if (!PLServer.Instance.HasMissionWithID(701))
+                {
+                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Kill a thief", new PLHailChoiceDelegate(this.KillThief)));
+                }
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Nevermind, just want to go back to buying", new PLHailChoiceDelegate(this.BackToBuy)));
+            }
+        }
+        private void RetriveCPU(bool authority, bool local)
+        {
+            if (local)
+            {
+                missionID = 700;
+                m_AllChoices.Clear();
+                currentText += "\n\nThis is a very simple job. A crew was supposed to bring me a special jump processor core for a... project. But I lost communication with them while they were in a black hole sector. I don't know if they are alive, but what I know is the ship probably won't survive for much time, so hurry with collecting the processor core. As a reward I will give you a special processor of mine.";
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
+            }
+        }
+        private void KillThief(bool authority, bool local)
+        {
+            if (local)
+            {
+                missionID = 701;
+                m_AllChoices.Clear();
+                currentText += "\n\nThere is this crew who dared to steal some of my components, and now think they are the most powerfull crew in the galaxy. Show them wrong by killing them. I will pay you a good amount of money, and you can keep any component that survives the destruction of their ship. I also heared that they modified the anti-shield turret they stole from me.";
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
+            }
+        }
+        private void AcceptMission(bool authority, bool local)
+        {
+            if (local)
+            {
+                switch (missionID)
+                {
+                    case 700:
+                        if (!PLServer.Instance.HasMissionWithID(700))
+                        {
+                            Missions.RecoverCPU.StartMission();
+                        }
+                        break;
+                    case 701:
+                        if (!PLServer.Instance.HasMissionWithID(701))
+                        {
+                            Missions.KillTaitor.StartMission();
+                        }
+                        break;
+                }
+                Mission(authority, local);
+            }
+        }
         private void WhyMoveHere(bool authority, bool local)
         {
             if (local)
@@ -336,8 +469,8 @@ namespace Exotic_Components
                     currentText += "And I know you guys are a C.U crew, but I have a felling you won't report me. ";
                 }
                 currentText += "Anyway, talking about hidding, I hearded the Estate is actually in this galaxy, apperently with the warp drive malfunctioning or something.";
-                if(!soldIntergalatic)   currentText += " But they could be my ticket to getting out of here, just need to find them first. If you find the schematics for a flagship drive you could bring it to me, I would pay good for it *laughs*";
-                else 
+                if (!soldIntergalatic) currentText += " But they could be my ticket to getting out of here, just need to find them first. If you find the schematics for a flagship drive you could bring it to me, I would pay good for it *laughs*";
+                else
                 {
                     currentText += " But since you got me the schematics somehow, I will be building my own intergalatic warpdrive soon to get out of this galaxy";
                 }
@@ -381,7 +514,7 @@ namespace Exotic_Components
                     " Also Ignore the big shiny center of the galaxy and buy something!";
                 currentText = defaultText;
             }
-            if(currentText == defaultText && PLServer.Instance.IsFragmentCollected(1) && !currentText.Contains("lower price")) 
+            if (currentText == defaultText && PLServer.Instance.IsFragmentCollected(1) && !currentText.Contains("lower price"))
             {
                 defaultText += " I have a strange felling, that I should sell you some things for a lower price, I am not sure why.";
                 currentText = defaultText;

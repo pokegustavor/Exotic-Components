@@ -29,6 +29,12 @@ namespace Exotic_Components
 
             public override PLShipComponent PLTurret => new InfectedTurret();
         }
+        public class TweakedAntiShieldMod : TurretMod
+        {
+            public override string Name => "Tweaked Anti-Shield";
+
+            public override PLShipComponent PLTurret => new TweakedAntiShield();
+        }
     }
 
     class SupremeRailGun : PLBasicTurret
@@ -101,7 +107,30 @@ namespace Exotic_Components
             this.UpdateMaxPowerUsageWatts();
         }
     }
-
+    class TweakedAntiShield : PLLaserTurret
+    {
+        public TweakedAntiShield(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
+        {
+            this.Name = "Tweaked Anti-Shield Turret";
+            this.Desc = "A weak but special turret that fires a laser at the exact frequency to ignore the target's shield if they are on static. This version was upgraded for more damage";
+            this.m_Damage = 69f;
+            this.FireDelay = 3.1f;
+            base.SubType = TurretModManager.Instance.GetTurretIDFromName("Tweaked Anti-Shield");
+            this.m_MarketPrice = 30000;
+            base.Level = inLevel;
+            base.SubTypeData = (short)inSubTypeData;
+            this.TurretRange = 8000f;
+            this.m_MaxPowerUsage_Watts = 6500f;
+            base.CargoVisualPrefabID = 3;
+            base.Experimental = true;
+            this.PlayShootSFX = "play_ship_generic_external_weapon_laser_shoot";
+            this.StopShootSFX = "";
+            this.PlayProjSFX = "play_ship_generic_external_weapon_laser_projectile";
+            this.StopProjSFX = "stop_ship_generic_external_weapon_laser_projectile";
+            this.LaserDamageType = EDamageType.E_BEAM;
+            this.UpdateMaxPowerUsageWatts();
+        }
+    }
     class InfectedTurret : PLSporeTurret
     {
         public InfectedTurret(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)

@@ -32,6 +32,21 @@ namespace Exotic_Components
                         player.GetPawn().TakeDamage(500000, false, -1);
                     }
                 }
+                foreach (PLShipInfoBase ship in PLEncounterManager.Instance.AllShips.Values) 
+                {
+                    if(ship is PLAlienTentacleCreatureInfo || ship.IsInfected) 
+                    {
+                        ship.DestroySelf(InWarpDriveProgram.ShipStats.Ship);
+                    }
+                }
+                foreach(PLCreature creatur in PLGameStatic.Instance.AllCreatures) 
+                {
+                    if(!(creatur is PLRobotWalker) && !(creatur is PLRobotWalkerLarge)) 
+                    {
+                        creatur.IsDead = true;
+                        creatur.TakeDamage(500000, false, -1);
+                    }
+                }
                 InWarpDriveProgram.MaxLevelCharges--;
                 if (InWarpDriveProgram.MaxLevelCharges < -3) InWarpDriveProgram.FlagForSelfDestruction();
             }

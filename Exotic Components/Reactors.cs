@@ -9,7 +9,7 @@ namespace Exotic_Components
         {
             public override string Name => "CryoCore MK2";
 
-            public override string Description => "A questinable reactor by Dragon's INC that somehow makes more power the colder it is, but why question the logic behind if it works";
+            public override string Description => "A questionable reactor by Dragon's INC that somehow makes more power the colder it is, but why question the logic behind if it works";
 
             public override int MarketPrice => 45000;
 

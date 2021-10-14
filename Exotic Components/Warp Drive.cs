@@ -12,7 +12,7 @@ namespace Exotic_Components
         {
             public override string Name => "Ultimate Explorer";
 
-            public override string Description => "A powerfull warpdrive using a similar technology to a flagship drive. While it won't warp you outside of the galaxy, it will warp anywhere inside of it (as long as you have the coordinates)";
+            public override string Description => "A powerful warpdrive using a similar technology to a flagship drive. While it won't warp you outside of the galaxy, it will warp anywhere inside of it (as long as you have the coordinates)";
 
             public override int MarketPrice => 70000;
 
@@ -58,7 +58,7 @@ namespace Exotic_Components
 		{
 			public override string Name => "Ultimate Explorer MK2";
 
-			public override string Description => "An overclocked version of the Ultimate Explorer that now charges way faster and has an extra program charge (We are not responsible for any malfuntion caused by this overclock)";
+			public override string Description => "An overclocked version of the Ultimate Explorer that now charges way faster and has an extra program charge (We are not responsible for any malfunction caused by this overclock)";
 
 			public override int MarketPrice => 80000;
 

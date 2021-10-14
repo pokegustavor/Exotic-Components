@@ -42,7 +42,7 @@ namespace Exotic_Components
         public SupremeRailGun(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
         {
             this.Name = "Supreme RailGun";
-            this.Desc = "Recovered Acient Human technology, this Railgun is the strongest of its kind, even if not as powerfull as the original";
+            this.Desc = "Recovered Ancient Human technology, this Railgun is the strongest of its kind, even if not as powerful as the original";
             this.m_Damage = 450f;
             base.SubType = TurretModManager.Instance.GetTurretIDFromName("Supreme RailGun");
             this.m_MarketPrice = 12000;

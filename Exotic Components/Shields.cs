@@ -37,7 +37,7 @@ namespace Exotic_Components
                 PLShieldGenerator me = InComp as PLShieldGenerator;
                 if (me != null && me.ShipStats != null && me.ShipStats.Ship.MyShieldGenerator.Name == "Layered Shield")
                 {
-                    me.Deflection = (3f - Mathf.Clamp01(me.ShipStats.ShieldsCurrent / me.ShipStats.ShieldsMax)) * (1.5f + me.Level*0.7f);
+                    me.Deflection = (3f - Mathf.Clamp01(me.ShipStats.ShieldsCurrent / me.ShipStats.ShieldsMax)) + (1.1f + me.Level*0.7f);
                     float multiplier = (1 / Mathf.Clamp01(me.ShipStats.ShieldsCurrent / me.ShipStats.ShieldsMax));
                     if (multiplier > 3.5f) multiplier = 3.5f;
                     me.CalculatedMaxPowerUsage_Watts = MaxPowerUsage_Watts * multiplier;
@@ -47,7 +47,7 @@ namespace Exotic_Components
 
         class EletricWall : ShieldMod
         {
-            public override string Name => "Eletric Wall";
+            public override string Name => "Electric Wall";
 
             public override string Description => "A modified version of the Second Hull that not only has 10% resistance against energy attacks, it also can emit an EMP pulse if turned off while above 90% integrity, just be careful with the recoil. It was marked as contraband because of this.";
 

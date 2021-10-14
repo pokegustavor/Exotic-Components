@@ -115,7 +115,7 @@ namespace Exotic_Components
                 PickupMissionData missionData = new PickupMissionData
                 {
                     Desc = "This guys stole some of my extra components, and I won't let that go so easy! Kill them, and you can keep whatever survives the explosion.",
-                    Name = "Kill the Thiefs",
+                    Name = "Kill the Thieves",
                     CanBeAbandonedByPlayers = true,
                     Reward_Credits = 25000,
                     MissionID = 701

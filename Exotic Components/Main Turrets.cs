@@ -56,7 +56,7 @@ namespace Exotic_Components
 	{
 		public TweakedMachineGunTurret(int inLevel = 0, int inSubTypeData = 1) : base(inLevel, inSubTypeData)
 		{
-			this.Name = "Machine Gun Turret";
+			this.Name = "Tweaked Machine Gun Turret";
 			this.Desc = "This old turret is designed for extreme firerate but with extremely low damage, time to melt some enemies. This version was upgraded for more damage and less heat generated";
 			this.m_Damage = 75f;
 			this.MinFireDelay = 0.009f;
@@ -82,7 +82,7 @@ namespace Exotic_Components
 		public SilentDeath(int inLevel = 0, int inSubTypeData = 1) : base(0)
 		{
 			this.Name = "Silent Death";
-			this.Desc = "A special Sylvassi turret made to fire without breaking the cloak of a ship. Due to the possible mallicious uses, it has being marked as a contraband";
+			this.Desc = "A special Sylvassi turret made to fire without breaking the cloak of a ship. Due to the possible malicious uses, it has being marked as a contraband";
 			this.m_Damage = 280f;
 			base.SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("SilentDeath");
 			this.Contraband = true;

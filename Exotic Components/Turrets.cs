@@ -33,7 +33,14 @@ namespace Exotic_Components
         {
             public override string Name => "Tweaked Anti-Shield";
 
-            public override PLShipComponent PLTurret => new TweakedAntiShield();
+            public override PLShipComponent PLTurret => new TweakedAntiShield(); 
+        }
+
+        public class RNG : TurretMod
+        {
+            public override string Name => "Respected Nullifier Gun";
+
+            public override PLShipComponent PLTurret => new RespectedNullifierGun(); 
         }
     }
 
@@ -200,6 +207,43 @@ namespace Exotic_Components
             base.Level = inLevel;
             this.OnFire_CameraShakeAmt = 0.8f;
             this.FireTurretSoundSFX = "play_ship_generic_external_weapon_railgun_shoot";
+        }
+    }
+    class RespectedNullifierGun : PLLaserTurret 
+    {
+        public RespectedNullifierGun(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
+        {
+            this.Name = "Respected Nullifier Gun";
+            this.Desc = "A more powerful laser turret that has some kind of portal to another universe (or something like that) and has a chance to insta-kill the enemy. You have no conception of how rare that is! IT IS MILLIONS TO ONE!";
+            this.m_Damage = 65f;
+            this.FireDelay = 5f;
+            base.SubType = TurretModManager.Instance.GetTurretIDFromName("Respected Nullifier Gun");
+            this.m_MarketPrice = 7500;
+            base.Level = inLevel;
+            base.SubTypeData = (short)inSubTypeData;
+            this.TurretRange = 8000f;
+            this.m_MaxPowerUsage_Watts = 9500f;
+            base.CargoVisualPrefabID = 3;
+            base.Experimental = true;
+            this.PlayShootSFX = "play_ship_generic_external_weapon_laser_shoot";
+            this.StopShootSFX = "";
+            this.PlayProjSFX = "play_ship_generic_external_weapon_laser_projectile";
+            this.StopProjSFX = "stop_ship_generic_external_weapon_laser_projectile";
+            this.LaserDamageType = EDamageType.E_BEAM;
+            this.UpdateMaxPowerUsageWatts();
+        }
+
+        public override void UpdateMaxPowerUsageWatts()
+        {
+            this.m_MaxPowerUsage_Watts = 9500f * base.LevelMultiplier(0.2f, 1f);
+        }
+
+        public override void Tick()
+        {
+            float original = this.m_Damage;
+            if (Random.Range(1, 1000000) == 69420) this.m_Damage = 1000000;
+            base.Tick();
+            m_Damage = original;
         }
     }
 

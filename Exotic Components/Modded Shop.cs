@@ -283,7 +283,7 @@ namespace Exotic_Components
                 {
                     foreach (PulsarModLoader.Content.Components.Turret.TurretMod Turret in PulsarModLoader.Content.Components.Turret.TurretModManager.Instance.TurretTypes)
                     {
-                        if (Turret is Turrets.TweakedAntiShieldMod) continue;
+                        if (Turret is Turrets.TweakedAntiShieldMod || Turret is Turrets.RNG) continue;
                         PLShipComponent component = PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(10, PulsarModLoader.Content.Components.Turret.TurretModManager.Instance.GetTurretIDFromName(Turret.Name), 0, 0, 12), null);
                         component.NetID = inPDE.ServerWareIDCounter;
                         inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
@@ -396,6 +396,10 @@ namespace Exotic_Components
                 {
                     this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Kill a thief", new PLHailChoiceDelegate(this.KillThief)));
                 }
+                if (!PLServer.Instance.HasMissionWithID(702))
+                {
+                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Protect my judge", new PLHailChoiceDelegate(this.ProtectJudge)));
+                }
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Nevermind, just want to go back to buying", new PLHailChoiceDelegate(this.BackToBuy)));
             }
         }
@@ -421,10 +425,23 @@ namespace Exotic_Components
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
             }
         }
+
+        private void ProtectJudge(bool authority, bool local)
+        {
+            if (local)
+            {
+                missionID = 702;
+                m_AllChoices.Clear();
+                currentText += "\n\nI am not a political guy, but you may remember my condition with the C.U. goverment is not the best one, but I found this matthew judge that maybe can make things a lot easier to me. Only problem is he has enemies, and I got a quick SOS before the assassins were able to block long range comms, they are not far away, so I need you to quickly go there and protect him. I will give you some money and a special par of turrets (it would all be easier if he got that witness protection).";
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
+            }
+        }
         private void AcceptMission(bool authority, bool local)
         {
             if (local)
             {
+
                 switch (missionID)
                 {
                     case 700:
@@ -437,6 +454,12 @@ namespace Exotic_Components
                         if (!PLServer.Instance.HasMissionWithID(701))
                         {
                             Missions.KillTaitor.StartMission();
+                        }
+                        break;
+                    case 702:
+                        if (!PLServer.Instance.HasMissionWithID(702))
+                        {
+                            Missions.ProtectJudge.StartMission();
                         }
                         break;
                 }

@@ -102,11 +102,11 @@ namespace Exotic_Components
 			public static float LastFailure = Time.time;
             public override void OnWarp(PLShipComponent InComp)
             {
-				if (!PhotonNetwork.isMasterClient) return;
+				if (!PhotonNetwork.isMasterClient || !InComp.IsEquipped) return;
 				if ((InComp as PLWarpDrive).Name != "Ultimate Explorer MK2") return;
 				PLSectorInfo current = PLServer.GetCurrentSector();
 				PLSectorInfo destiny = PLGlobal.Instance.Galaxy.AllSectorInfos.GetValueSafe(PLEncounterManager.Instance.PlayerShip.WarpTargetID);
-				if (UnityEngine.Random.Range(0, 100) <= Mathf.Min(1000 * Vector2.Distance(current.Position,destiny.Position),35) && Time.time - LastFailure > 20f) 
+				if (UnityEngine.Random.Range(0, 100) <= Mathf.Min(1000 * Vector2.Distance(current.Position,destiny.Position),35) && Time.time - LastFailure > 50f) 
 				{
 					if(PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>() == null) 
 					{
@@ -150,7 +150,7 @@ namespace Exotic_Components
 			}
 			if (possibleSectors.Count == 0) yield break;
 			int ID = possibleSectors[(int)UnityEngine.Random.Range(0, possibleSectors.Count - 1)].ID;
-			yield return new WaitForSeconds(6f);
+			yield return new WaitForSeconds(5f);
 			failing = true;
 			destinyID = ID;
 			PLEncounterManager.Instance.PlayerShip.WarpTargetID = ID;
@@ -161,6 +161,7 @@ namespace Exotic_Components
 				ID,
 				0
 			});
+			PLEncounterManager.Instance.PlayerShip.LastBeginBlindWarpServerTime = PLServer.Instance.GetEstimatedServerMs();
 			PLServer.Instance.photonView.RPC("AddCrewWarning", PhotonTargets.All, new object[]
 			{
 				"WARP DRIVE MALFUNCTION DETECTED!",

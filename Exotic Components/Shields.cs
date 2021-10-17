@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using HarmonyLib;
 namespace Exotic_Components
 {
-    internal class Shields
+    public class Shields
     {
-        class LayeredShieldMod : ShieldMod
+        public class LayeredShieldMod : ShieldMod
         {
             public override string Name => "Layered Shield";
 
@@ -30,17 +30,18 @@ namespace Exotic_Components
 
             public override float MaxPowerUsage_Watts => 8500f;
 
-            public override int MinIntegrityAfterDamage => Mathf.RoundToInt(ShieldMax * 0.5f);
+            public override int MinIntegrityAfterDamage => 380;
 
             public override void Tick(PLShipComponent InComp)
             {
                 PLShieldGenerator me = InComp as PLShieldGenerator;
                 if (me != null && me.ShipStats != null && me.ShipStats.Ship.MyShieldGenerator.Name == "Layered Shield")
                 {
-                    me.Deflection = (3f - Mathf.Clamp01(me.ShipStats.ShieldsCurrent / me.ShipStats.ShieldsMax)) + (1.1f + me.Level*0.7f);
+                    me.Deflection = (2.8f - Mathf.Clamp01(me.ShipStats.ShieldsCurrent / me.ShipStats.ShieldsMax)*4.2f);
+                    if (me.Deflection < 0.6f) me.Deflection = 0.6f;
                     float multiplier = (1 / Mathf.Clamp01(me.ShipStats.ShieldsCurrent / me.ShipStats.ShieldsMax));
-                    if (multiplier > 3.5f) multiplier = 3.5f;
-                    me.CalculatedMaxPowerUsage_Watts = MaxPowerUsage_Watts * multiplier;
+                    if (multiplier > 5f) multiplier = 5f;
+                    me.CalculatedMaxPowerUsage_Watts = Mathf.RoundToInt(MaxPowerUsage_Watts * multiplier);
                 }
             }
         }

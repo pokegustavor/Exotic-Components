@@ -24,24 +24,30 @@ namespace Exotic_Components
 
             public override void Execute(PLWarpDriveProgram InWarpDriveProgram)
             {
+                if (!PhotonNetwork.isMasterClient) return;
                 if (InWarpDriveProgram.MaxLevelCharges < -3) return;
                 foreach (PLPlayer player in PLServer.Instance.AllPlayers)
                 {
-                    if (player.GetPawn() != null && !player.GetPawn().IsDead && player.RaceID != 2)
+                    if (player != null && player.GetPawn() != null && !player.GetPawn().IsDead && player.RaceID != 2)
                     {
-                        player.GetPawn().TakeDamage(500000, false, -1);
+                        player.GetPawn().photonView.RPC("TakeDamage", PhotonTargets.All, new object[]
+                        {
+                            500000,
+                            false,
+                            -1
+                        });
                     }
                 }
                 foreach (PLShipInfoBase ship in PLEncounterManager.Instance.AllShips.Values) 
                 {
-                    if(ship is PLAlienTentacleCreatureInfo || ship.IsInfected) 
+                    if(ship != null && (ship is PLAlienTentacleCreatureInfo || ship.IsInfected)) 
                     {
                         ship.DestroySelf(InWarpDriveProgram.ShipStats.Ship);
                     }
                 }
                 foreach(PLCreature creatur in PLGameStatic.Instance.AllCreatures) 
                 {
-                    if(!(creatur is PLRobotWalker) && !(creatur is PLRobotWalkerLarge)) 
+                    if(creatur != null && (!(creatur is PLRobotWalker) && !(creatur is PLRobotWalkerLarge))) 
                     {
                         creatur.IsDead = true;
                         creatur.TakeDamage(500000, false, -1);

@@ -94,7 +94,7 @@ namespace Exotic_Components
             {
                 int targetId = PLEncounterManager.Instance.PlayerShip.WarpTargetID;
                 if (targetId == -1 || !InComp.IsEquipped) return;
-                if (!PLGlobal.Instance.Galaxy.AllSectorInfos[targetId].Visited)
+                if (!PLGlobal.Instance.Galaxy.AllSectorInfos[targetId].Visited && PhotonNetwork.isMasterClient)
                 {
                     int researchID = Random.Range(0, 5);
                     PLServer.Instance.photonView.RPC("AddNotification_OneString_LocalizedString", PhotonTargets.All, new object[]
@@ -124,7 +124,7 @@ namespace Exotic_Components
             return instructionsList.AsEnumerable();
         }
     }
-    [HarmonyPatch(typeof(PLUITurretUI),"Update")]
+   [HarmonyPatch(typeof(PLUITurretUI),"Update")]
     class HeatUIUpdate 
     {
         static void Postfix(PLUITurretUI __instance) 
@@ -176,7 +176,7 @@ namespace Exotic_Components
             PLHull hull = listofhulls[0] as PLHull;
             if (hull.Current > __result) return;
             List<PLShipComponent> componentsOfType2 = __instance.GetComponentsOfType(ESlotType.E_COMP_CPU, false);
-            if (componentsOfType2 != null)
+            if (componentsOfType2 != null && PhotonNetwork.isMasterClient)
             {
                 bool found = false;
                 foreach (PLShipComponent plshipComponent in componentsOfType2)
@@ -250,20 +250,23 @@ namespace Exotic_Components
     }
 
     [HarmonyPatch(typeof(PLPersistantEncounterInstance), "SpawnEnemyShip")]
-    class StoreEnemies 
+    class StoreCrewPosition 
     {
         static void Postfix(PLShipInfoBase __result) 
         {
-            for(int i = 0; i < 5; i++) 
+            if (PhotonNetwork.isMasterClient)
             {
-                PLPlayer player = PLEncounterManager.Instance.PlayerShip.GetRelevantCrewMember(i, false);
-                if (player != null && player.GetPawn() != null && !player.GetPawn().IsDead)
+                for (int i = 0; i < 5; i++)
                 {
-                    CPUS.The_Premonition.crewPosition[i] = player.GetPawn().gameObject.transform.position;
-                }
-                else
-                {
-                    CPUS.The_Premonition.crewPosition[i] = new Vector3(0, 0, 0);
+                    PLPlayer player = PLEncounterManager.Instance.PlayerShip.GetRelevantCrewMember(i, false);
+                    if (player != null && player.GetPawn() != null && !player.GetPawn().IsDead)
+                    {
+                        CPUS.The_Premonition.crewPosition[i] = player.GetPawn().gameObject.transform.position;
+                    }
+                    else
+                    {
+                        CPUS.The_Premonition.crewPosition[i] = new Vector3(0, 0, 0);
+                    }
                 }
             }
         }
@@ -274,10 +277,13 @@ namespace Exotic_Components
     {
         static void Postfix(PLCPU __instance)
         {
-            int subtypeformodded = __instance.SubType - CPUModManager.Instance.VanillaCPUMaxType;
-            if (subtypeformodded > -1 && subtypeformodded < CPUModManager.Instance.CPUTypes.Count && __instance.ShipStats != null)
+            if (PhotonNetwork.isMasterClient)
             {
-               CPUModManager.Instance.CPUTypes[subtypeformodded].OnWarp(__instance);
+                int subtypeformodded = __instance.SubType - CPUModManager.Instance.VanillaCPUMaxType;
+                if (subtypeformodded > -1 && subtypeformodded < CPUModManager.Instance.CPUTypes.Count && __instance.ShipStats != null)
+                {
+                    CPUModManager.Instance.CPUTypes[subtypeformodded].OnWarp(__instance);
+                }
             }
         }
     }

@@ -61,10 +61,10 @@ namespace Exotic_Components
 			this.m_Damage = 75f;
 			this.MinFireDelay = 0.009f;
 			this.FireDelay = 0.009f;
-			this.HeatGeneratedOnFire = 0.0024f;
-			this.m_MaxPowerUsage_Watts = 7500f;
+			this.HeatGeneratedOnFire = 0.008f;
+			this.m_MaxPowerUsage_Watts = 18000f;
 			this.m_ProjSpeed = 5000f;
-			base.SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("MachineGunMainTurret"); ;
+			base.SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("TweakedMachineGunMainTurret"); ;
 			this.m_MarketPrice = 24600;
 			base.CargoVisualPrefabID = 5;
 			this.m_SlotType = ESlotType.E_COMP_MAINTURRET;

@@ -277,6 +277,7 @@ namespace Exotic_Components
                         new ComponentOverrideData() { CompType = 11, CompSubType = PulsarModLoader.Content.Components.MegaTurret.MegaTurretModManager.Instance.GetMegaTurretIDFromName("TweakedMachineGunMainTurret"), ReplaceExistingComp = true, CompLevel = 2 + PLShipInfoBase.GetChaosBoost(ship,shipDeterministicRand.Next() % 50), IsCargo = false, CompTypeToReplace = 11, SlotNumberToReplace = 0},
                         new ComponentOverrideData() { CompType = 17, CompSubType = PulsarModLoader.Content.Components.WarpDriveProgram.WarpDriveProgramModManager.Instance.GetWarpDriveProgramIDFromName("BlindFold [VIRUS]")},
                         new ComponentOverrideData() { CompType = 17, CompSubType = PulsarModLoader.Content.Components.WarpDriveProgram.WarpDriveProgramModManager.Instance.GetWarpDriveProgramIDFromName("Anti-Life Pulse")},
+                        new ComponentOverrideData() { CompType = 17, CompSubType = PulsarModLoader.Content.Components.WarpDriveProgram.WarpDriveProgramModManager.Instance.GetWarpDriveProgramIDFromName("Self Destruction [VIRUS]")},
                     };
                         ship.CompOverrides.AddRange(overrides);
                         PLServer.Instance.AllPSIs.Add(ship);

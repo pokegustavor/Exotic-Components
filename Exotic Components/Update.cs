@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using UnityEngine;
 namespace Exotic_Components
 {
     [HarmonyLib.HarmonyPatch(typeof(PLShipInfo),"Update")]
     internal class Update
     {
-        static void Postfix()
+        static void Postfix(PLShipInfo __instance)
         {
             try
             {
+                if (!__instance.GetIsPlayerShip()) return;
                 if (PLServer.GetCurrentSector().Name == "The Core(MOD)" && !PLEncounterManager.Instance.PlayerShip.Get_IsInWarpMode())
                 {
                     InitialStore.UpdateCore();
@@ -56,7 +57,16 @@ namespace Exotic_Components
                         }
                     }
                 }
-
+                if(__instance.MyReactor != null && __instance.MyReactor.GetItemName() != "" && __instance.Exterior.GetComponent<PLSpaceHeatVolume>() != null) 
+                {
+                    PLSpaceHeatVolume heatVolume = __instance.Exterior.GetComponent<PLSpaceHeatVolume>();
+                    heatVolume.MyPS.enableEmission = false;
+                    ParticleSystem.ShapeModule shape = heatVolume.MyPS.shape;
+                    shape.radius = 0.0001f;
+                    shape.scale = new Vector3(0, 0, 0);
+                    heatVolume.MyPS.gameObject.transform.localPosition = __instance.Exterior.transform.localPosition - new Vector3(0, -50, 0);
+                    __instance.MyTLI.AtmoSettings.Temperature = 1f;
+                }
 
                 if (!PLCampaignIO.Instance.m_CampaignData.MissionTypes.Contains(Missions.RecoverCPU.Missiondata)) 
                 {

@@ -77,15 +77,45 @@ namespace Exotic_Components
 
             public override Texture2D IconTexture => PLGlobal.Instance.VirusBGTexture;
 
-            public override void Execute(PLWarpDriveProgram InWarpDriveProgram)
-            {
-                base.Execute(InWarpDriveProgram);
-                /*
-                PLServer.Instance.photonView.RPC("AddToSendQueue", PhotonTargets.All, new object[]
-                {
+        }
+        class SelfDestructProgram : WarpDriveProgramMod
+        {
+            public override string Name => "Self Destruction [VIRUS]";
 
-                });
-                */
+            public override string Description => "If this virus is not removed in 30 seconds, the ship will selfdestruct";
+
+            public override int MarketPrice => 45000;
+
+            public override bool Experimental => true;
+
+            public override int MaxLevelCharges => 6;
+
+            public override bool IsVirus => true;
+
+            public override int VirusSubtype => VirusModManager.Instance.GetVirusIDFromName("Self Destruction");
+
+            public override string ShortName => "SFD";
+
+            public override float ActiveTime => 45f;
+
+            public override Texture2D IconTexture => PLGlobal.Instance.VirusBGTexture;
+        }
+        class SelfDestructVirus : VirusMod 
+        {
+            public override string Name => "Self Destruction";
+
+            public override string Description => "Destroys the ship if not removed in 30 seconds";
+
+            public override int InfectionTimeLimitMs => 45500;
+
+            public override void FinalLateAddStats(PLShipComponent InComp)
+            {
+                PLVirus me = InComp as PLVirus;
+                if (me.ShipStats.Ship.ShipTypeID == EShipType.E_GUARDIAN || me.ShipStats.Ship.ShipTypeID == EShipType.E_UNSEEN_EYE) return;
+                if(PLServer.Instance.GetEstimatedServerMs() - me.InitialInfectionTime >= 30000f) 
+                {
+                    me.ShipStats.Ship.TakeDamage(500000, false, EDamageType.E_INFECTED, 0, 0, me.Sender, -1);
+                }
             }
         }
         class BlindFoldVirus : VirusMod

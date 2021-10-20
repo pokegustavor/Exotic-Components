@@ -102,6 +102,7 @@
     <Compile Include="Missions.cs" />
     <Compile Include="Mod.cs" />
     <Compile Include="Modded Shop.cs" />
+    <Compile Include="Polytech.cs" />
     <Compile Include="Programs_Virus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reactors.cs" />

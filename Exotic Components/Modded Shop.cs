@@ -177,13 +177,6 @@ namespace Exotic_Components
                     inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
                     inPDE.ServerWareIDCounter++;
                 }
-                foreach (PulsarModLoader.Content.Components.PolytechModule.PolytechModuleMod PolytechModule in PulsarModLoader.Content.Components.PolytechModule.PolytechModuleModManager.Instance.PolytechModuleTypes)
-                {
-                    PLShipComponent component = PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(34, PulsarModLoader.Content.Components.PolytechModule.PolytechModuleModManager.Instance.GetPolytechModuleIDFromName(PolytechModule.Name), 0, 0, 12), null);
-                    component.NetID = inPDE.ServerWareIDCounter;
-                    inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
-                    inPDE.ServerWareIDCounter++;
-                }
                 foreach (PulsarModLoader.Content.Components.FBRecipeModule.FBRecipeModuleMod FBRecipeModule in PulsarModLoader.Content.Components.FBRecipeModule.FBRecipeModuleModManager.Instance.FBRecipeModuleTypes)
                 {
                     PLShipComponent component = PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(30, PulsarModLoader.Content.Components.FBRecipeModule.FBRecipeModuleModManager.Instance.GetFBRecipeModuleIDFromName(FBRecipeModule.Name), 0, 0, 12), null);
@@ -296,6 +289,16 @@ namespace Exotic_Components
                     component.NetID = inPDE.ServerWareIDCounter;
                     inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
                     inPDE.ServerWareIDCounter++;
+                }
+                if (PLServer.Instance.CrewFactionID == 5)
+                {
+                    foreach (PulsarModLoader.Content.Components.PolytechModule.PolytechModuleMod polytechModule in PulsarModLoader.Content.Components.PolytechModule.PolytechModuleModManager.Instance.PolytechModuleTypes)
+                    {
+                        PLShipComponent component = PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(34, PulsarModLoader.Content.Components.PolytechModule.PolytechModuleModManager.Instance.GetPolytechModuleIDFromName(polytechModule.Name), 0, 0, 12), null);
+                        component.NetID = inPDE.ServerWareIDCounter;
+                        inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
+                        inPDE.ServerWareIDCounter++;
+                    }
                 }
                 UpdateCore();
             }
@@ -541,6 +544,11 @@ namespace Exotic_Components
             if (currentText == defaultText && PLServer.Instance.IsFragmentCollected(1) && !currentText.Contains("lower price"))
             {
                 defaultText += " I have a strange felling, that I should sell you some things for a lower price, I am not sure why.";
+                currentText = defaultText;
+            }
+            if (currentText == defaultText && PLServer.Instance.CrewFactionID == 5 && !currentText.Contains("polytech"))
+            {
+                defaultText += " I noticed you guys are part of the polytechnic federation, I actually got some components from another crew if you are interested.";
                 currentText = defaultText;
             }
             if (currentText == null) currentText = defaultText;

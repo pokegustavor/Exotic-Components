@@ -285,7 +285,216 @@ namespace Exotic_Components
                 });
             }
         }
+        class Thermopoint : ReactorMod
+        {
+            public override string Name => "ThermoPoint Reactor";
 
+            public override string Description => "This special reactor by badteck™ may not make much energy, but it can handle massive amounts of heat, when too hot it releases some of the heat to the exterior and interior of the ship, also causing fires.";
+
+            public override int MarketPrice => 15000;
+
+            public override bool Contraband => true;
+
+            public override float EnergyOutputMax => 12700f;
+
+            public override float EnergySignatureAmount => 20f;
+
+            public override float MaxTemp => 6800f;
+
+            public override float EmergencyCooldownTime => 15f;
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                if (InComp.ShipStats.Ship.Exterior.GetComponent<PLSpaceHeatVolume>() == null)
+                {
+                    InComp.ShipStats.Ship.Exterior.AddComponent<PLSpaceHeatVolume>();
+                }
+                PLSpaceHeatVolume heatVolume = InComp.ShipStats.Ship.Exterior.GetComponent<PLSpaceHeatVolume>();
+                if (heatVolume.MyPS == null)
+                {
+                    GameObject IceDust = Object.Instantiate(PLGlobal.Instance.IceDustPrefab);
+                    IceDust.transform.SetParent(InComp.ShipStats.Ship.Exterior.transform, false);
+                    IceDust.transform.localPosition = Vector3.zero;
+                    IceDust.transform.localRotation = Quaternion.identity;
+                    IceDust.transform.localScale = Vector3.one;
+                    heatVolume.MyPS = IceDust.GetComponent<PLIceDust>().MyPS;
+                    heatVolume.MyPS.startColor = new Color(1, 0.394f, 0.14f, 0.78f);
+                }
+                if (!InComp.IsEquipped || InComp.ShipStats.ReactorTempCurrent/InComp.ShipStats.ReactorTempMax < 0.7f)
+                {
+                    heatVolume.MyPS.enableEmission = false;
+                    ParticleSystem.ShapeModule shape = heatVolume.MyPS.shape;
+                    shape.radius = 0.0001f;
+                    shape.scale = new Vector3(0,0,0);
+                    heatVolume.MyPS.gameObject.transform.localPosition = InComp.ShipStats.Ship.Exterior.transform.localPosition - new Vector3(0, -50, 0);
+                }
+                else 
+                {
+                    heatVolume.MyPS.enableEmission = true;
+                    ParticleSystem.ShapeModule shape = heatVolume.MyPS.shape;
+                    shape.radius = 60f;
+                    shape.scale = new Vector3(1, 1, 1);
+                    heatVolume.MyPS.gameObject.transform.position = InComp.ShipStats.Ship.Exterior.transform.position;
+                }
+                InComp.ShipStats.Ship.MyTLI.AtmoSettings.Temperature = 1f + InComp.ShipStats.ReactorTempCurrent / InComp.ShipStats.ReactorTempMax * 1.5f;
+                if (!InComp.IsEquipped) 
+                {
+                    InComp.ShipStats.Ship.MyTLI.AtmoSettings.Temperature = 1f;
+                }
+            }
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLReactor me = InComp as PLReactor;
+                return string.Concat(new string[]
+                {
+                    (me.TempMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
+                    " kP\n",
+                    me.EmergencyCooldownTime.ToString("0.0"),
+                    " sec\n",
+                    (me.OriginalEnergyOutputMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
+                    " MW\n",
+                });
+            }
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return string.Concat(new string[]
+                {
+                   PLLocalize.Localize("Max Temp", false),
+                    "\n",
+                    PLLocalize.Localize("Emer. Cooldown", false),
+                    "\n",
+                    PLLocalize.Localize("Output", false),
+                });
+            }
+        }
+        class StableReactor : ReactorMod
+        {
+            public override string Name => "ZeroPoint Reactor";
+
+            public override string Description => "This state of the art reactor can work at any capacity without increasing heat, but it has come with the cost of extreme low energy production. At least you won't be using any coolant, and it emits no EM signature!";
+
+            public override int MarketPrice => 9000;
+
+            public override bool Experimental => true;
+
+            public override Texture2D IconTexture => (Texture2D)Resources.Load("Icons/29_Reactor");
+
+            public override float EnergyOutputMax => 8600f;
+
+            public override float EnergySignatureAmount => 0f;
+
+            public override float MaxTemp => 750f;
+
+            public override float EmergencyCooldownTime => 0f;
+
+            public override float HeatOutput => 0f;
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                PLReactor me = InComp as PLReactor;
+                if (me.IsEquipped) 
+                {
+                    me.ShipStats.ReactorTempCurrent = 217f;
+                }
+            }
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLReactor me = InComp as PLReactor;
+                return string.Concat(new string[]
+                {
+                    (me.TempMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
+                    " kP\n",
+                    me.EmergencyCooldownTime.ToString("0.0"),
+                    " sec\n",
+                    (me.OriginalEnergyOutputMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
+                    " MW\n",
+                });
+            }
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return string.Concat(new string[]
+                {
+                   PLLocalize.Localize("Max Temp", false),
+                    "\n",
+                    PLLocalize.Localize("Emer. Cooldown", false),
+                    "\n",
+                    PLLocalize.Localize("Output", false),
+                });
+            }
+        }
+        class CombustionReactor : ReactorMod 
+        {
+            public override string Name => "Internal Fusion Reactor";
+
+            public override string Description => "This strange reactor makes a decent amount of power, but it is able to make even more power the more unstable it is. Just be sure not to let stability reach 0%";
+
+            public override int MarketPrice => 36000;
+
+            public override bool Experimental => true;
+
+            public override float EnergyOutputMax => 16000f;
+
+            public override float MaxTemp => 3100f;
+
+            public override float EmergencyCooldownTime => 10f;
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                PLReactor me = InComp as PLReactor;
+                me.EnergyOutputMax = me.OriginalEnergyOutputMax * (1f + me.ShipStats.Ship.CoreInstability * 1.5f);
+            }
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLReactor me = InComp as PLReactor;
+                return string.Concat(new string[]
+                {
+                    (me.TempMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
+                    " kP\n",
+                    me.EmergencyCooldownTime.ToString("0.0"),
+                    " sec\n",
+                    (me.OriginalEnergyOutputMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
+                    " MW\n",
+                });
+            }
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return string.Concat(new string[]
+                {
+                   PLLocalize.Localize("Max Temp", false),
+                    "\n",
+                    PLLocalize.Localize("Emer. Cooldown", false),
+                    "\n",
+                    PLLocalize.Localize("Output", false),
+                });
+            }
+        }
+
+        [HarmonyPatch(typeof(PLSpaceHeatVolume),"Update")]
+        class HeatOustide 
+        {
+            static void Postfix(PLSpaceHeatVolume __instance) 
+            {
+                if(__instance.GetComponentInParent<PLShipInfo>() != null && __instance.GetComponentInParent<PLShipInfo>().MyReactor != null && __instance.GetComponentInParent<PLShipInfo>().MyReactor.GetItemName() == "ThermoPoint Reactor" && __instance.NearbyShips.Contains(__instance.GetComponentInParent<PLShipInfo>()))
+                {
+                    __instance.NearbyShips.Remove(__instance.GetComponentInParent<PLShipInfo>());
+                    if (__instance.GetComponentInParent<PLShipInfo>().Exterior.GetComponentInChildren<PLIceDust>() != null && __instance.GetComponentInParent<PLShipInfo>().Exterior.GetComponentInChildren<PLIceDust>().MyPS == __instance.MyPS)
+                    {
+                        __instance.GetComponentInParent<PLShipInfo>().Exterior.GetComponentInChildren<PLIceDust>().AttachedTo_Ship = __instance.GetComponentInParent<PLShipInfo>();
+                    }
+                }
+            }
+        }
+        [HarmonyPatch(typeof(PLIceDust), "ShipWithinDust")]
+        class NoCooling 
+        {
+            static void Postfix(PLIceDust __instance, ref bool __result) 
+            {
+                if(__instance.AttachedTo_Ship != null && __instance.AttachedTo_Ship.MyReactor != null && __instance.AttachedTo_Ship.MyReactor.GetItemName() == "ThermoPoint Reactor") 
+                {
+                    __result = false;
+                }
+            }
+        }
         [HarmonyPatch(typeof(PLReactor), "GetStatLineLeft")]
         class LeftDescFix
         {

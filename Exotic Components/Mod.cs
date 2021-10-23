@@ -4,11 +4,11 @@ namespace Exotic_Components
 {
     public class Mod : PulsarMod
     {
-        public override string Version => "2.2";
+        public override string Version => "2.4";
 
         public override string Author => "pokegustavo";
 
-        public override string ShortDescription => "Adds new components to the game";
+        public override string ShortDescription => "Adds new components to the game, new shop and some missions";
 
         public override string Name => "Exotic Components";
 

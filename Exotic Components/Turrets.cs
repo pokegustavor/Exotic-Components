@@ -252,7 +252,7 @@ namespace Exotic_Components
     {
         private static void Postfix(PLInfectedSporeProj __instance, ref Rigidbody ___MyRigidbody)
         {
-            if (PLEncounterManager.Instance.PlayerShip == null) return;
+            if (PLEncounterManager.Instance.PlayerShip == null || PLEncounterManager.Instance.GetShipFromID(__instance.OwnerShipID) == null || PLEncounterManager.Instance.GetShipFromID(__instance.OwnerShipID).IsInfected) return;
             float d = 1f;
             if (PLEncounterManager.Instance.GetShipFromID(__instance.OwnerShipID).MyStats.Ship.TargetShip != null && PLEncounterManager.Instance.GetShipFromID(__instance.OwnerShipID).GetTurretAtID(__instance.TurretID).Name == "Infected Turret")
             {

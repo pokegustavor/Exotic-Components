@@ -468,6 +468,58 @@ namespace Exotic_Components
                 });
             }
         }
+        class UnstableReactor : ReactorMod 
+        {
+            public override string Name => "Overclocked ZeroPoint Reactor";
+
+            public override string Description => "Unlike the previous version, this reactor makes way more power, but not using the power causes heat to increase, SO ONLY BUY IF YOU CAN KEEP IT BUSY.";
+
+            public override int MarketPrice => 31000;
+
+            public override bool Experimental => true;
+
+            public override float EnergyOutputMax => 44000f;
+
+            public override float EnergySignatureAmount => 7f;
+
+            public override float MaxTemp => 4100f;
+
+            public override float EmergencyCooldownTime => 15f;
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                PLReactor me = InComp as PLReactor;
+                if (me.IsEquipped)
+                {
+                    me.HeatOutput = 12f - me.ShipStats.ReactorTotalUsagePercent * 22f;
+                    if (me.HeatOutput < 0) me.HeatOutput = 0f;
+                }
+            }
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLReactor me = InComp as PLReactor;
+                return string.Concat(new string[]
+                {
+                    (me.TempMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
+                    " kP\n",
+                    me.EmergencyCooldownTime.ToString("0.0"),
+                    " sec\n",
+                    (me.OriginalEnergyOutputMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
+                    " MW\n",
+                });
+            }
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return string.Concat(new string[]
+                {
+                   PLLocalize.Localize("Max Temp", false),
+                    "\n",
+                    PLLocalize.Localize("Emer. Cooldown", false),
+                    "\n",
+                    PLLocalize.Localize("Output", false),
+                });
+            }
+        }
 
         [HarmonyPatch(typeof(PLSpaceHeatVolume),"Update")]
         class HeatOustide 

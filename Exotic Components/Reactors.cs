@@ -569,7 +569,7 @@ namespace Exotic_Components
 
             public override int MarketPrice => 1500000;
 
-            public override float EnergyOutputMax => 100001f;
+            public override float EnergyOutputMax => 517691f;
 
             public override float MaxTemp => 12007f;
 

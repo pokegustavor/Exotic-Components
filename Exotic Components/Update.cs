@@ -9,6 +9,7 @@ namespace Exotic_Components
     [HarmonyLib.HarmonyPatch(typeof(PLShipInfo),"Update")]
     internal class Update
     {
+        
         static void Postfix(PLShipInfo __instance)
         {
             try
@@ -67,7 +68,57 @@ namespace Exotic_Components
                     heatVolume.MyPS.gameObject.transform.localPosition = __instance.Exterior.transform.localPosition - new Vector3(0, -50, 0);
                     __instance.MyTLI.AtmoSettings.Temperature = 1f;
                 }
-
+                if(PLServer.Instance.HasMissionWithID(703) && !PLServer.Instance.GetMissionWithID(703).Abandoned && !PLServer.Instance.GetMissionWithID(703).Ended) 
+                {
+                    
+                    PLPersistantShipInfo objective = null;
+                    if (Missions.DeliverBiscuit.BiscuitShip == null)
+                    {
+                        foreach (PLPersistantShipInfo ship in PLServer.Instance.AllPSIs)
+                        {
+                            if (ship.ShipName == "Delivery #324" && !ship.m_IsShipDestroyed)
+                            {
+                                objective = ship;
+                                Missions.DeliverBiscuit.BiscuitShip = ship;
+                                break;
+                            }
+                        }
+                    }
+                    else 
+                    {
+                        objective = Missions.DeliverBiscuit.BiscuitShip;
+                    }
+                    if(objective != null) 
+                    {
+                        PLServer.Instance.ActiveBountyHunter_TypeID = 5;
+                        PLServer.Instance.ActiveBountyHunter_SectorID = objective.MyCurrentSector.ID;
+                        PLServer.Instance.ActiveBountyHunter_SecondsSinceWarp = 0f;
+                        PLServer.Instance.m_ActiveBountyHunter_LastUpdateTime = Time.time;
+                        if (objective.ShipInstance != null)
+                        {
+                            foreach (int enemyID in PLEncounterManager.Instance.PlayerShip.HostileShips)
+                            {
+                                if(enemyID != objective.ShipInstance.ShipID && !objective.ShipInstance.HostileShips.Contains(enemyID))
+                                {
+                                    objective.ShipInstance.HostileShips.Add(enemyID);
+                                }
+                            }
+                            foreach (int enemyID in objective.ShipInstance.HostileShips)
+                            {
+                                if (enemyID != objective.ShipInstance.ShipID && !PLEncounterManager.Instance.PlayerShip.HostileShips.Contains(enemyID))
+                                {
+                                    PLEncounterManager.Instance.PlayerShip.HostileShips.Add(enemyID);
+                                }
+                            }
+                            objective.ShipInstance.HostileShips.RemoveAll((int ID) => PLEncounterManager.Instance.GetShipFromID(ID) == null || PLEncounterManager.Instance.PlayerShip.ShipID == ID);
+                            PLEncounterManager.Instance.PlayerShip.HostileShips.RemoveAll((int ID) => objective.ShipInstance.ShipID == ID);
+                        }
+                        else if(PLServer.Instance.ActiveBountyHunter_SectorID == PLServer.GetCurrentSector().ID && !PLEncounterManager.Instance.PlayerShip.InWarp) 
+                        {
+                            objective.CreateShipInstance(PLEncounterManager.Instance.GetCPEI());
+                        }
+                    }
+                }
                 if (!PLCampaignIO.Instance.m_CampaignData.MissionTypes.Contains(Missions.RecoverCPU.Missiondata)) 
                 {
                     PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.RecoverCPU.Missiondata);
@@ -79,6 +130,10 @@ namespace Exotic_Components
                 if (!PLCampaignIO.Instance.m_CampaignData.MissionTypes.Contains(Missions.ProtectJudge.Missiondata))
                 {
                     PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.ProtectJudge.Missiondata);
+                }
+                if (!PLCampaignIO.Instance.m_CampaignData.MissionTypes.Contains(Missions.DeliverBiscuit.Missiondata))
+                {
+                    PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.DeliverBiscuit.Missiondata);
                 }
             }
             catch { }

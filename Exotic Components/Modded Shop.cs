@@ -403,6 +403,10 @@ namespace Exotic_Components
                 {
                     this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Protect my judge", new PLHailChoiceDelegate(this.ProtectJudge)));
                 }
+                if (!PLServer.Instance.HasMissionWithID(703))
+                {
+                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Protect Biscuit Delivery", new PLHailChoiceDelegate(this.DeliverBiscuit)));
+                }
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Nevermind, just want to go back to buying", new PLHailChoiceDelegate(this.BackToBuy)));
             }
         }
@@ -440,6 +444,25 @@ namespace Exotic_Components
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
             }
         }
+
+        private void DeliverBiscuit(bool authority, bool local)
+        {
+            if (local)
+            {
+                missionID = 703;
+                m_AllChoices.Clear();
+                currentText += "\n\nI am a really big fan of the Fluffy Biscuits, mostly the funky biscuit. Saddly with the intergalatic warpnetwork deactivated, the number of funky biscuits has being falling really fast, but I got notice of a ship currently near some kind of ancient warpgate and they have a lot of funky recipes. They are, however, being hunted, so please make sure they arrive in the fluffy factory 1, and I will pay you a good amount of cash.";
+                if (PLServer.Instance.m_ActiveBountyHunter_TypeID < 0)
+                {
+                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
+                }
+                else 
+                {
+                    currentText += "I just noted that you guys have a bounty hunter after you, please kill them before starting this mission!";
+                }
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
+            }
+        }
         private void AcceptMission(bool authority, bool local)
         {
             if (local)
@@ -463,6 +486,12 @@ namespace Exotic_Components
                         if (!PLServer.Instance.HasMissionWithID(702))
                         {
                             Missions.ProtectJudge.StartMission();
+                        }
+                        break;
+                    case 703:
+                        if (!PLServer.Instance.HasMissionWithID(703))
+                        {
+                            Missions.DeliverBiscuit.StartMission();
                         }
                         break;
                 }

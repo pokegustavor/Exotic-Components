@@ -10,8 +10,6 @@ namespace Exotic_Components
         public class RecoverCPU
         {
             public static ComponentOverrideData data = new ComponentOverrideData() { CompType = 23, CompSubType = MissionShipComponentModManager.Instance.GetMissionShipComponentIDFromName("Intergalatic Jump Processor Core"), IsCargo = true };
-
-
             public static PickupMissionData Missiondata
             {
                 get
@@ -463,6 +461,167 @@ namespace Exotic_Components
                 PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(missionData);
             }
         }
+
+        public class DeliverBiscuit
+        {
+            public static PLPersistantShipInfo BiscuitShip = null;
+            public static PickupMissionData Missiondata
+            {
+                get
+                {
+                    return CreateData();
+                }
+            }
+
+            private static PickupMissionData CreateData()
+            {
+                PickupMissionData missionData = new PickupMissionData
+                {
+                    Desc = "I heared that since the intergalatic warpnetwork was deactivated, my precious funky biscuits are not as avaliable as I wish they were, but I heared this ship is delivering more recipe modules to the factory, keep them alive!",
+                    Name = "Protect Delivery Ship",
+                    CanBeAbandonedByPlayers = true,
+                    MissionID = 703,
+                };
+                List<RewardData> rewards = new List<RewardData>
+            {
+                new RewardData()
+                {
+                    RewardAmount = 150000,
+                    RwdType = 1,
+                }
+            };
+                List<ObjectiveData> objectivesData = new List<ObjectiveData>
+            {
+                new ObjectiveData
+                {
+                    ObjType = 0,
+                    Data = new Dictionary<string, string>
+                    {
+                        {"CustomText","Keep Fluffy Ship Alive"},
+                    },
+                },
+                new ObjectiveData
+                {
+                    ObjType = 0,
+                    Data = new Dictionary<string, string>
+                    {
+                        {"CustomText","Guide the Fluffy ship to the Fluffy Factory 1 (appears as bounty hunter)"},
+                    },
+                }
+            };
+                missionData.SuccessRewards.AddRange(rewards);
+                missionData.Objectives.AddRange(objectivesData);
+                return missionData;
+            }
+            public static void StartMission(bool loading = false)
+            {
+                if (!loading)
+                {
+                    PLServer.Instance.photonView.RPC("AddCrewWarning", PhotonTargets.All, new object[]
+                        {
+                        "NEW MISSION ACCEPTED",
+                        Color.yellow,
+                        0,
+                        "MSN"
+                        });
+                }
+                GameObject gameObject = PhotonNetwork.Instantiate("NetworkPrefabs/Missions/PickupMission", Vector3.zero, Quaternion.identity, 0, null);
+                PLPickupMissionBase mission = gameObject.GetComponent<PLPickupMissionBase>();
+                MissionDataBlock missionDataBlock = new MissionDataBlock
+                {
+                    MissionID = 703,
+                    IsPickupMission = false
+                };
+                PickupMissionData missionData = Missiondata;
+                List<PLMissionObjective> objectives = new List<PLMissionObjective>
+                {
+                new PLMissionObjective_Custom() { CustomTextOriginal = "Keep Fluffy Ship Alive", RawCustomText = "Keep Fluffy Ship Alive" },
+                new PLMissionObjective_Custom() { CustomTextOriginal = "Guide the Fluffy ship to the Fluffy Factory 1 (appears as bounty hunter)", RawCustomText = "Guide the Fluffy ship to the Fluffy Factory 1 (appears as bounty hunter)" }
+                };
+                foreach (PLMissionObjective objective in objectives)
+                {
+                    objective.Init();
+                }
+                mission.MyData = missionDataBlock;
+                mission.MyMissionData = missionData;
+                mission.MissionTypeID = 703;
+                mission.Objectives.AddRange(objectives);
+                PLSectorInfo plsectorInfo = PLGlobal.Instance.Galaxy.GetSectorOfVisualIndication(ESectorVisualIndication.GWG);
+                PLPersistantShipInfo ship = new PLPersistantShipInfo(EShipType.E_FLUFFY_TWO, 1, plsectorInfo, 0, false, false, false);
+                ship.ShipName = "Delivery #324";
+                List<ComponentOverrideData> overrides = new List<ComponentOverrideData>
+                    {
+                        new ComponentOverrideData() { CompType = 1, CompSubType = 6, CompLevel = 3},
+                        new ComponentOverrideData() { CompType = 2, CompSubType = 1, CompLevel = 4},
+                        new ComponentOverrideData() { CompType = 3, CompSubType = 4, CompLevel = 1},
+                        new ComponentOverrideData() { CompType = 5, CompSubType = 0, CompLevel = 3},
+                        new ComponentOverrideData() { CompType = 6, CompSubType = 0, CompLevel = 1},
+                        new ComponentOverrideData() { CompType = 7, CompSubType = 0},
+                        new ComponentOverrideData() { CompType = 7, CompSubType = 2, CompLevel = 2},
+                        new ComponentOverrideData() { CompType = 7, CompSubType = 1, CompLevel = 1},
+                        new ComponentOverrideData() { CompType = 8, CompSubType = 0, CompLevel = 0},
+                        new ComponentOverrideData() { CompType = 9, CompSubType = 0, CompLevel = 2},
+                        new ComponentOverrideData() { CompType = 9, CompSubType = 0, CompLevel = 2},
+                        new ComponentOverrideData() { CompType = 10, CompSubType = 0, CompLevel = 3},
+                        new ComponentOverrideData() { CompType = 10, CompSubType = 1, CompLevel = 1},
+                        new ComponentOverrideData() { CompType = 11, CompSubType = 0, CompLevel = 1},
+                        new ComponentOverrideData() { CompType = 16, CompSubType = 0, CompLevel = 0},
+                        new ComponentOverrideData() { CompType = 17, CompSubType = 33},
+                        new ComponentOverrideData() { CompType = 17, CompSubType = 35},
+                        new ComponentOverrideData() { CompType = 17, CompSubType = 22},
+                        new ComponentOverrideData() { CompType = 17, CompSubType = 24},
+                        new ComponentOverrideData() { CompType = 17, CompSubType = 3},
+                        new ComponentOverrideData() { CompType = 20, CompSubType = 10},
+                        new ComponentOverrideData() { CompType = 22, CompSubType = 0},
+                        new ComponentOverrideData() { CompType = 25, CompSubType = 4, CompLevel = 4},
+                        new ComponentOverrideData() { CompType = 26, CompSubType = 0, CompLevel = 0},
+                        new ComponentOverrideData() { CompType = 28, CompSubType = 0},
+                        new ComponentOverrideData() { CompType = 30, CompSubType = 16},
+                        new ComponentOverrideData() { CompType = 30, CompSubType = 16},
+                        new ComponentOverrideData() { CompType = 30, CompSubType = 16, IsCargo = true},
+                        new ComponentOverrideData() { CompType = 30, CompSubType = 16, IsCargo = true},
+                        new ComponentOverrideData() { CompType = 30, CompSubType = 16, IsCargo = true},
+                        new ComponentOverrideData() { CompType = 30, CompSubType = 16, IsCargo = true},
+                        new ComponentOverrideData() { CompType = 30, CompSubType = 16, IsCargo = true},
+                        new ComponentOverrideData() { CompType = 30, CompSubType = 16, IsCargo = true},
+                        new ComponentOverrideData() { CompType = 30, CompSubType = 16, IsCargo = true},
+                        new ComponentOverrideData() { CompType = 30, CompSubType = 16, IsCargo = true},
+                        new ComponentOverrideData() { CompType = 30, CompSubType = 16, IsCargo = true},
+                        new ComponentOverrideData() { CompType = 30, CompSubType = 16, IsCargo = true},
+                    };
+                ship.CompOverrides.AddRange(overrides);
+                BiscuitShip = ship;
+                PLServer.Instance.AllPSIs.Add(ship);
+                PLServer.Instance.AllMissions.Add(mission);
+                PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(missionData);
+            }
+
+            public static void SpawnEnemy(PLSectorInfo sector, int maxEnemy = 2) 
+            {
+                List<EShipType> possibleHunters = new List<EShipType>()
+                {
+                    EShipType.E_INTREPID,
+                    EShipType.E_OUTRIDER,
+                    EShipType.E_ROLAND,
+                    EShipType.E_WDCRUISER,
+                    EShipType.E_DESTROYER,
+                    EShipType.E_ANNIHILATOR,
+                    EShipType.E_STARGAZER,
+                    EShipType.E_CARRIER,
+                    EShipType.OLDWARS_SYLVASSI,
+                    EShipType.OLDWARS_HUMAN,
+                    EShipType.E_FLUFFY_DELIVERY,
+                };
+                for (int i = 0; i < UnityEngine.Random.Range(1, maxEnemy); i++)
+                {
+                    PLPersistantShipInfo hunter = new PLPersistantShipInfo(possibleHunters[UnityEngine.Random.Range(0, possibleHunters.Count - 1)], 1, sector, 0, false, false, false);
+                    hunter.ForcedHostileToFactionID = 3;
+                    hunter.ShipName = "Bounty Hunter";
+                    hunter.IsFlagged = true;
+                    PLServer.Instance.AllPSIs.Add(hunter);
+                }
+            }
+        }
     }
 
     class MissionItems
@@ -539,6 +698,20 @@ namespace Exotic_Components
                         }
                     }
                 }
+                if (Missions.DeliverBiscuit.BiscuitShip != null && Missions.DeliverBiscuit.BiscuitShip.ShipInstance == __instance)
+                {
+                    foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
+                    {
+                        if (mission.MissionTypeID == 703 && !mission.Abandoned)
+                        {
+                            mission.FailMission();
+                            Missions.DeliverBiscuit.BiscuitShip = null;
+                            PLServer.Instance.ActiveBountyHunter_SectorID = -1;
+                            PLServer.Instance.ActiveBountyHunter_TypeID = -1;
+                            break;
+                        }
+                    }
+                }
             }
         }
     }
@@ -561,7 +734,34 @@ namespace Exotic_Components
                         }
                     }
                 }
+                if (Missions.DeliverBiscuit.BiscuitShip != null && Missions.DeliverBiscuit.BiscuitShip.ShipInstance == ship)
+                {
+                    foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
+                    {
+                        if (mission.MissionTypeID == 703 && !mission.Abandoned)
+                        {
+                            mission.FailMission();
+                            Missions.DeliverBiscuit.BiscuitShip.m_IsShipDestroyed = true;
+                            Missions.DeliverBiscuit.BiscuitShip = null;
+                            PLServer.Instance.ActiveBountyHunter_SectorID = -1;
+                            PLServer.Instance.ActiveBountyHunter_TypeID = -1;
+                            break;
+                        }
+                    }
+                }
             }
+        }
+    }
+    [HarmonyPatch(typeof(PLShipInfoBase), "Ship_WarpOutNow")]
+    class AvoidWarping 
+    {
+        static bool Prefix(PLShipInfoBase __instance) 
+        {
+            if(Missions.DeliverBiscuit.BiscuitShip != null && Missions.DeliverBiscuit.BiscuitShip.ShipInstance == __instance) 
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

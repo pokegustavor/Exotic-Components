@@ -520,6 +520,88 @@ namespace Exotic_Components
                 });
             }
         }
+        class CheapReactor : ReactorMod 
+        {
+            public override string Name => "Mini Fusion Reactor";
+
+            public override string Description => "I will be honest with you, I got scammed with this reactor, but you are some kind of cheap bastard, go ahead and buy it, hope you like suffering";
+
+            public override int MarketPrice => 5000;
+
+            public override float EnergyOutputMax => 7500f;
+
+            public override float MaxTemp => 1200f;
+
+            public override float EmergencyCooldownTime => 3f;
+
+            public override float EnergySignatureAmount => 3f;
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLReactor me = InComp as PLReactor;
+                return string.Concat(new string[]
+                {
+                    (me.TempMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
+                    " kP\n",
+                    me.EmergencyCooldownTime.ToString("0.0"),
+                    " sec\n",
+                    (me.OriginalEnergyOutputMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
+                    " MW\n",
+                });
+            }
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return string.Concat(new string[]
+                {
+                   PLLocalize.Localize("Max Temp", false),
+                    "\n",
+                    PLLocalize.Localize("Emer. Cooldown", false),
+                    "\n",
+                    PLLocalize.Localize("Output", false),
+                });
+            }
+        }
+        class FlagShipReactor : ReactorMod 
+        {
+            public override string Name => "Flagship Reactor";
+
+            public override string Description => "This reactor was supposed to be used in a third Flagship, but with some contacts and favors, I got it from the W.D. Factory that created it. I will say, won't be cheap to install it in your ship";
+
+            public override int MarketPrice => 1500000;
+
+            public override float EnergyOutputMax => 100001f;
+
+            public override float MaxTemp => 12007f;
+
+            public override float EmergencyCooldownTime => 360f;
+
+            public override float EnergySignatureAmount => 500f;
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLReactor me = InComp as PLReactor;
+                return string.Concat(new string[]
+                {
+                    (me.TempMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
+                    " kP\n",
+                    me.EmergencyCooldownTime.ToString("0.0"),
+                    " sec\n",
+                    (me.OriginalEnergyOutputMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
+                    " MW\n",
+                });
+            }
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return string.Concat(new string[]
+                {
+                   PLLocalize.Localize("Max Temp", false),
+                    "\n",
+                    PLLocalize.Localize("Emer. Cooldown", false),
+                    "\n",
+                    PLLocalize.Localize("Output", false),
+                });
+            }
+        }
 
         [HarmonyPatch(typeof(PLSpaceHeatVolume),"Update")]
         class HeatOustide 

@@ -205,6 +205,59 @@ namespace Exotic_Components
 			{
 				WarpDriveModManager.Instance.WarpDriveTypes[subtypeformodded].OnWarp(__instance);
 			}
+			if(PLServer.Instance.ActiveBountyHunter_TypeID == 5 && Missions.DeliverBiscuit.BiscuitShip != null) 
+			{
+				PLSectorInfo sectorWithID = PLServer.GetSectorWithID(PLServer.Instance.ActiveBountyHunter_SectorID);
+				PLSectorInfo currentSector2 = PLServer.GetSectorWithID(PLEncounterManager.Instance.PlayerShip.WarpTargetID);
+				float num5 = Vector3.Magnitude(sectorWithID.Position - currentSector2.Position);
+				float currentHunterWarpRange = PLServer.Instance.GetCurrentHunterWarpRange();
+				if(num5 < currentHunterWarpRange && Missions.DeliverBiscuit.BiscuitShip.ShipInstance != null && (Missions.DeliverBiscuit.BiscuitShip.ShipInstance.HostileShips.Count == 0 || (Missions.DeliverBiscuit.BiscuitShip.ShipInstance.HostileShips.Count == 1 && Missions.DeliverBiscuit.BiscuitShip.ShipInstance.HostileShips[0] == PLEncounterManager.Instance.PlayerShip.ShipID))) 
+				{
+					Missions.DeliverBiscuit.BiscuitShip.MyCurrentSector = currentSector2;
+					if(currentSector2.VisualIndication != ESectorVisualIndication.GENERAL_STORE && currentSector2.VisualIndication != ESectorVisualIndication.GENTLEMEN_START && currentSector2.VisualIndication != ESectorVisualIndication.WARP_NETWORK_STATION && currentSector2.VisualIndication != ESectorVisualIndication.AOG_HUB && currentSector2.VisualIndication != ESectorVisualIndication.COLONIAL_HUB && currentSector2.VisualIndication != ESectorVisualIndication.WD_START && currentSector2.VisualIndication != ESectorVisualIndication.FLUFFY_FACTORY_01 &&
+						currentSector2.VisualIndication != ESectorVisualIndication.FLUFFY_FACTORY_02 && currentSector2.VisualIndication != ESectorVisualIndication.FLUFFY_FACTORY_03 && currentSector2.VisualIndication != ESectorVisualIndication.COMET && currentSector2.VisualIndication != ESectorVisualIndication.EXOTIC1 && currentSector2.VisualIndication != ESectorVisualIndication.EXOTIC2 && currentSector2.VisualIndication != ESectorVisualIndication.EXOTIC3 && currentSector2.VisualIndication != ESectorVisualIndication.EXOTIC4 && currentSector2.VisualIndication != ESectorVisualIndication.EXOTIC5
+						&& currentSector2.VisualIndication != ESectorVisualIndication.EXOTIC6 && currentSector2.VisualIndication != ESectorVisualIndication.EXOTIC7 && currentSector2.VisualIndication != ESectorVisualIndication.RACING_SECTOR && currentSector2.VisualIndication != ESectorVisualIndication.RACING_SECTOR_2 && currentSector2.VisualIndication != ESectorVisualIndication.RACING_SECTOR_3 && currentSector2.VisualIndication != ESectorVisualIndication.GENTLEMEN_START && currentSector2.VisualIndication != ESectorVisualIndication.GREY_HUNTSMAN_HQ && currentSector2.VisualIndication != ESectorVisualIndication.INTREPID_SECTOR_CMDR 
+						&& currentSector2.VisualIndication != ESectorVisualIndication.ALCHEMIST && currentSector2.VisualIndication != ESectorVisualIndication.SWARM_CMDR && currentSector2.VisualIndication != ESectorVisualIndication.SWARM_KEEPER && currentSector2.VisualIndication != ESectorVisualIndication.DEATHSEEKER_COMMANDER && currentSector2.VisualIndication != ESectorVisualIndication.ANCIENT_SENTRY) 
+					{
+						Missions.DeliverBiscuit.SpawnEnemy(currentSector2);
+					}
+					else if(currentSector2.VisualIndication == ESectorVisualIndication.WARP_NETWORK_STATION) 
+					{
+						Missions.DeliverBiscuit.SpawnEnemy(currentSector2,3);
+					}
+					if(currentSector2.VisualIndication == ESectorVisualIndication.WD_START || currentSector2.VisualIndication == ESectorVisualIndication.AOG_HUB || currentSector2.VisualIndication == ESectorVisualIndication.GENTLEMEN_START || currentSector2.VisualIndication == ESectorVisualIndication.GENERAL_STORE || currentSector2.VisualIndication == ESectorVisualIndication.EXOTIC1 || currentSector2.VisualIndication == ESectorVisualIndication.EXOTIC2 || currentSector2.VisualIndication == ESectorVisualIndication.EXOTIC3 || currentSector2.VisualIndication == ESectorVisualIndication.EXOTIC4 || currentSector2.VisualIndication == ESectorVisualIndication.EXOTIC5
+						|| currentSector2.VisualIndication == ESectorVisualIndication.EXOTIC6 || currentSector2.VisualIndication == ESectorVisualIndication.EXOTIC7 || currentSector2.VisualIndication == ESectorVisualIndication.FLUFFY_FACTORY_02 || currentSector2.VisualIndication == ESectorVisualIndication.FLUFFY_FACTORY_03 || currentSector2.VisualIndication == ESectorVisualIndication.COLONIAL_HUB) 
+					{
+						Missions.DeliverBiscuit.BiscuitShip.HullPercent = 1f;
+					}
+				}
+				if(sectorWithID.IsPartOfLongRangeWarpNetwork && currentSector2.IsPartOfLongRangeWarpNetwork) 
+				{
+					Missions.DeliverBiscuit.BiscuitShip.MyCurrentSector = currentSector2;
+					if (currentSector2.VisualIndication != ESectorVisualIndication.GENERAL_STORE && currentSector2.VisualIndication != ESectorVisualIndication.GENTLEMEN_START && currentSector2.VisualIndication != ESectorVisualIndication.AOG_HUB && currentSector2.VisualIndication != ESectorVisualIndication.COLONIAL_HUB && currentSector2.VisualIndication != ESectorVisualIndication.WD_START && currentSector2.VisualIndication != ESectorVisualIndication.FLUFFY_FACTORY_01 && currentSector2.VisualIndication != ESectorVisualIndication.FLUFFY_FACTORY_02 && currentSector2.VisualIndication != ESectorVisualIndication.FLUFFY_FACTORY_03)
+					{
+						Missions.DeliverBiscuit.SpawnEnemy(currentSector2);
+					}
+				}
+				PLMissionBase biscuitmission = null;
+				foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
+				{
+					if (mission.MissionTypeID == 703 && !mission.Abandoned)
+					{
+						biscuitmission = mission;
+						break;
+					}
+				}
+				if (Missions.DeliverBiscuit.BiscuitShip.MyCurrentSector.VisualIndication == ESectorVisualIndication.FLUFFY_FACTORY_01 && biscuitmission != null) 
+				{
+					biscuitmission.Objectives[0].IsCompleted = true;
+					biscuitmission.Objectives[1].IsCompleted = true;
+					Missions.DeliverBiscuit.BiscuitShip.m_IsShipDestroyed = true;
+					Missions.DeliverBiscuit.BiscuitShip = null;
+					PLServer.Instance.ActiveBountyHunter_SectorID = -1;
+					PLServer.Instance.ActiveBountyHunter_TypeID = -1;
+				}
+			}
 		}
 	}
 	[HarmonyPatch(typeof(PLShipInfoBase), "SetInWarp")]

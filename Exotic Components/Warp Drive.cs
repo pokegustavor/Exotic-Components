@@ -120,6 +120,50 @@ namespace Exotic_Components
 
 			
         }
+		class TheReacharger : WarpDriveMod 
+		{
+			public override string Name => "The Recharger";
+
+			public override string Description => "This special warp drive was made with focus on charges per fuel, allowing it to charge all programs at the same time. It has come with the cost of low charge rate and higer EM signature and \"decent\" range";
+
+			public override int MarketPrice => 15000;
+
+			public override bool Experimental => true;
+
+			public override float ChargeSpeed => 1.5f;
+
+			public override float WarpRange => 0.055f;
+
+			public override float EnergySignature => 30f;
+
+			public override int NumberOfChargesPerFuel => 9001;
+
+			//public override float MaxPowerUsage_Watts => 17000f;
+			public override string GetStatLineLeft(PLShipComponent InComp)
+			{
+				return string.Concat(new string[]
+				{
+				PLLocalize.Localize("Charge Rate", false),
+				"\n",
+				PLLocalize.Localize("Range", false),
+				"\n",
+				PLLocalize.Localize("Charges Per Fuel", false)
+				});
+			}
+			public override string GetStatLineRight(PLShipComponent InComp)
+			{
+				PLWarpDrive me = InComp as PLWarpDrive;
+				me.CalculatedMaxPowerUsage_Watts = 15000f;
+				return string.Concat(new string[]
+				{
+				(me.ChargeSpeed * me.LevelMultiplier(0.25f, 1f)).ToString("0"),
+				"\n",
+				"Galaxy",
+				"\n",
+				me.NumberOfChargingNodes.ToString("0")
+				});
+			}
+		}
 	}
 
 	class Heart : MonoBehaviour 

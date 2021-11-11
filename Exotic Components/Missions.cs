@@ -488,6 +488,13 @@ namespace Exotic_Components
                 {
                     RewardAmount = 150000,
                     RwdType = 1,
+                },
+                new RewardData()
+                {
+                    RewardAmount = 0,
+                    RewardDataA = 7,
+                    RewardDataB = PulsarModLoader.Content.Components.CPU.CPUModManager.Instance.GetCPUIDFromName("Credits Processor"),
+                    RwdType = 3
                 }
             };
                 List<ObjectiveData> objectivesData = new List<ObjectiveData>

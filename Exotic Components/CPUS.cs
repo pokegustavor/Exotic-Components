@@ -3,6 +3,7 @@ using PulsarModLoader.Content.Components.CPU;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
+using CodeStage.AntiCheat.ObscuredTypes;
 using System.Reflection.Emit;
 namespace Exotic_Components
 {
@@ -48,7 +49,6 @@ namespace Exotic_Components
                 return ((20-lastLive)/2) + " jumps remains";
             }
         }
-
         public class ThermoBoost : CPUMod 
         {
             public static float MaxHeat = 1.1f;
@@ -79,7 +79,6 @@ namespace Exotic_Components
                 MaxHeat = 1.1f + 0.3f * InComp.LevelMultiplier(0.31f, 1);
             }
         }
-
         public class Researcher : CPUMod
         {
             public override string Name => "Research Processor";
@@ -107,6 +106,104 @@ namespace Exotic_Components
                                 });
                     PLServer.Instance.ResearchMaterials[researchID]++;
                 }
+            }
+            
+        }
+        public class CreditLaundering : CPUMod
+        {
+            static int money = 10000;
+            public override string Name => "Credits Processor";
+
+            public override string Description => "A processor that gives credits when going to unvisited sectors. Don't worry about how or from where the credits comes from, also if the Colonial Union asks, I didn't give this to you.";
+
+            public override int MarketPrice => 40000;
+
+            public override bool Contraband => true;
+
+            public override float MaxPowerUsage_Watts => 1f;
+
+            public override void OnWarp(PLShipComponent InComp)
+            {
+                int targetId = PLEncounterManager.Instance.PlayerShip.WarpTargetID;
+                if (targetId == -1 || !InComp.IsEquipped) return;
+                if (!PLGlobal.Instance.Galaxy.AllSectorInfos[targetId].Visited && PhotonNetwork.isMasterClient)
+                {
+                    PLServer.Instance.photonView.RPC("AddNotification_OneString_LocalizedString", PhotonTargets.All, new object[]
+                                {
+                                        "[STR0]Cr added due to the Credits Processor!",
+                                        -1,
+                                        PLServer.Instance.GetEstimatedServerMs() + 3000,
+                                        true,
+                                        money.ToString()
+                                });
+                    PLServer.Instance.CurrentCrewCredits += money;
+                }
+            }
+            public override void AddStats(PLShipComponent InComp)
+            {
+                money = 10000 + (int)(10000 * InComp.LevelMultiplier(0.61f, 1));
+            }
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return "Credits per jump:";
+            }
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLCPU me = InComp as PLCPU;
+                return 10000 + (int)(10000 * InComp.LevelMultiplier(0.61f, 1)) + " Cr";
+            }
+        }
+        public class TripleCombo : CPUMod 
+        {
+            public override string Name => "Triple Combo Processor";
+
+            public override string Description => "This processor adds cyberdefence, jump calculation and shield charge boost, while not having a absurd energy consumption!";
+
+            public override int MarketPrice => 20000;
+
+            public override float Defense => 0.1f;
+
+            public override float Speed => 1.2f;
+
+            public override bool Experimental => true;
+
+            public override float MaxPowerUsage_Watts => 6900f;
+
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return "Jump Processor: \nCyber Defense: \nShield Charge Boost:";
+            }
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLCPU me = InComp as PLCPU;
+                return "+" + (0.7f * me.LevelMultiplier(0.5f, 1f) * 10f).ToString("0") + "\n" + (0.36f * me.LevelMultiplier(0.75f, 1f)).ToString("0.0") + "\n" +(1.7f * me.LevelMultiplier(0.25f, 1f) * 10f).ToString("0");
+            }
+
+            public override void AddStats(PLShipComponent InComp)
+            {
+                PLCPU me = InComp as PLCPU;
+                ObscuredFloat[] computingPower3 = me.ShipStats.ComputingPower;
+                int num = 0;
+                computingPower3[num] += 0.70f * me.LevelMultiplier(0.5f, 1f) * me.GetPowerPercentInput();
+                me.ShipStats.CyberDefenseRating += 0.36f * me.LevelMultiplier(0.75f, 1f) * me.GetPowerPercentInput();
+            }
+
+            public override void FinalLateAddStats(PLShipComponent InComp)
+            {
+                PLShipStats inStats = InComp.ShipStats;
+                PLCPU me = InComp as PLCPU;
+                inStats.ShieldsChargeRate += me.GetPowerPercentInput() * 1.7f * me.LevelMultiplier(0.25f, 1f);
+                inStats.ShieldsChargeRateMax += 1.7f;
+            }
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                PLCPU me = InComp as PLCPU;
+                me.m_MaxPowerUsage_Watts = 6900f * me.LevelMultiplier(0.12f, 1f);
+                me.IsPowerActive = true;
+                me.m_RequestPowerUsage_Percent = 1f;
             }
         }
     }

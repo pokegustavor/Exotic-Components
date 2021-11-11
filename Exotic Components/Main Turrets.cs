@@ -25,6 +25,18 @@ namespace Exotic_Components
 
 			public override PLShipComponent PLMegaTurret => new TweakedMachineGunTurret();
 		}
+		class FlagShipMainTurretMod : MegaTurretMod 
+		{
+			public override string Name => "FlagShipMainTurret";
+
+			public override PLShipComponent PLMegaTurret => new FlagShipMainTurret();
+		}
+		class InfectedBeamMod : MegaTurretMod
+		{
+			public override string Name => "InfectedBeamMainTurret";
+
+			public override PLShipComponent PLMegaTurret => new InfectedBeam();
+		}
 	}
 
 	class MachineGunTurret : PLMegaTurret_Proj
@@ -334,5 +346,86 @@ namespace Exotic_Components
 		private bool m_IsCharging;
 		private bool m_IsVisiblyCharging;
 		private float m_ChargeLevel;
+	}
+    class FlagShipMainTurret : PLMegaTurret
+    {
+        public FlagShipMainTurret(int inLevel = 0) : base(inLevel)
+        {
+			Level = inLevel;
+			SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("FlagShipMainTurret");
+			Name = "Flagship MainTurret";
+			Desc = "This monster of a turret, that was going to be used in a flagship, will obliterate any ship that faces it, but it does use a lot of power and has a big knockback. Also it will be expensive to equip, because is quite... big for your ship, but if you think you can handle the size.";
+			BeamColor = Color.green;
+			m_Damage = 4900f;
+			TurretRange = 50000f;
+			TrackerMissileReloadTime = 5f;
+			m_MaxPowerUsage_Watts = 190000f;
+			FireDelay = 45f;
+			m_MarketPrice = 1450000;
+			HeatGeneratedOnFire *= 3;
+			m_KickbackForceMultiplier *= 7;
+			CoolingRateModifier *= 0.3f;
+			HasPulseLaser = false;
+		}
+		protected override string GetTurretPrefabPath()
+		{
+			return "NetworkPrefabs/Component_Prefabs/CorruptedLaserTurret";
+		}
+
+        public override void Tick()
+        {
+            base.Tick();
+			if (TurretInstance != null && TurretInstance.OptionalGameObjects[1] != null)
+			{
+				bool flag = ChargeAmount > 0.7f;
+				GameObject gameObject = TurretInstance.OptionalGameObjects[1];
+				if (!IsFiring && flag)
+				{
+					Ray ray = new Ray(TurretInstance.FiringLoc.position, TurretInstance.FiringLoc.forward);
+					RaycastHit raycastHit = default(RaycastHit);
+					int layerMask = 524289;
+					if (Physics.SphereCast(ray, 1f, out raycastHit, 20000f, layerMask))
+					{
+						LaserDist = (raycastHit.point - TurretInstance.FiringLoc.position).magnitude * (1f / TurretInstance.transform.parent.lossyScale.x);
+					}
+					else
+					{
+						LaserDist = 20000f;
+					}
+				}
+				if (gameObject != null)
+				{
+					float num = Mathf.Min(50000f, LaserDist);
+					gameObject.transform.localPosition = new Vector3(0f, 0f, num * 0.5f);
+					Mathf.Abs(0.2f);
+					gameObject.transform.localScale = new Vector3(1f, num * 0.5f, 1f);
+					if (gameObject.activeSelf != flag)
+					{
+						gameObject.SetActive(flag);
+					}
+				}
+			}
+		}
+    }
+    class InfectedBeam : PLMegaTurretCU_2
+    {
+        public InfectedBeam(int inLevel = 0, int inSubTypeData = 1) : base(inLevel, inSubTypeData)
+        {
+			Name = "Infected Beam";
+			Desc = "Using some biological materials from the infected, this turret will cause a massive amount of damage to shields and hull, just hope you don't mind using biological warfare.";
+			Contraband = true;
+			m_MarketPrice = 23000;
+			FireDelay = 14f;
+			m_Damage = 650;
+			DamageType = EDamageType.E_INFECTED;
+			SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("InfectedBeamMainTurret");
+			BeamColor = new Color(204f, 88f, 6f, 0.8f);
+			m_MaxPowerUsage_Watts = 18700f;
+			Level = inLevel;
+		}
+		protected override string GetDamageTypeString()
+		{
+			return "INFECTED (BEAM)";
+		}
 	}
 }

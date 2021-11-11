@@ -87,6 +87,47 @@ namespace Exotic_Components
                 }
             }
         }
+        class FlagShipHull : HullMod 
+        {
+            public override string Name => "Flagship Hull";
+
+            public override string Description => "Also planed to be used in a third flagship, this hull is virtually indestructible, but not impenetrable. Once you pay me a fortune to install it you won't explode, but be carefull with the infected.";
+
+            public override int MarketPrice => 1700000;
+
+            public override bool CanBeDroppedOnShipDeath => false;
+
+            public override float HullMax => 50000f;
+
+            public override float Armor => 5f;
+
+            public override float Defense => 2f;
+
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return string.Concat(new string[]
+                {
+                PLLocalize.Localize("Integrity", false),
+                "\n",
+                PLLocalize.Localize("Armor", false),
+                "\n",
+                PLLocalize.Localize("Armor (Max)", false)
+                });
+            }
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLHull me = InComp as PLHull;
+                return string.Concat(new string[]
+                {
+                (me.Max * InComp.LevelMultiplier(0.2f, 1f)).ToString("0"),
+                "\n",
+                (me.Armor * 250f * InComp.LevelMultiplier(0.15f, 1f)).ToString("0"),
+                "\n",
+                (200f * InComp.LevelMultiplier(0.15f, 1f)).ToString("0")
+                });
+            }
+        }
         [HarmonyLib.HarmonyPatch(typeof(PLHull), "Tick")]
         class ManualTick
         {

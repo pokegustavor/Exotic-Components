@@ -45,7 +45,6 @@ namespace Exotic_Components
                 }
             }
         }
-
         class EletricWall : ShieldMod
         {
             public override string Name => "Electric Wall";
@@ -67,6 +66,26 @@ namespace Exotic_Components
             public override float MaxPowerUsage_Watts => 10200f;
 
             public override int MinIntegrityAfterDamage => 550;
+        }
+        class FlagShipShield : ShieldMod
+        {
+            public override string Name => "Flagship shield";
+
+            public override string Description => "This is the best shield ever made, planed for the third flagship, it will hold its own for a long time, while also keeping intruders away because of the size flagships have. Hope you have the money and the power for this.";
+
+            public override int MarketPrice => 1400000;
+
+            public override float ShieldMax => 40000f;
+
+            public override float ChargeRateMax => 50f;
+
+            public override float RecoveryRate => 20f;
+
+            public override float MinIntegrityPercentForQuantumShield => 0.15f;
+
+            public override float MaxPowerUsage_Watts => 180000f;
+
+            public override int MinIntegrityAfterDamage => 20000;
         }
         [HarmonyPatch(typeof(PLShieldGenerator), "Tick")]
         class ManualTick

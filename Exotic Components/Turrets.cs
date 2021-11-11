@@ -1,6 +1,7 @@
 ﻿using PulsarModLoader.Content.Components.Turret;
 using UnityEngine;
 using Pathfinding;
+using System.Collections;
 namespace Exotic_Components
 {
     internal class Turrets
@@ -41,6 +42,12 @@ namespace Exotic_Components
             public override string Name => "Respected Nullifier Gun";
 
             public override PLShipComponent PLTurret => new RespectedNullifierGun(); 
+        }
+        public class Defender2 : TurretMod 
+        {
+            public override string Name => "Defender Turret mk2";
+
+            public override PLShipComponent PLTurret => new Defender2Turret();
         }
     }
 
@@ -246,7 +253,114 @@ namespace Exotic_Components
             m_Damage = original;
         }
     }
-
+    class Defender2Turret : PLDefenderTurret
+    {
+        private Vector3[] Offsets_ProjArray;
+        public Defender2Turret(int inLevel = 0, int inSubTypeData = 0) : base(inLevel, inSubTypeData)
+        {
+            Name = "Paragon Defender Turret";
+            Desc = "This special defender turret will cause damage based on the currently equiped missile silo, so go ahead with making some combos with this.";
+            Level = inLevel;
+            SubType = TurretModManager.Instance.GetTurretIDFromName("Defender Turret mk2");
+            HasTrackingMissileCapability = true;
+            Experimental = true;
+            TrackerMissileReloadTime = 9999999f;
+            m_MarketPrice = 31000;
+            m_ProjSpeed = 190f;
+            m_Damage = 60f;
+            FireDelay = 9f;
+            float x = 0.01f;
+            float y = 0.01f;
+            this.Offsets_ProjArray = new Vector3[8];
+            this.Offsets_ProjArray[0] = Vector3.Scale(new Vector3(x, y, 0f), new Vector3(-3f, 0.5f, 0f));
+            this.Offsets_ProjArray[1] = Vector3.Scale(new Vector3(x, y, 0f), new Vector3(-1f, 0.5f, 0f));
+            this.Offsets_ProjArray[2] = Vector3.Scale(new Vector3(x, y, 0f), new Vector3(3f, 0.5f, 0f));
+            this.Offsets_ProjArray[3] = Vector3.Scale(new Vector3(x, y, 0f), new Vector3(1f, 0.5f, 0f));
+            this.Offsets_ProjArray[4] = Vector3.Scale(new Vector3(x, y, 0f), new Vector3(-3f, -0.5f, 0f));
+            this.Offsets_ProjArray[5] = Vector3.Scale(new Vector3(x, y, 0f), new Vector3(-1f, -0.5f, 0f));
+            this.Offsets_ProjArray[6] = Vector3.Scale(new Vector3(x, y, 0f), new Vector3(3f, -0.5f, 0f));
+            this.Offsets_ProjArray[7] = Vector3.Scale(new Vector3(x, y, 0f), new Vector3(1f, -0.5f, 0f));
+        }
+        public override void Tick()
+        {
+            base.Tick();
+            LastFireMissileTime = Time.time;
+        }
+        public override void Fire(int inProjID, Vector3 dir)
+        {
+            this.LastFireTime = Time.time;
+            this.ChargeAmount = 0f;
+            if (Time.time - base.ShipStats.Ship.LastCloakingSystemActivatedTime > 2f)
+            {
+                base.ShipStats.Ship.SetIsCloakingSystemActive(false);
+            }
+            PLMusic.PostEvent("play_ship_generic_external_weapon_defenderturret_shoot", this.TurretInstance.gameObject);
+            this.TurretInstance.StartCoroutine(this.ControlledFireRoutine(inProjID, dir));
+        }
+        private IEnumerator ControlledFireRoutine(int inProjID, Vector3 dir)
+        {
+            PLRand spreadRandomness = new PLRand(inProjID);
+            int index = 0;
+            foreach (Vector3 b in this.Offsets_ProjArray)
+            {
+                GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(this.TurretInstance.Proj, this.TurretInstance.FiringLoc.transform.position + b, this.TurretInstance.FiringLoc.transform.rotation);
+                PLMissle component = gameObject.GetComponent<PLMissle>();
+                PLProjectile component2 = gameObject.GetComponent<PLProjectile>();
+                PLTrackerMissile silo = ShipStats.Ship.SelectedMissileLauncher;
+                gameObject.GetComponent<Rigidbody>().velocity = base.ShipStats.Ship.Exterior.GetComponent<Rigidbody>().velocity + dir * this.m_ProjSpeed * Mathf.Clamp((float)spreadRandomness.NextDouble(), 0.5f, 1f);
+                component2.ProjID = inProjID + index;
+                component.MaxDamage = (this.m_Damage * base.LevelMultiplier(0.15f, 1f) * base.ShipStats.TurretDamageFactor) + (silo != null ? silo.Damage / 30 : 0);
+                component.Damage = (this.m_Damage * base.LevelMultiplier(0.15f, 1f) * base.ShipStats.TurretDamageFactor) + (silo != null ? silo.Damage / 30 : 0);
+                component2.MaxLifetime = 7f;
+                component2.OwnerShipID = base.ShipStats.Ship.ShipID;
+                component.TurnFactor *= spreadRandomness.Next(0.33f, 0.66f);
+                if (base.ShipStats.Ship.TargetShip != null)
+                {
+                    component.TargetShipID = base.ShipStats.Ship.TargetShip.ShipID;
+                }
+                component2.TurretID = this.TurretID;
+                component.TargetShip = base.ShipStats.Ship.TargetShip;
+                component2.ExplodeOnMaxLifetime = false;
+                EDamageType eDamageType;
+                if(silo != null) 
+                {
+                    eDamageType = silo.DamageType;
+                }
+                else 
+                {
+                    eDamageType = EDamageType.E_PHYSICAL;
+                }
+                switch (eDamageType) 
+                {
+                    case EDamageType.E_SHIELD_PIERCE_PHYS:
+                        component.SmokeSys.startColor = Color.yellow;
+                        break;
+                    case EDamageType.E_INFECTED:
+                        component.SmokeSys.startColor = new Color(204f, 88f, 6f, 0.8f);
+                        break;
+                    case EDamageType.E_SYSTEM_DAMAGE:
+                        component.SmokeSys.startColor = Color.red;
+                        break;
+                    case EDamageType.E_ARMOR_PIERCE_PHYS:
+                        component.SmokeSys.startColor = Color.blue;
+                        break;
+                }
+                component2.MyDamageType = eDamageType;
+                component.TrackingDelay = spreadRandomness.Next(0.5f, 1.5f);
+                component.Speed *= spreadRandomness.Next(0.5f, 1f);
+                component.SetShouldLeadTargetShip(true);
+                component.SetLerpedSpeed(base.ShipStats.Ship.ExteriorRigidbody.velocity.magnitude * 1.5f);
+                Physics.IgnoreCollision(base.ShipStats.Ship.Exterior.GetComponent<Collider>(), gameObject.GetComponent<Collider>());
+                PLServer.Instance.m_ActiveProjectiles.Add(component2);
+                int num = index;
+                index = num + 1;
+                yield return new WaitForSeconds(0.1f);
+                this.Heat += this.HeatGeneratedOnFire;
+            }
+            Vector3[] array = null;
+            yield break;
+        }
+    }
     [HarmonyLib.HarmonyPatch(typeof(PLInfectedSporeProj), "FixedUpdate")]
     internal class SporePatch
     {

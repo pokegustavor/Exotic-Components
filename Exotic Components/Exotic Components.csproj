@@ -107,6 +107,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reactors.cs" />
     <Compile Include="Shields.cs" />
+    <Compile Include="Thursters.cs" />
     <Compile Include="Turrets.cs" />
     <Compile Include="Update.cs" />
     <Compile Include="Warp Drive.cs" />

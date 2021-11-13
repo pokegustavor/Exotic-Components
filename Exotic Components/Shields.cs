@@ -87,6 +87,38 @@ namespace Exotic_Components
 
             public override int MinIntegrityAfterDamage => 20000;
         }
+        class GustavFrortress : ShieldMod 
+        {
+            public override string Name => "Gustav's Fortress";
+
+            public override string Description => "This special shield was actually of my own making, it has a extreme charge rate and not too bad of power usage, but it is a little unstable, and requires constant power to stay online, but hey, the price is not the worst.";
+
+            public override int MarketPrice => 18000;
+
+            public override bool Experimental => true;
+
+            public override float ShieldMax => 340f;
+
+            public override float ChargeRateMax => 340f;
+
+            public override float RecoveryRate => 13f;
+
+            public override float MinIntegrityPercentForQuantumShield => 0.7f;
+
+            public override float MaxPowerUsage_Watts => 8000f;
+
+            public override int MinIntegrityAfterDamage => 100;
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                PLShieldGenerator me = InComp as PLShieldGenerator;
+                me.IsPowerActive = true;
+                me.RequestPowerUsage_Percent = 1f;
+                me.ChargeRateCurrent = me.ChargeRateMax * me.LevelMultiplier(0.5f, 1f) * (me.GetPowerPercentInput() - 0.5f) * 2;
+                if ((me.Current - me.ShipStats.ShieldsChargeRate * Time.deltaTime <= 0 && me.ChargeRateCurrent < 0) || (me.Current >= me.CurrentMax && me.ChargeRateCurrent > 0)) me.ShipStats.ShieldsChargeRate = 0f;
+                if (me.Current < 0) me.Current = 0f;
+            }
+        }
         [HarmonyPatch(typeof(PLShieldGenerator), "Tick")]
         class ManualTick
         {

@@ -37,6 +37,12 @@ namespace Exotic_Components
 
 			public override PLShipComponent PLMegaTurret => new InfectedBeam();
 		}
+		class FakeKeeperBeamMod : MegaTurretMod
+		{
+			public override string Name => "FakeKeeperBeamTurret";
+
+			public override PLShipComponent PLMegaTurret => new FakeKeeper();
+		}
 	}
 
 	class MachineGunTurret : PLMegaTurret_Proj
@@ -426,6 +432,46 @@ namespace Exotic_Components
 		protected override string GetDamageTypeString()
 		{
 			return "INFECTED (BEAM)";
+		}
+	}
+    class FakeKeeper : PLMegaTurret_KeeperBeam
+    {
+        public FakeKeeper(int inLevel = 0, int inSubTypeData = 1) : base(inLevel, inSubTypeData)
+        {
+			Name = "Keeper Beam Prototype";
+			Desc = "This special turret was made with data collected from an alien machine called \"Keeper\", it is quite powerfull, but this prototype doesn't have an... off button. So be carefull with the power you will use, it will only stop when it overheat. Look, copying alien tech from some scans is not easy, ok.";
+			m_Damage = 100f;
+			Experimental = true;
+			Level = inLevel;
+			FireDelay = 30f;
+			m_MarketPrice = 39000;
+			HeatGeneratedOnFire = 0.05f;
+			CoolingRateModifier *= 0.5f;
+			SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("FakeKeeperBeamTurret");
+			BeamActiveTime = 50000f;
+		}
+        public override void Tick()
+        {
+			if (IsOverheated || ShipStats.Ship.IsReactorOverheated()) IsBeamActive = false;
+			base.Tick();
+			if (IsBeamActive)
+			{
+				ChargeAmount = 0f;
+			}
+		}
+		public override void UpdateMaxPowerUsageWatts()
+		{
+			base.CalculatedMaxPowerUsage_Watts = 25600f * base.LevelMultiplier(0.1f, 1f);
+		}
+        protected override void UpdatePowerUsage(PLPlayer currentOperator)
+        {
+            base.UpdatePowerUsage(currentOperator);
+			if (IsBeamActive) RequestPowerUsage_Percent = ShipStats.Ship.WeaponsSystem.GetHealthRatio();
+		}
+		protected override bool ShouldAIFire(bool operatedByBot, float heatOffset, float heatGeneratedOnFire)
+		{
+			float num = this.Heat + heatOffset;
+			return num < 1f - heatGeneratedOnFire;
 		}
 	}
 }

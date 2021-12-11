@@ -128,6 +128,46 @@ namespace Exotic_Components
                 });
             }
         }
+        class AntiInfectedHull : HullMod 
+        {
+            public override string Name => "Anti-Infected Hull";
+
+            public override string Description => "This resistent hull was designed to be resistent to the infected acid, allowing it to handle any infected sector.";
+
+            public override int MarketPrice => 19000;
+
+            public override bool CanBeDroppedOnShipDeath => false;
+
+            public override bool Experimental => true;
+
+            public override float HullMax => 710f;
+
+            public override float Armor => 0.4f;
+
+            public override float Defense => 0.3f;
+
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return string.Concat(new string[]
+                {
+                PLLocalize.Localize("Integrity", false),
+                "\n",
+                PLLocalize.Localize("Armor", false),
+                });
+            }
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLHull me = InComp as PLHull;
+                return string.Concat(new string[]
+                {
+                (me.Max * InComp.LevelMultiplier(0.2f, 1f)).ToString("0"),
+                "\n",
+                (me.Armor * 250f * InComp.LevelMultiplier(0.15f, 1f)).ToString("0"),
+                });
+            }
+
+        }
         [HarmonyLib.HarmonyPatch(typeof(PLHull), "Tick")]
         class ManualTick
         {
@@ -138,6 +178,24 @@ namespace Exotic_Components
                 {
                     HullModManager.Instance.HullTypes[subtypeformodded].Tick(__instance);
                 }
+            }
+        }
+
+        [HarmonyLib.HarmonyPatch(typeof(PLShipStats), "TakeHullDamage")]
+        class HullDamage
+        {
+            static bool Prefix(ref float inDmg, EDamageType inDmgType, PLShipInfoBase attackingShip, PLTurret turret, PLShipStats __instance) 
+            {
+                PLHull shipComponent = __instance.GetShipComponent<PLHull>(ESlotType.E_COMP_HULL, false);
+                if(inDmgType == EDamageType.E_INFECTED && inDmg == 10 && HullModManager.Instance.GetHullIDFromName("Anti-Infected Hull") == shipComponent.SubType) 
+                {
+                    return false;
+                }
+                else if(inDmgType == EDamageType.E_INFECTED && HullModManager.Instance.GetHullIDFromName("Anti-Infected Hull") == shipComponent.SubType) 
+                {
+                    inDmg *= 0.2f;
+                }
+                return true;
             }
         }
     }

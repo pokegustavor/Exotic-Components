@@ -119,6 +119,49 @@ namespace Exotic_Components
                 if (me.Current < 0) me.Current = 0f;
             }
         }
+        class AntiInfected : ShieldMod 
+        {
+            public override string Name => "Anti-Infected Shield";
+
+            public override string Description => "This shield may not be one of the best, but it is able to resist the infected acid, allowing it to charge in infected space and resist their attack";
+
+            public override int MarketPrice => 15000;
+
+            public override bool Experimental => true;
+
+            public override float ShieldMax => 290f;
+
+            public override float ChargeRateMax => 12f;
+
+            public override float RecoveryRate => 13f;
+
+            public override float MinIntegrityPercentForQuantumShield => 0.6f;
+
+            public override float MaxPowerUsage_Watts => 14000f;
+
+            public override int MinIntegrityAfterDamage => 15;
+
+            public override void AddStats(PLShipComponent InComp)
+            {
+                PLShieldGenerator me = InComp as PLShieldGenerator;
+                PLShipStats inStats = me.ShipStats;
+                if(PLEncounterManager.Instance.GetCPEI() != null && PLEncounterManager.Instance.GetCPEI().DisableShieldsInSector) 
+                {
+                    inStats.ShieldsChargeRate += me.ChargeRateCurrent;
+                    inStats.ShieldsChargeRateMax += me.ChargeRateMax * me.LevelMultiplier(0.5f, 1f);
+                }
+            }
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                PLShieldGenerator me = InComp as PLShieldGenerator;
+                if (PLEncounterManager.Instance.GetCPEI() != null && PLEncounterManager.Instance.GetCPEI().DisableShieldsInSector)
+                {
+                    me.Current += me.ShipStats.ShieldsChargeRate * Time.deltaTime;
+                }
+                me.ShipStats.ShieldsCurrent = me.Current;
+            }
+        }
         [HarmonyPatch(typeof(PLShieldGenerator), "Tick")]
         class ManualTick
         {
@@ -128,6 +171,18 @@ namespace Exotic_Components
                 if (subtypeformodded > -1 && subtypeformodded < ShieldModManager.Instance.ShieldTypes.Count && __instance.ShipStats != null)
                 {
                     ShieldModManager.Instance.ShieldTypes[subtypeformodded].Tick(__instance);
+                }
+            }
+        }
+        [HarmonyPatch(typeof(PLShieldGenerator), "AddStats")]
+        class ManualAddStats
+        {
+            static void Postfix(PLShieldGenerator __instance)
+            {
+                int subtypeformodded = __instance.SubType - ShieldModManager.Instance.VanillaShieldMaxType;
+                if (subtypeformodded > -1 && subtypeformodded < ShieldModManager.Instance.ShieldTypes.Count && __instance.ShipStats != null)
+                {
+                    ShieldModManager.Instance.ShieldTypes[subtypeformodded].AddStats(__instance);
                 }
             }
         }
@@ -153,6 +208,11 @@ namespace Exotic_Components
                 __instance.GetComponentsOfType(ESlotType.E_COMP_SHLD, false);
                 PLShieldGenerator shipComponent = __instance.GetShipComponent<PLShieldGenerator>(ESlotType.E_COMP_SHLD, false);
                 if (shipComponent == null || inDmg <= 0f)
+                {
+                    __result = 0f;
+                    return false;
+                }
+                if (dmgType == EDamageType.E_INFECTED && inDmg == 10 && shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("Anti-Infected Shield")) 
                 {
                     __result = 0f;
                     return false;
@@ -200,6 +260,12 @@ namespace Exotic_Components
                     {
                         num2 += 0.3f;
                     }
+                    if(dmgType == EDamageType.E_PHYSICAL && shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("Anti-Infected Shield") && turret != null && turret is PLSporeTurret) 
+                    {
+                        num2 = 1.5f;
+                        inDmg *= 0.1f;
+                        DT_ShieldBoost = 1f;
+                    }
                     num2 *= 1f / DT_ShieldBoost * (1f / shieldDamageMod);
                     num2 += (__instance.ShieldsDeflection - (0.6f * __instance.Ship.MyShieldGenerator.LevelMultiplier(0.1f, 1f))) * 1.5f;
                     float num3 = Mathf.Min(inDmg, shipComponent.Current * num2);
@@ -234,30 +300,27 @@ namespace Exotic_Components
                 __result = inDmg;
                 return false;
             }
-            catch 
+            catch
             {
                 return true;
             }
         }
     }
 
+
+
     [HarmonyPatch(typeof(PLServer), "SetStartupSwitchStatus")]
     class EMPPulse 
     {
         static void Postfix(int shipID, bool status) 
         {
-            if (!PhotonNetwork.isMasterClient) return;
             PLShipStats mystats = PLEncounterManager.Instance.GetShipFromID(shipID).MyStats;
             if (PLEncounterManager.Instance.GetShipFromID(shipID).MyShieldGenerator.Name == "Eletric Wall" && !status &&  mystats.ShieldsCurrent/mystats.ShieldsMax >= 0.9f)
             {
-                PhotonNetwork.Instantiate("Assets/PrefabInstance/EMPExplosion", PLEncounterManager.Instance.PlayerShip.GetCurrentSensorPosition(), new Quaternion(), 0);
                 Object.Instantiate(PLGlobal.Instance.EMPExplosionPrefab, PLEncounterManager.Instance.PlayerShip.Exterior.transform.position, Quaternion.identity);
+                if (!PhotonNetwork.isMasterClient) return;
                 foreach (PLShipInfoBase ship in Object.FindObjectsOfType(typeof(PLShipInfoBase)))
                 {
-                    if (ship as PLShipInfo != null && !ship.GetIsPlayerShip())
-                    {
-                        (ship as PLShipInfo).EndGameSequenceActive = true;
-                    }
                     if (!ship.GetIsPlayerShip()) ship.photonView.RPC("Overcharged", PhotonTargets.All, new object[0]);
                 }
                 PLEncounterManager.Instance.PlayerShip.EngineeringSystem.TakeDamage(Random.Range(0, 20));

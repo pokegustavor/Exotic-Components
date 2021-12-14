@@ -412,6 +412,11 @@ namespace Exotic_Components
 				}
 			}
 		}
+        public override void FinalLateAddStats(PLShipStats inStats)
+        {
+            base.FinalLateAddStats(inStats);
+			inStats.Mass += 2400f;
+        }
     }
     class InfectedBeam : PLMegaTurretCU_2
     {

@@ -127,6 +127,11 @@ namespace Exotic_Components
                 (200f * InComp.LevelMultiplier(0.15f, 1f)).ToString("0")
                 });
             }
+
+            public override void FinalLateAddStats(PLShipComponent InComp)
+            {
+                InComp.ShipStats.Mass += 4800f;
+            }
         }
         class AntiInfectedHull : HullMod 
         {

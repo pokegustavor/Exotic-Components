@@ -86,6 +86,11 @@ namespace Exotic_Components
             public override float MaxPowerUsage_Watts => 180000f;
 
             public override int MinIntegrityAfterDamage => 20000;
+
+            public override void FinalLateAddStats(PLShipComponent InComp)
+            {
+                InComp.ShipStats.Mass += 2500f;
+            }
         }
         class GustavFrortress : ShieldMod 
         {

@@ -1,4 +1,6 @@
 ﻿using PulsarModLoader.Content.Components.Reactor;
+using PulsarModLoader.Content.Components.Shield;
+using PulsarModLoader.Content.Components.Hull;
 using UnityEngine;
 using HarmonyLib;
 namespace Exotic_Components
@@ -601,6 +603,11 @@ namespace Exotic_Components
                     PLLocalize.Localize("Output", false),
                 });
             }
+
+            public override void FinalLateAddStats(PLShipComponent InComp)
+            {
+                InComp.ShipStats.Mass += 2760f;
+            }
         }
 
         [HarmonyPatch(typeof(PLSpaceHeatVolume),"Update")]
@@ -653,7 +660,38 @@ namespace Exotic_Components
                 }
             }
         }
+        [HarmonyPatch(typeof(PLShipComponent), "FinalLateAddStats")]
+        class AddStatsFix 
+        {
+            static void Postfix(PLShipComponent __instance) 
+            {
 
+                switch (__instance.ActualSlotType) 
+                {
+                    case ESlotType.E_COMP_REACTOR:
+                        int subtypeformodded = __instance.SubType - ReactorModManager.Instance.VanillaReactorMaxType;
+                        if (subtypeformodded > -1 && subtypeformodded < ReactorModManager.Instance.ReactorTypes.Count && __instance.ShipStats != null)
+                        {
+                            ReactorModManager.Instance.ReactorTypes[subtypeformodded].FinalLateAddStats(__instance);
+                        }
+                        break;
+                    case ESlotType.E_COMP_SHLD:
+                        int subtypeformoddeds = __instance.SubType - ShieldModManager.Instance.VanillaShieldMaxType;
+                        if (subtypeformoddeds > -1 && subtypeformoddeds < ShieldModManager.Instance.ShieldTypes.Count && __instance.ShipStats != null)
+                        {
+                            ShieldModManager.Instance.ShieldTypes[subtypeformoddeds].FinalLateAddStats(__instance);
+                        }
+                        break;
+                    case ESlotType.E_COMP_HULL:
+                        int subtypeformoddedh = __instance.SubType - HullModManager.Instance.VanillaHullMaxType;
+                        if (subtypeformoddedh > -1 && subtypeformoddedh < HullModManager.Instance.HullTypes.Count && __instance.ShipStats != null)
+                        {
+                            HullModManager.Instance.HullTypes[subtypeformoddedh].FinalLateAddStats(__instance);
+                        }
+                        break;
+                }
+            }
+        }
         [HarmonyPatch(typeof(PLShipInfo), "ServerClickAtomize")]
         class BiscuitCharge 
         {

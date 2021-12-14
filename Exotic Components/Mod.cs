@@ -4,7 +4,7 @@ namespace Exotic_Components
 {
     public class Mod : PulsarMod
     {
-        public override string Version => "2.8";
+        public override string Version => "2.9";
 
         public override string Author => "pokegustavo";
 

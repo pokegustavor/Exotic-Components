@@ -194,18 +194,80 @@ namespace Exotic_Components
             {
                 PLShipStats inStats = InComp.ShipStats;
                 PLCPU me = InComp as PLCPU;
-                inStats.ShieldsChargeRate += me.GetPowerPercentInput() * 1.7f * me.LevelMultiplier(0.25f, 1f);
-                inStats.ShieldsChargeRateMax += 1.7f;
+                if (me.IsEquipped)
+                {
+                    inStats.ShieldsChargeRate += me.GetPowerPercentInput() * 1.7f * me.LevelMultiplier(0.25f, 1f);
+                    inStats.ShieldsChargeRateMax += me.GetPowerPercentInput() * 1.7f * me.LevelMultiplier(0.25f, 1f);
+                }
             }
 
             public override void Tick(PLShipComponent InComp)
             {
                 PLCPU me = InComp as PLCPU;
-                me.m_MaxPowerUsage_Watts = 6900f * me.LevelMultiplier(0.12f, 1f);
-                me.IsPowerActive = true;
-                me.m_RequestPowerUsage_Percent = 1f;
+                if (me.IsEquipped)
+                {
+                    me.m_MaxPowerUsage_Watts = 6900f * me.LevelMultiplier(0.12f, 1f);
+                    me.IsPowerActive = true;
+                    me.m_RequestPowerUsage_Percent = 1f;
+                }
             }
         }
+        public class ActiveAntiVirus : CPUMod 
+        {
+            static float lastRemoval = Time.time;
+            public override string Name => "Active Anti-Virus";
+
+            public override string Description => "This processor will remove a random virus every few seconds if given power, less power to it means slower virus removal, at least you will be protected. Also your virus definitions were updated.";
+
+            public override int MarketPrice => 15000;
+
+            public override bool Experimental => true;
+
+            public override float MaxPowerUsage_Watts => 6000f;
+
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return "Virus removal delay: ";
+            }
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLCPU me = InComp as PLCPU;
+                if (me.IsEquipped)
+                {
+                    float timer = (30f - 1 * me.LevelMultiplier(2, 1)) / me.GetPowerPercentInput();
+                    if (timer > 120) timer = 120f;
+                    if (timer < 10) timer = 10f;
+                    return ((int)timer).ToString() + "s";
+                }
+                else 
+                {
+                    int timer = Mathf.FloorToInt(30f - 1 * me.LevelMultiplier(2, 1));
+                    if (timer < 10) timer = 10;
+                    return ((int)timer).ToString() + "s";
+                }
+            }
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                PLCPU me = InComp as PLCPU;
+                if (me.IsEquipped)
+                {
+                    float timerequired = (30f - 1 * me.LevelMultiplier(2, 1)) / me.GetPowerPercentInput();
+                    if (timerequired > 120) timerequired = 120f;
+                    if (timerequired < 10) timerequired = 10f;
+                    me.m_MaxPowerUsage_Watts = 6000;
+                    me.IsPowerActive = true;
+                    me.m_RequestPowerUsage_Percent = 1f;
+                    if(Time.time - lastRemoval > timerequired) 
+                    {
+                        me.ShipStats.Ship.RemoveOneRandomHostileVirus();
+                        lastRemoval = Time.time;
+                    }
+                }
+            }
+        }
+
     }
 
     [HarmonyPatch(typeof(PLTurret),"Tick")]

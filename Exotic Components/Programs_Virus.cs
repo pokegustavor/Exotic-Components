@@ -100,6 +100,35 @@ namespace Exotic_Components
 
             public override Texture2D IconTexture => PLGlobal.Instance.VirusBGTexture;
         }
+        class DoorStuckProgram : WarpDriveProgramMod
+        {
+            public override string Name => "DoorStuck [VIRUS]";
+
+            public override string Description => "Locks all doors for 15 seconds";
+
+            public override int MaxLevelCharges => 1;
+
+            public override bool IsVirus => true;
+
+            public override int MarketPrice => 7000;
+
+            public override int VirusSubtype => VirusModManager.Instance.GetVirusIDFromName("Door Stuck");
+
+            public override string ShortName => "DS";
+
+            public override float ActiveTime => 30f;
+
+            public override Texture2D IconTexture => PLGlobal.Instance.VirusBGTexture;
+
+        }
+        class DoorStuckVirus : VirusMod
+        {
+            public override string Name => "Door Stuck";
+
+            public override string Description => "Locks all doors for 15 seconds";
+
+            public override int InfectionTimeLimitMs => 15000;
+        }
         class SelfDestructVirus : VirusMod 
         {
             public override string Name => "Self Destruction";

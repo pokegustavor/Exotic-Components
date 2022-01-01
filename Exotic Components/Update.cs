@@ -58,7 +58,28 @@ namespace Exotic_Components
                         }
                     }
                 }
-                if(__instance.MyReactor != null && __instance.MyReactor.GetItemName() != "" && __instance.Exterior.GetComponent<PLSpaceHeatVolume>() != null) 
+                if(__instance.MyWarpDrive != null && PLInput.Instance.GetButtonUp(PLInputBase.EInputActionName.pilot_ability) && __instance.MyWarpDrive.Name == "The Phase Drive" && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10f && (!(__instance is PLOldWarsShip_Sylvassi) || (__instance is PLOldWarsShip_Sylvassi && (__instance as PLOldWarsShip_Sylvassi).SlicerFiredInThisSector)) && __instance.GetCurrentShipControllerPlayerID() == PLNetworkManager.Instance.LocalPlayerID) 
+                {
+                    PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.RecivePhase", PhotonTargets.All, new object[0]);
+                }
+                if (Time.time - Warp_Drive.PhaseDrive.LastPhase < 1f && __instance.HullPlatingRenderers != null && Warp_Drive.PhaseDrive.Phasing) 
+                {
+                    foreach(Renderer rend in __instance.HullPlatingRenderers) 
+                    {
+                        if (rend != null)
+                        {
+                            rend.enabled = false;
+                        }
+                    }
+                    __instance.MyStats.ThrustOutputMax = 0;
+                    __instance.MyStats.InertiaThrustOutputMax = 0;
+                    __instance.MyStats.ManeuverThrustOutputMax = 0;
+                    if (__instance.ExteriorMeshRenderer != null)
+                    {
+                        __instance.ExteriorMeshRenderer.enabled = false;
+                    }
+                }
+                if (__instance.MyReactor != null && __instance.MyReactor.GetItemName() != "" && __instance.Exterior.GetComponent<PLSpaceHeatVolume>() != null) 
                 {
                     PLSpaceHeatVolume heatVolume = __instance.Exterior.GetComponent<PLSpaceHeatVolume>();
                     heatVolume.MyPS.enableEmission = false;

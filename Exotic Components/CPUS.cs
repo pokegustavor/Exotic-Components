@@ -267,7 +267,59 @@ namespace Exotic_Components
                 }
             }
         }
+        public class QDI_Fix : CPUMod 
+        {
+            PLCPU me = null;
+            public override string Name => "QDI-FIX-ALL";
 
+            public override string Description => "Processor that slightly repairs all systems whenever a program is run. Maximum of 10 times per sector.";
+
+            public override int MarketPrice => 10000;
+
+            public override bool Experimental => true;
+
+            public override float MaxPowerUsage_Watts => 1f;
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return "All systems heal:";
+            }
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLCPU me = InComp as PLCPU;
+                return (10f * me.LevelMultiplier(0.25f, 1f)).ToString("0.0") + "%";
+            }
+            public override void AddStats(PLShipComponent InComp)
+            {
+                me = InComp as PLCPU;
+            }
+            public override void WhenProgramIsRun(PLWarpDriveProgram InProgram)
+            {
+                if (me != null && me.SubTypeData < 10)
+                {
+                    if (me.ShipStats.Ship.WeaponsSystem != null)
+                    {
+                        PLWeaponsSystem weaponsSystem = me.ShipStats.Ship.WeaponsSystem;
+                        weaponsSystem.Health += 5f * me.LevelMultiplier(0.25f, 1f);
+                    }
+                    if (me.ShipStats.Ship.EngineeringSystem != null)
+                    {
+                        PLEngineeringSystem weaponsSystem = me.ShipStats.Ship.EngineeringSystem;
+                        weaponsSystem.Health += 5f * me.LevelMultiplier(0.25f, 1f);
+                    }
+                    if (me.ShipStats.Ship.LifeSupportSystem != null)
+                    {
+                        PLLifeSupportSystem lifeSupportSystem = me.ShipStats.Ship.LifeSupportSystem;
+                        lifeSupportSystem.Health += 5f * me.LevelMultiplier(0.25f, 1f);
+                    }
+                    if (me.ShipStats.Ship.ComputerSystem != null)
+                    {
+                        PLComputerSystem computerSystem = me.ShipStats.Ship.ComputerSystem;
+                        computerSystem.Health += 5f * me.LevelMultiplier(0.25f, 1f);
+                    }
+                }
+            }
+        }
     }
 
     [HarmonyPatch(typeof(PLTurret),"Tick")]

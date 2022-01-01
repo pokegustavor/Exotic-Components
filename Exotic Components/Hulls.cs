@@ -173,6 +173,45 @@ namespace Exotic_Components
             }
 
         }
+        class PhaseDriverHull : HullMod 
+        {
+            public override string Name => "Phase Driver Hull";
+
+            public override string Description => "This special hull has quite a bit of resistence, designed to survive multiple short range warp with no damage. But it doesn't survive imploding by warping in a wall, so hope that safety system works in the warp drive.";
+
+            public override int MarketPrice => 13000;
+
+            public override bool CanBeDroppedOnShipDeath => false;
+
+            public override bool Experimental => true;
+
+            public override float HullMax => 950f;
+
+            public override float Armor => 0.35f;
+
+            public override float Defense => 0.2f;
+
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return string.Concat(new string[]
+                {
+                PLLocalize.Localize("Integrity", false),
+                "\n",
+                PLLocalize.Localize("Armor", false),
+                });
+            }
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLHull me = InComp as PLHull;
+                return string.Concat(new string[]
+                {
+                (me.Max * InComp.LevelMultiplier(0.2f, 1f)).ToString("0"),
+                "\n",
+                (me.Armor * 250f * InComp.LevelMultiplier(0.15f, 1f)).ToString("0"),
+                });
+            }
+        }
         [HarmonyLib.HarmonyPatch(typeof(PLHull), "Tick")]
         class ManualTick
         {
@@ -199,6 +238,19 @@ namespace Exotic_Components
                 else if(inDmgType == EDamageType.E_INFECTED && HullModManager.Instance.GetHullIDFromName("Anti-Infected Hull") == shipComponent.SubType) 
                 {
                     inDmg *= 0.2f;
+                }
+                if(turret is AutoScrapper) 
+                {
+                    if (PhotonNetwork.isMasterClient && !__instance.Ship.GetIsPlayerShip() && Time.time - __instance.Ship.LastServerDroppedScrapperScrap > 20f && Random.Range(0, 40) == 3)
+                    {
+                        __instance.Ship.LastServerDroppedScrapperScrap = Time.time;
+                        PLServer.Instance.photonView.RPC("CreateSpaceScrapAtLocation", PhotonTargets.All, new object[]
+                        {
+                        __instance.Ship.Exterior.transform.position + UnityEngine.Random.onUnitSphere,
+                        __instance.Ship.ShipID,
+                        true
+                        });
+                    }
                 }
                 return true;
             }

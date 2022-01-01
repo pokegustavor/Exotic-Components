@@ -100,6 +100,26 @@ namespace Exotic_Components
 
             public override Texture2D IconTexture => PLGlobal.Instance.VirusBGTexture;
         }
+        class FriendlyDroneProgram : WarpDriveProgramMod
+        {
+            public override string Name => "Friendly Charm [VIRUS]";
+
+            public override string Description => "This virus makes so infected drones see you as friendly for 30 seconds.";
+
+            public override int MarketPrice => 35000;
+
+            public override int MaxLevelCharges => 5;
+
+            public override bool IsVirus => true;
+
+            public override int VirusSubtype => VirusModManager.Instance.GetVirusIDFromName("Friendly Charm");
+
+            public override string ShortName => "FC";
+
+            public override float ActiveTime => 50f;
+
+            public override Texture2D IconTexture => PLGlobal.Instance.VirusBGTexture;
+        }
         class DoorStuckProgram : WarpDriveProgramMod
         {
             public override string Name => "DoorStuck [VIRUS]";
@@ -128,6 +148,14 @@ namespace Exotic_Components
             public override string Description => "Locks all doors for 15 seconds";
 
             public override int InfectionTimeLimitMs => 15000;
+        }
+        class FriendlyDroneVirus : VirusMod
+        {
+            public override string Name => "Friendly Charm";
+
+            public override string Description => "This virus makes so infected drones see you as friendly for 30 seconds.";
+
+            public override int InfectionTimeLimitMs => 30000;
         }
         class SelfDestructVirus : VirusMod 
         {
@@ -174,6 +202,34 @@ namespace Exotic_Components
                 {
                     VirusMod VirusType = VirusModManager.Instance.VirusTypes[Subtype - VirusModManager.Instance.VanillaVirusMaxType];
                     __result.InfectionTimeLimitMs = VirusType.InfectionTimeLimitMs;
+                }
+            }
+        }
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(PLShipInfoBase), "ShouldBeHostileToShip")]
+    class FriendlyDrones 
+    {
+        static void Postfix(PLShipInfoBase __instance, PLShipInfoBase inShip, ref bool __result) 
+        {
+            if (__instance.IsDrone && !(__instance is PLWarpGuardian) && !(__instance is PLUnseenEye))
+            {
+                bool Friendly = false;
+                foreach (PLShipComponent component in __instance.MyStats.GetSlot(ESlotType.E_COMP_VIRUS))
+                {
+                    if (component.SubType == VirusModManager.Instance.GetVirusIDFromName("Friendly Charm") && (component as PLVirus).Sender == inShip)
+                    {
+                        Friendly = true;
+                        break;
+                    }
+                }
+                if (Friendly)
+                {
+                    __result = false;
+                    if (__instance.HostileShips.Contains(inShip.ShipID))
+                    {
+                        __instance.HostileShips.Remove(inShip.ShipID);
+                    }
                 }
             }
         }

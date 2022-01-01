@@ -164,8 +164,88 @@ namespace Exotic_Components
                 });
             }
         }
-    }
+        public class PhaseDrive : WarpDriveMod
+        {
+            public static float LastPhase = Time.time;
+            public static bool Phasing = false;
+            public override string Name => "The Phase Drive";
 
+            public override string Description => "A powerfull warpdrive that charges so fast that it allows the pilot to make shot range jumps. I would just recommend you to get a \"Phase Driver Hull\", so your ship doesn't get damaged in the process. It comes with a safety system so your ship doesn't implode by warping in a wall.";
+
+            public override int MarketPrice => 20000;
+
+            public override bool Experimental => true;
+
+            public override float ChargeSpeed => 20f;
+
+            public override float WarpRange => 0.07f;
+
+            public override float EnergySignature => 20f;
+
+            public override int NumberOfChargesPerFuel => 4;
+
+            //public override float MaxPowerUsage_Watts => 17000f;
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return string.Concat(new string[]
+                {
+                PLLocalize.Localize("Charge Rate", false),
+                "\n",
+                PLLocalize.Localize("Range", false),
+                "\n",
+                PLLocalize.Localize("Charges Per Fuel", false)
+                });
+            }
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLWarpDrive me = InComp as PLWarpDrive;
+                me.CalculatedMaxPowerUsage_Watts = 15000f;
+                return string.Concat(new string[]
+                {
+                (me.ChargeSpeed * me.LevelMultiplier(0.25f, 1f)).ToString("0"),
+                "\n",
+                "Galaxy",
+                "\n",
+                me.NumberOfChargingNodes.ToString("0")
+                });
+            }
+        }
+    }
+    class RecivePhase : PulsarModLoader.ModMessage
+    {
+        public override void HandleRPC(object[] arguments, PhotonMessageInfo sender)
+        {
+            if (PLEncounterManager.Instance.PlayerShip != null && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10)
+            {
+                Vector3 destiny = PLEncounterManager.Instance.PlayerShip.Exterior.transform.position + PLEncounterManager.Instance.PlayerShip.Exterior.transform.forward * 250;
+                if (!Physics.Linecast(PLEncounterManager.Instance.PlayerShip.Exterior.transform.position, destiny, 1))
+                {
+                    if (PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>() == null)
+                    {
+                        PLEncounterManager.Instance.PlayerShip.gameObject.AddComponent<Heart>();
+                    }
+                    Heart heart = PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>();
+                    if (PLEncounterManager.Instance.PlayerShip.MyHull == null || PLEncounterManager.Instance.PlayerShip.MyHull.Name != "Phase Driver Hull")
+                    {
+                        PLEncounterManager.Instance.PlayerShip.MyStats.TakeHullDamage(300, EDamageType.E_ARMOR_PIERCE_PHYS, null, null);
+                    }
+                    if(PLEncounterManager.Instance.PlayerShip.MyStats != null && PLEncounterManager.Instance.PlayerShip.MyReactor != null) 
+                    {
+                        PLEncounterManager.Instance.PlayerShip.MyStats.ReactorTempCurrent += PLEncounterManager.Instance.PlayerShip.MyStats.ReactorTempMax / 10;
+                    }
+                    if (PLEncounterManager.Instance.PlayerShip.MyStats != null && PLEncounterManager.Instance.PlayerShip.MyStats.HullCurrent > 0)
+                    {
+                        heart.StartCoroutine(heart.PhaseAway());
+                    }
+                    else if(PLEncounterManager.Instance.PlayerShip.MyStats.HullCurrent <= 0) 
+                    {
+                        PLEncounterManager.Instance.PlayerShip.DestroySelf(null);
+                    }
+                    Warp_Drive.PhaseDrive.LastPhase = Time.time;
+                }
+            }
+        }
+    }
     class Heart : MonoBehaviour
     {
         public static int destinyID = 0;
@@ -235,6 +315,141 @@ namespace Exotic_Components
                 ship.ShipInstance.MyHull.Current = ship.ShipInstance.MyStats.HullMax;
                 if (ship.ShipInstance.MyShieldGenerator != null) ship.ShipInstance.MyShieldGenerator.Current = ship.ShipInstance.MyStats.ShieldsMax;
             }
+            yield break;
+        }
+
+        public IEnumerator PhaseAway()
+        {
+            PLShipInfo ship = PLEncounterManager.Instance.PlayerShip;
+            if (ship != null)
+            {
+                Warp_Drive.PhaseDrive.Phasing = true;
+                float StartedPhasing = Time.time;
+                Instantiate(PLGlobal.Instance.PhasePS, ship.Exterior.transform.position, Quaternion.identity);
+                GameObject gameObject = Instantiate(PLGlobal.Instance.PhaseTrailPS, ship.Exterior.transform.position, Quaternion.identity);
+                if (gameObject != null)
+                {
+                    PLPhaseTrail component = gameObject.GetComponent<PLPhaseTrail>();
+                    if (component != null)
+                    {
+                        component.StartPos = ship.Exterior.transform.position;
+                        component.End = ship.Exterior.transform;
+                    }
+                }
+                foreach (PLShipInfoBase plshipInfoBase in PLEncounterManager.Instance.AllShips.Values)
+                {
+                    if (plshipInfoBase != null && plshipInfoBase.MySensorObjectShip != null)
+                    {
+                        PLSensorObjectCacheData plsensorObjectCacheData = plshipInfoBase.MySensorObjectShip.IsDetectedBy_CachedInfo(ship, true);
+                        if (plsensorObjectCacheData != null)
+                        {
+                            plsensorObjectCacheData.LastDetectedCheckTime = 0f;
+                            plsensorObjectCacheData.IsDetected = false;
+                        }
+                    }
+                }
+                StartCoroutine(DelayedEndPhasePS(ship));
+                List<MeshRenderer> exteriorRenderers = ship.ExteriorRenderers;
+                MeshRenderer[] hullplanting = ship.HullPlatingRenderers;
+                List<PLShipComponent> componentsOfType = ship.MyStats.GetComponentsOfType(ESlotType.E_COMP_TURRET, false);
+                componentsOfType.AddRange(ship.MyStats.GetComponentsOfType(ESlotType.E_COMP_MAINTURRET, false));
+                componentsOfType.AddRange(ship.MyStats.GetComponentsOfType(ESlotType.E_COMP_AUTO_TURRET, false));
+                ship.Exterior.transform.position = ship.Exterior.transform.position + ship.Exterior.transform.forward * 200;
+                PLMusic.PostEvent("play_sx_ship_enemy_phasedrone_warp", ship.Exterior);
+                while (Time.time - StartedPhasing < 1f)
+                {
+                    ship.MyStats.EMSignature = 0f;
+                    ship.MyStats.CanBeDetected = false;
+                    foreach (Renderer rend in exteriorRenderers)
+                    {
+                        if (rend != null)
+                        {
+                            rend.enabled = false;
+                        }
+                    }
+                    foreach (Renderer rend in hullplanting)
+                    {
+                        if (rend != null)
+                        {
+                            rend.enabled = false;
+                        }
+                    }
+                    foreach (PLShipComponent comp in componentsOfType)
+                    {
+                        PLTurret turret = comp as PLTurret;
+                        if (turret != null && turret.TurretInstance != null)
+                        {
+                            foreach (Renderer rend in turret.TurretInstance.MyMainRenderers)
+                            {
+                                rend.enabled = false;
+                            }
+                        }
+                    }
+                    if(ship is PLFluffyShipInfo || ship is PLFluffyShipInfo2) 
+                    {
+                        if((ship as PLFluffyShipInfo).MyVisibleBomb != null) 
+                        {
+                            (ship as PLFluffyShipInfo).MyVisibleBomb.gameObject.SetActive(false);
+                        }
+                    }
+                    ship.MyStats.ThrustOutputCurrent = 0f;
+                    ship.MyStats.ManeuverThrustOutputCurrent = 0f;
+                    ship.MyStats.InertiaThrustOutputCurrent = 0f;
+                    if (ship.ExteriorMeshCollider != null)
+                    {
+                        ship.ExteriorMeshCollider.enabled = false;
+                    }
+                    yield return new WaitForEndOfFrame();
+                }
+                Warp_Drive.PhaseDrive.Phasing = false;
+                foreach (Renderer rend in exteriorRenderers)
+                {
+                    if (rend != null)
+                    {
+                        rend.enabled = true;
+                    }
+                }
+                foreach (Renderer rend in hullplanting)
+                {
+                    if (rend != null)
+                    {
+                        rend.enabled = true;
+                    }
+                }
+                componentsOfType = ship.MyStats.GetComponentsOfType(ESlotType.E_COMP_TURRET, false);
+                componentsOfType.AddRange(ship.MyStats.GetComponentsOfType(ESlotType.E_COMP_MAINTURRET, false));
+                componentsOfType.AddRange(ship.MyStats.GetComponentsOfType(ESlotType.E_COMP_AUTO_TURRET, false));
+                foreach (PLShipComponent comp in componentsOfType)
+                {
+                    PLTurret turret = comp as PLTurret;
+                    if (turret != null && turret.TurretInstance != null)
+                    {
+                        foreach (Renderer rend in turret.TurretInstance.MyMainRenderers)
+                        {
+                            rend.enabled = true;
+                        }
+                    }
+                }
+                if (ship is PLFluffyShipInfo || ship is PLFluffyShipInfo2)
+                {
+                    if ((ship as PLFluffyShipInfo).MyVisibleBomb != null)
+                    {
+                        (ship as PLFluffyShipInfo).MyVisibleBomb.gameObject.SetActive(true);
+                    }
+                }
+                if (ship.ExteriorMeshCollider != null)
+                {
+                    ship.ExteriorMeshCollider.enabled = true;
+                }
+                ship.MyStats.CanBeDetected = true;
+                PLMusic.PostEvent("stop_sx_ship_enemy_phasedrone_warp", ship.Exterior);
+            }
+            yield break;
+        }
+        private IEnumerator DelayedEndPhasePS(PLShipInfo ship)
+        {
+            yield return new WaitForSeconds(1f);
+            Instantiate(PLGlobal.Instance.PhasePS, ship.Exterior.transform.position, Quaternion.identity);
             yield break;
         }
     }
@@ -469,6 +684,51 @@ namespace Exotic_Components
                 __instance.NextWaypointSector.transform.LookAt(PLCameraSystem.Instance.CurrentSubSystem.MainCameras[0].transform);
                 sectorUIElementForSector.Image.color = sectorUIElementForSector.Label.color;
                 PLGlobal.SafeLabelSetText(sectorUIElementForSector.Label, plsectorInfo4.Name);
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(PLShipInfoBase), "HasPilotAbilityToDisplay")]
+    class ShouldShowAbility
+    {
+        static void Postfix(PLShipInfoBase __instance, ref bool __result)
+        {
+            if (__instance.MyWarpDrive != null && __instance.MyWarpDrive.Name == "The Phase Drive" && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10f)
+            {
+                __result = true;
+            }
+        }
+    }
+    [HarmonyPatch(typeof(PLOldWarsShip_Sylvassi), "HasPilotAbilityToDisplay")]
+    class ShouldShowAbilitySwordShip
+    {
+        static void Postfix(PLOldWarsShip_Sylvassi __instance, ref bool __result)
+        {
+            if (__instance.MyWarpDrive != null && __instance.MyWarpDrive.Name == "The Phase Drive" && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10f)
+            {
+                __result = true;
+            }
+        }
+    }
+    [HarmonyPatch(typeof(PLShipInfoBase), "GetPilotAbilityText")]
+    class AbilityName
+    {
+        static void Postfix(PLShipInfoBase __instance, ref string __result)
+        {
+            if (__instance.MyWarpDrive != null && __instance.MyWarpDrive.Name == "The Phase Drive" && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10f && (!(__instance is PLOldWarsShip_Sylvassi) || (__instance is PLOldWarsShip_Sylvassi && (__instance as PLOldWarsShip_Sylvassi).SlicerFiredInThisSector)))
+            {
+                __result = "Phase Drive";
+            }
+        }
+    }
+    [HarmonyPatch(typeof(PLOldWarsShip_Sylvassi), "GetPilotAbilityText")]
+    class AbilityNameSwordShip
+    {
+        static void Postfix(PLOldWarsShip_Sylvassi __instance, ref string __result)
+        {
+            if (__instance.MyWarpDrive != null && __instance.MyWarpDrive.Name == "The Phase Drive" && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10f && __instance.SlicerFiredInThisSector)
+            {
+                __result = "Phase Drive";
             }
         }
     }

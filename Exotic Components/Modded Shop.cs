@@ -135,6 +135,29 @@ namespace Exotic_Components
             plsectorInfo3.Name = "The Core(MOD)";
         }
     }
+    [HarmonyPatch(typeof(PLTraderInfo),"Update")]
+    class KeepStock 
+    {
+        static bool reseted = false;
+        static float lastReset = Time.time;
+        static void Postfix(PLTraderInfo __instance) 
+        {
+            if(PLEncounterManager.Instance.PlayerShip != null && PLServer.GetCurrentSector() != null && PLServer.GetCurrentSector().Name == "The Core(MOD)" && __instance is PLShop_General) 
+            {
+                if (PLEncounterManager.Instance.PlayerShip.InWarp) 
+                {
+                    reseted = false;
+                }
+                else if (!reseted) 
+                {
+                    __instance.MyPDE = new TraderPersistantDataEntry();
+                    __instance.CreateInitialWares(__instance.MyPDE);
+                    reseted = true;
+                    lastReset = Time.time;
+                }
+            }
+        }
+    }
     [HarmonyPatch(typeof(PLShop_General), "CreateInitialWares")]
     class InitialStore
     {

@@ -150,6 +150,7 @@ namespace Exotic_Components
                 }
                 else if (!reseted)
                 {
+                    InitialStore.UpdateCore();
                     __instance.MyPDE = new TraderPersistantDataEntry();
                     __instance.CreateInitialWares(__instance.MyPDE);
                     reseted = true;
@@ -323,7 +324,6 @@ namespace Exotic_Components
                         inPDE.ServerWareIDCounter++;
                     }
                 }
-                UpdateCore();
             }
         }
         public static void UpdateCore()
@@ -509,63 +509,53 @@ namespace Exotic_Components
         }
         private void WhyMoveHere(bool authority, bool local)
         {
-            if (local)
-            {
-                currentText = "Why did I move here? I guess it was the weather, I hearded Karattis has a good weather or something like that. Also I did cross almost all galaxies on the known universe serching for some components for my fine collection and I heard about these Infected" +
-                    " that were spreading through your sectors and thought maybe there is something useful coming from them, and I wasn't wrong! I got this cool infected turret. And with the intergalatic warp network disabled I am now stuck here (maybe I should have bought that ultimate explorer MK3)";
-            }
+            currentText = "Why did I move here? I guess it was the weather, I hearded Karattis has a good weather or something like that. Also I did cross almost all galaxies on the known universe serching for some components for my fine collection and I heard about these Infected" +
+                " that were spreading through your sectors and thought maybe there is something useful coming from them, and I wasn't wrong! I got this cool infected turret. And with the intergalatic warp network disabled I am now stuck here (maybe I should have bought that ultimate explorer MK3)";
+
         }
         private void HowGotThing(bool authority, bool local)
         {
-            if (local)
-            {
-                currentText = "My components? I found them during the years talking with exotic dealers from multiple galaxies, still didn't have time to buy from the dealers from this galaxy, I have heard about this ThermoCore and the Corbin's Wall, maybe I will buy them before the intergalatic warp network is activated again. If you bring them I will buy... And that's it. " +
+            currentText = "My components? I found them during the years talking with exotic dealers from multiple galaxies, still didn't have time to buy from the dealers from this galaxy, I have heard about this ThermoCore and the Corbin's Wall, maybe I will buy them before the intergalatic warp network is activated again. If you bring them I will buy... And that's it. " +
                     "If you think I don't sell enough components, maybe visit me in another timeline, at least that is what Skarg said.";
-            }
+
         }
         private void WhyCore(bool authority, bool local)
         {
-            if (local)
+            currentText = "Why the Core? I came here to the center of the galaxy mostly to avoid the C.U actually. Even if the outpost is not far, my low EM is hidden in the galaxy's core (still not sure how you found me here). ";
+            if (PLServer.Instance.CrewFactionID == 0)
             {
-                currentText = "Why the Core? I came here to the center of the galaxy mostly to avoid the C.U actually. Even if the outpost is not far, my low EM is hidden in the galaxy's core (still not sure how you found me here). ";
-                if (PLServer.Instance.CrewFactionID == 0)
-                {
-                    currentText += "And I know you guys are a C.U crew, but I have a felling you won't report me. ";
-                }
-                currentText += "Anyway, talking about hiding, I heard the Estate is actually in this galaxy, apperently with the warp drive malfunctioning or something.";
-                if (!soldIntergalatic) currentText += " But they could be my ticket to getting out of here, just need to find them first. If you find the schematics for a flagship drive, you could bring it to me, I would pay good for it *laughs*";
-                else
-                {
-                    currentText += " But since you got me the schematics somehow, I will be building my own intergalatic warpdrive soon to get out of this galaxy";
-                }
+                currentText += "And I know you guys are a C.U crew, but I have a felling you won't report me. ";
             }
+            currentText += "Anyway, talking about hiding, I heard the Estate is actually in this galaxy, apperently with the warp drive malfunctioning or something.";
+            if (!soldIntergalatic) currentText += " But they could be my ticket to getting out of here, just need to find them first. If you find the schematics for a flagship drive, you could bring it to me, I would pay good for it *laughs*";
+            else
+            {
+                currentText += " But since you got me the schematics somehow, I will be building my own intergalatic warpdrive soon to get out of this galaxy";
+            }
+
         }
         private void WhyStore(bool authority, bool local)
         {
-            if (local)
-            {
-                currentText = "The general shop? I don't sell exotic items here, only components. That robot that came with is just Davey, he probably will sell you things normally found around. And don't worry he is not a slave, I pay him.... with energy. If you want some food the biscuit shop came with.";
-            }
+            currentText = "The general shop? I don't sell exotic items here, only components. That robot that came with is just Davey, he probably will sell you things normally found around. And don't worry he is not a slave, I pay him.... with energy. If you want some food the biscuit shop came with.";
+
         }
         private void Colony(bool authority, bool local)
         {
-            if (local)
-            {
-                currentText = "The Lost Colony? I didn't recive anything due to the Core interference....\nOh, some kind of hidden treasure and big power that could change the course of history forever? I am no treasure hunter, whatever is there, if it is something interesting I might buy it later. This galaxy of yours" +
-                    " has a lot of random shit happening, at this point I wouldn't be surprised if some alien robot army was trying to kill us all.";
-            }
+
+            currentText = "The Lost Colony? I didn't recive anything due to the Core interference....\nOh, some kind of hidden treasure and big power that could change the course of history forever? I am no treasure hunter, whatever is there, if it is something interesting I might buy it later. This galaxy of yours" +
+                " has a lot of random shit happening, at this point I wouldn't be surprised if some alien robot army was trying to kill us all.";
+
         }
         private void BackToBuy(bool authority, bool local)
         {
-            if (local)
-            {
-                m_AllChoices.Clear();
-                currentText = defaultText;
-                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Browse Goods", false), new PLHailChoiceDelegate(this.OnSelectBrowseGoods)));
-                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Install Ship Components", false), new PLHailChoiceDelegate(this.OnSelectInstallComp)));
-                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Tell me more about you", new PLHailChoiceDelegate(this.OnTalkWith)));
-                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Missions", new PLHailChoiceDelegate(this.Mission)));
-            }
+
+            m_AllChoices.Clear();
+            currentText = defaultText;
+            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Browse Goods", false), new PLHailChoiceDelegate(this.OnSelectBrowseGoods)));
+            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Install Ship Components", false), new PLHailChoiceDelegate(this.OnSelectInstallComp)));
+            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Tell me more about you", new PLHailChoiceDelegate(this.OnTalkWith)));
+            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Missions", new PLHailChoiceDelegate(this.Mission)));
+
         }
         public override string GetName()
         {

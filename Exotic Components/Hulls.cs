@@ -91,7 +91,7 @@ namespace Exotic_Components
         {
             public override string Name => "Flagship Hull";
 
-            public override string Description => "Also planed to be used in a third flagship, this hull is virtually indestructible, but not impenetrable. Once you pay me a fortune to install it you won't explode, but be carefull with the infected.";
+            public override string Description => "Originally planned to be used in a third flagship, this hull is virtually indestructible, but not impenetrable. Once you pay me a fortune to install it you won't explode, but be carefull with the infected.";
 
             public override int MarketPrice => 1700000;
 
@@ -137,7 +137,7 @@ namespace Exotic_Components
         {
             public override string Name => "Anti-Infected Hull";
 
-            public override string Description => "This resistent hull was designed to be resistent to the infected acid, allowing it to handle any infected sector.";
+            public override string Description => "This resistant hull was designed to be resistent to the infected acid, allowing it to handle any infected sector.";
 
             public override int MarketPrice => 19000;
 
@@ -175,7 +175,7 @@ namespace Exotic_Components
         }
         class PhaseDriverHull : HullMod 
         {
-            public override string Name => "Phase Driver Hull";
+            public override string Name => "The Phase Driver Hull";
 
             public override string Description => "This special hull has quite a bit of resistence, designed to survive multiple short range warp with no damage. But it doesn't survive imploding by warping in a wall, so hope that safety system works in the warp drive.";
 

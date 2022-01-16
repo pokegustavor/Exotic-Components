@@ -69,9 +69,9 @@ namespace Exotic_Components
         }
         class FlagShipShield : ShieldMod
         {
-            public override string Name => "Flagship shield";
+            public override string Name => "Flagship Shield";
 
-            public override string Description => "This is the best shield ever made, planed for the third flagship, it will hold its own for a long time, while also keeping intruders away because of the size flagships have. Hope you have the money and the power for this.";
+            public override string Description => "This is the best shield ever made, planned for the third flagship, it will hold its own for a long time, while also keeping intruders away because of the size flagships have. Hope you have the money and the power for this.";
 
             public override int MarketPrice => 1400000;
 

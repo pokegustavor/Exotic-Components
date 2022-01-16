@@ -82,7 +82,7 @@ namespace Exotic_Components
         {
             public override string Name => "Self Destruction [VIRUS]";
 
-            public override string Description => "If this virus is not removed in 30 seconds, the ship will selfdestruct";
+            public override string Description => "If this virus is not removed in 30 seconds, the ship will self-destruct";
 
             public override int MarketPrice => 45000;
 
@@ -104,7 +104,7 @@ namespace Exotic_Components
         {
             public override string Name => "Friendly Charm [VIRUS]";
 
-            public override string Description => "This virus makes so infected drones see you as friendly for 30 seconds.";
+            public override string Description => "This virus makes it so infected drones see you as friendly for 30 seconds.";
 
             public override int MarketPrice => 35000;
 
@@ -153,7 +153,7 @@ namespace Exotic_Components
         {
             public override string Name => "Friendly Charm";
 
-            public override string Description => "This virus makes so infected drones see you as friendly for 30 seconds.";
+            public override string Description => "This virus makes it so infected drones see you as friendly for 30 seconds.";
 
             public override int InfectionTimeLimitMs => 30000;
         }

@@ -150,7 +150,7 @@ namespace Exotic_Components
         public InfectedTurret(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
         {
             this.Name = "Infected Turret";
-            this.Desc = "A dangerous and questionable experiment at using the infected as weapons. Just be carreful with possible subjects escaping the ammo sile";
+            this.Desc = "A dangerous and questionable experiment at using the infected as weapons. Just be careful of possible specimens escaping the ammo silo";
             this.m_Damage = 250f;
             base.SubType = TurretModManager.Instance.GetTurretIDFromName("Infected Turret");
             this.m_MarketPrice = 21000;

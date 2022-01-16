@@ -124,7 +124,7 @@ namespace Exotic_Components
         {
             public override string Name => "The Recharger";
 
-            public override string Description => "This special warp drive was made with focus on charges per fuel, allowing it to charge all programs at the same time. It has come with the cost of low charge rate and higer EM signature and \"decent\" range";
+            public override string Description => "This special warp drive was made with focus on charges per fuel, allowing it to charge all programs at the same time. It has come with the cost of low charge rate and higher EM signature and \"decent\" range";
 
             public override int MarketPrice => 15000;
 
@@ -170,7 +170,7 @@ namespace Exotic_Components
             public static bool Phasing = false;
             public override string Name => "The Phase Drive";
 
-            public override string Description => "A powerfull warpdrive that charges so fast that it allows the pilot to make shot range jumps. I would just recommend you to get a \"Phase Driver Hull\", so your ship doesn't get damaged in the process. It comes with a safety system so your ship doesn't implode by warping in a wall.";
+            public override string Description => "A powerful warpdrive that charges so fast that it allows the pilot to make short range jumps. I would just recommend you to get a \"The Phase Driver Hull\", so your ship doesn't get damaged in the process. It comes with a safety system so your ship doesn't implode by warping in a wall.";
 
             public override int MarketPrice => 20000;
 
@@ -225,7 +225,7 @@ namespace Exotic_Components
                         PLEncounterManager.Instance.PlayerShip.gameObject.AddComponent<Heart>();
                     }
                     Heart heart = PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>();
-                    if (PLEncounterManager.Instance.PlayerShip.MyHull == null || PLEncounterManager.Instance.PlayerShip.MyHull.Name != "Phase Driver Hull")
+                    if (PLEncounterManager.Instance.PlayerShip.MyHull == null || PLEncounterManager.Instance.PlayerShip.MyHull.Name != "The Phase Driver Hull")
                     {
                         PLEncounterManager.Instance.PlayerShip.MyStats.TakeHullDamage(300, EDamageType.E_ARMOR_PIERCE_PHYS, null, null);
                     }
@@ -259,14 +259,7 @@ namespace Exotic_Components
             foreach (PLSectorInfo sector in PLGlobal.Instance.Galaxy.AllSectorInfos.Values)
             {
                 if (sector == current || sector == destiny) continue;
-                /*
-				if (sector.Position.x > Mathf.Min(current.Position.x, destiny.Position.x) && sector.Position.x < Mathf.Max(current.Position.x, destiny.Position.x) && sector.Position.y > Mathf.Min(current.Position.y, destiny.Position.y) && sector.Position.x < Mathf.Max(current.Position.y, destiny.Position.y))
-				{
-					possibleSectors.Add(sector);
-				}
-				*/
                 float D = Math.Abs(A * sector.Position.x + B * sector.Position.y + C) / (float)Math.Sqrt(A * A + B * B);
-                PulsarModLoader.Utilities.Logger.Info(sector.ID + " result: " + D);
                 if (D < 0.005f && sector.Position.x > Mathf.Min(current.Position.x, destiny.Position.x) && sector.Position.x < Mathf.Max(current.Position.x, destiny.Position.x) && sector.Position.y > Mathf.Min(current.Position.y, destiny.Position.y) && sector.Position.x < Mathf.Max(current.Position.y, destiny.Position.y))
                 {
                     possibleSectors.Add(sector);

@@ -677,7 +677,7 @@ namespace Exotic_Components
         public AutoSentryTurret(int inLevel = 0, int inSubTypeData = 0) : base(inLevel, inSubTypeData)
         {
             this.Name = "Auto Ancient Laser Turret";
-            this.Desc = "This turret was recovered from a ancient sentry... and I decided to transform in an auto turret... yeah, just remember that it breaks some laws of physics, so if reality starts to colapse... RUN!";
+            this.Desc = "This turret was recovered from an ancient sentry... and I decided to transform into an auto turret... yeah, just remember that it breaks some laws of physics, so if reality starts to collapse... RUN!";
             this.m_Damage = 190f;
             this.m_MarketPrice = 500000;
             this.FireDelay = 5f;

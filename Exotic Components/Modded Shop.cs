@@ -52,9 +52,9 @@ namespace Exotic_Components
                         "MSN"
                     });
                     */
-                    foreach(PLMissionBase mission in PLServer.Instance.AllMissions) 
+                    foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
                     {
-                        if(mission != null && mission.MissionTypeID == 700 && !mission.Ended) 
+                        if (mission != null && mission.MissionTypeID == 700 && !mission.Ended)
                         {
                             mission.Objectives[2].IsCompleted = true;
                         }
@@ -135,20 +135,20 @@ namespace Exotic_Components
             plsectorInfo3.Name = "The Core(MOD)";
         }
     }
-    [HarmonyPatch(typeof(PLTraderInfo),"Update")]
-    class KeepStock 
+    [HarmonyPatch(typeof(PLTraderInfo), "Update")]
+    class KeepStock
     {
         static bool reseted = false;
         static float lastReset = Time.time;
-        static void Postfix(PLTraderInfo __instance) 
+        static void Postfix(PLTraderInfo __instance)
         {
-            if(PLEncounterManager.Instance.PlayerShip != null && PLServer.GetCurrentSector() != null && PLServer.GetCurrentSector().Name == "The Core(MOD)" && __instance is PLShop_General) 
+            if (PLEncounterManager.Instance.PlayerShip != null && PLServer.GetCurrentSector() != null && PLServer.GetCurrentSector().Name == "The Core(MOD)" && __instance is PLShop_General)
             {
-                if (PLEncounterManager.Instance.PlayerShip.InWarp) 
+                if (PLEncounterManager.Instance.PlayerShip.InWarp)
                 {
                     reseted = false;
                 }
-                else if (!reseted) 
+                else if (!reseted)
                 {
                     __instance.MyPDE = new TraderPersistantDataEntry();
                     __instance.CreateInitialWares(__instance.MyPDE);
@@ -409,88 +409,74 @@ namespace Exotic_Components
         }
         private void Mission(bool authority, bool local)
         {
-            if (local)
+            missionID = -1;
+            m_AllChoices.Clear();
+            currentText = "\n\nWant some money? I guess I have some jobs for you.";
+            if (!PLServer.Instance.HasMissionWithID(700))
             {
-                missionID = -1;
-                m_AllChoices.Clear();
-                currentText = "\n\nWant some money? I guess I have some jobs for you.";
-                if (!PLServer.Instance.HasMissionWithID(700))
-                {
-                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Recover a jump processor", new PLHailChoiceDelegate(this.RetriveCPU)));
-                }
-                if (!PLServer.Instance.HasMissionWithID(701))
-                {
-                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Kill a thief", new PLHailChoiceDelegate(this.KillThief)));
-                }
-                if (!PLServer.Instance.HasMissionWithID(702))
-                {
-                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Protect my judge", new PLHailChoiceDelegate(this.ProtectJudge)));
-                }
-                if (!PLServer.Instance.HasMissionWithID(703))
-                {
-                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Protect Biscuit Delivery", new PLHailChoiceDelegate(this.DeliverBiscuit)));
-                }
-                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Nevermind, just want to go back to buying", new PLHailChoiceDelegate(this.BackToBuy)));
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Recover a jump processor", new PLHailChoiceDelegate(this.RetriveCPU)));
             }
+            if (!PLServer.Instance.HasMissionWithID(701))
+            {
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Kill a thief", new PLHailChoiceDelegate(this.KillThief)));
+            }
+            if (!PLServer.Instance.HasMissionWithID(702))
+            {
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Protect my judge", new PLHailChoiceDelegate(this.ProtectJudge)));
+            }
+            if (!PLServer.Instance.HasMissionWithID(703))
+            {
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Protect Biscuit Delivery", new PLHailChoiceDelegate(this.DeliverBiscuit)));
+            }
+            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Nevermind, just want to go back to buying", new PLHailChoiceDelegate(this.BackToBuy)));
         }
         private void RetriveCPU(bool authority, bool local)
         {
-            if (local)
-            {
-                missionID = 700;
-                m_AllChoices.Clear();
-                currentText += "\n\nThis is a very simple job. A crew was supposed to bring me a special jump processor core for a... project. But I lost communication with them while they were in a black hole sector. I don't know if they are alive, but what I know is the ship probably won't survive for much time, so hurry with collecting the processor core. As a reward I will give you a special processor of mine.";
-                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
-                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
-            }
+            missionID = 700;
+            m_AllChoices.Clear();
+            currentText += "\n\nThis is a very simple job. A crew was supposed to bring me a special jump processor core for a... project. But I lost communication with them while they were in a black hole sector. I don't know if they are alive, but what I know is the ship probably won't survive for much time, so hurry with collecting the processor core. As a reward I will give you a special processor of mine.";
+            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
+            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
         }
         private void KillThief(bool authority, bool local)
         {
-            if (local)
-            {
-                missionID = 701;
-                m_AllChoices.Clear();
-                currentText += "\n\nThere is this crew who dared to steal some of my components, and now think they are the most powerful crew in the galaxy. Show them wrong by killing them. I will pay you a good amount of money, and you can keep any component that survives the destruction of their ship. I also heared that they modified the anti-shield turret and the machine gun they stole from me.";
-                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
-                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
-            }
+            missionID = 701;
+            m_AllChoices.Clear();
+            currentText += "\n\nThere is this crew who dared to steal some of my components, and now think they are the most powerful crew in the galaxy. Show them wrong by killing them. I will pay you a good amount of money, and you can keep any component that survives the destruction of their ship. I also heared that they modified the anti-shield turret and the machine gun they stole from me.";
+            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
+            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
+
         }
 
         private void ProtectJudge(bool authority, bool local)
         {
-            if (local)
-            {
-                missionID = 702;
-                m_AllChoices.Clear();
-                currentText += "\n\nI am not a political guy, but you may remember my condition with the C.U. goverment is not the best one, but I found this matthew judge that maybe can make things a lot easier to me. Only problem is he has enemies, and I got a quick SOS before the assassins were able to block long range comms, they are not far away, so I need you to quickly go there and protect him. I will give you some money and a special par of turrets (it would all be easier if he got that witness protection).";
-                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
-                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
-            }
+            missionID = 702;
+            m_AllChoices.Clear();
+            currentText += "\n\nI am not a political guy, but you may remember that my relations with the C.U. goverment is not the best one, but I found this Matthew judge that maybe can make things a lot easier to me. Only problem is he has enemies, and I got a quick SOS before the assassins were able to block long range comms, they are not far away, so I need you to quickly go there and protect him. I will give you some money and a special pair of turrets (it would all be easier if he got that witness protection).";
+            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
+            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
+
         }
 
         private void DeliverBiscuit(bool authority, bool local)
         {
-            if (local)
+            missionID = 703;
+            m_AllChoices.Clear();
+            currentText += "\n\nI am a really big fan of the Fluffy Biscuits, mostly the funky biscuit. Sadly with the intergalatic warp network deactivated, the number of funky biscuits has being falling really fast, but I got notice of a ship currently near some kind of ancient warpgate and they have a lot of funky recipes. They are, however, being hunted, so please make sure they arrive in the Fluffy Factory 1, and I will pay you a good amount of cash.";
+            if (PLServer.Instance.m_ActiveBountyHunter_TypeID < 0)
             {
-                missionID = 703;
-                m_AllChoices.Clear();
-                currentText += "\n\nI am a really big fan of the Fluffy Biscuits, mostly the funky biscuit. Saddly with the intergalatic warpnetwork deactivated, the number of funky biscuits has being falling really fast, but I got notice of a ship currently near some kind of ancient warpgate and they have a lot of funky recipes. They are, however, being hunted, so please make sure they arrive in the fluffy factory 1, and I will pay you a good amount of cash.";
-                if (PLServer.Instance.m_ActiveBountyHunter_TypeID < 0)
-                {
-                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
-                }
-                else 
-                {
-                    currentText += "I just noted that you guys have a bounty hunter after you, please kill them before starting this mission!";
-                }
-                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
             }
+            else
+            {
+                currentText += "I just noted that you guys have a bounty hunter after you, please kill them before starting this mission!";
+            }
+            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
         }
         private void AcceptMission(bool authority, bool local)
         {
             if (local)
             {
-
                 switch (missionID)
                 {
                     case 700:

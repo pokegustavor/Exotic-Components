@@ -300,7 +300,7 @@ namespace Exotic_Components
             {
                 PickupMissionData missionData = new PickupMissionData
                 {
-                    Desc = "I need this jude alive to try freeing my \"Complicated situation\", if you kill those assassins so the judge lives, I will give you a exclusive pair of turrets and some money.",
+                    Desc = "I need this judge alive to get out of my \"complicated situation\", if you kill those assassins so the judge lives, I will give you a exclusive pair of turrets and some money.",
                     Name = "Protect the Judge",
                     CanBeAbandonedByPlayers = true,
                     MissionID = 702,
@@ -341,7 +341,7 @@ namespace Exotic_Components
                     ObjType = 0,
                     Data = new Dictionary<string, string>
                     {
-                        {"CustomText","Keep the Judge Alive"},
+                        {"CustomText","Keep the Judge alive"},
                     },
                 },
                 new ObjectiveData
@@ -478,7 +478,7 @@ namespace Exotic_Components
             {
                 PickupMissionData missionData = new PickupMissionData
                 {
-                    Desc = "I heared that since the intergalatic warpnetwork was deactivated, my precious funky biscuits are not as avaliable as I wish they were, but I heared this ship is delivering more recipe modules to the factory, keep them alive!",
+                    Desc = "I heard that since the intergalatic warp network was deactivated, my precious funky biscuits are not as available as I wish they were, but I heard this ship is delivering more recipe modules to the factory. Keep them alive!",
                     Name = "Protect Delivery Ship",
                     CanBeAbandonedByPlayers = true,
                     MissionID = 703,
@@ -505,7 +505,7 @@ namespace Exotic_Components
                     ObjType = 0,
                     Data = new Dictionary<string, string>
                     {
-                        {"CustomText","Keep Fluffy Ship Alive"},
+                        {"CustomText","Keep Fluffy ship alive"},
                     },
                 },
                 new ObjectiveData

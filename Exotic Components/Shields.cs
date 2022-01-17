@@ -104,7 +104,7 @@ namespace Exotic_Components
 
             public override float ShieldMax => 340f;
 
-            public override float ChargeRateMax => 340f;
+            public override float ChargeRateMax => 300f;
 
             public override float RecoveryRate => 13f;
 
@@ -119,6 +119,7 @@ namespace Exotic_Components
                 PLShieldGenerator me = InComp as PLShieldGenerator;
                 me.IsPowerActive = true;
                 me.RequestPowerUsage_Percent = 1f;
+                me.CalculatedMaxPowerUsage_Watts = 8000f * me.LevelMultiplier(0.2f, 1f);
                 me.ChargeRateCurrent = me.ChargeRateMax * me.LevelMultiplier(0.5f, 1f) * (me.GetPowerPercentInput() - 0.5f) * 2;
                 if ((me.Current - me.ShipStats.ShieldsChargeRate * Time.deltaTime <= 0 && me.ChargeRateCurrent < 0) || (me.Current >= me.CurrentMax && me.ChargeRateCurrent > 0)) me.ShipStats.ShieldsChargeRate = 0f;
                 if (me.Current < 0) me.Current = 0f;

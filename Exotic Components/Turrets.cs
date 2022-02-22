@@ -221,7 +221,7 @@ namespace Exotic_Components
         public RespectedNullifierGun(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
         {
             this.Name = "Respected Nullifier Gun";
-            this.Desc = "A more powerful laser turret that has some kind of portal to another universe (or something like that) and has a chance to insta-kill the enemy. You have no conception of how rare that is! IT IS MILLIONS TO ONE!";
+            this.Desc = "A more powerful laser turret that has some kind of portal to another universe (or something like that) and every shot will have a random damage between half and double the base damage, also it has a chance to insta-kill the enemy. You have no conception of how rare that is! IT IS MILLIONS TO ONE!";
             this.m_Damage = 65f;
             this.FireDelay = 5f;
             base.SubType = TurretModManager.Instance.GetTurretIDFromName("Respected Nullifier Gun");
@@ -249,6 +249,7 @@ namespace Exotic_Components
         {
             float original = this.m_Damage;
             if (Random.Range(1, 1000000) == 69420) this.m_Damage = 1000000;
+            else this.m_Damage *= Random.Range(0.5f, 2f);
             base.Tick();
             m_Damage = original;
         }

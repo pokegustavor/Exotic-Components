@@ -387,7 +387,7 @@ namespace Exotic_Components
                             PLMatrixPoint component = raycastHit.collider.GetComponent<PLMatrixPoint>();
                             if (component != null && component.IsActiveAndBlocking())
                             {
-                                component.OnHit();
+                                component.OnHit(this.ShipStats.Ship);
                             }
                         }
                         PLSpaceTarget plspaceTarget = null;

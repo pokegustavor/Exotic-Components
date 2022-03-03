@@ -625,6 +625,7 @@ namespace Exotic_Components
 		{
 			if (base.ShipStats.Ship.GetCurrentTurretControllerPlayerID(this.TurretID) != -1)
 			{
+				/*
 				PulsarModLoader.Utilities.Messaging.Notification("Damage before math: " + this.m_Damage,PLNetworkManager.Instance.LocalPlayer,default,20000,default);
 				PulsarModLoader.Utilities.Messaging.Notification("Reactor maxt temp: " + (0.01f * this.ShipStats.ReactorTempMax), PLNetworkManager.Instance.LocalPlayer, default, 20000, default);
 				PulsarModLoader.Utilities.Messaging.Notification("Reactor maxt power: " + (0.001f * this.ShipStats.ReactorTotalOutput), PLNetworkManager.Instance.LocalPlayer, default, 20000, default);
@@ -637,7 +638,7 @@ namespace Exotic_Components
 				PulsarModLoader.Utilities.Logger.Info("Reactor current instability: " + (this.ShipStats.Ship.CoreInstability));
 				PulsarModLoader.Utilities.Logger.Info("Reactor initial instability: " + (this.initialInstability));
 				PulsarModLoader.Utilities.Logger.Info("Damage multiplication: " + ((0.01f * this.ShipStats.ReactorTempMax + 0.001f * this.ShipStats.ReactorTotalOutput) / (((1 - this.initialInstability) - (1 - this.ShipStats.Ship.CoreInstability)))));
-
+				*/
 			}
 			this.m_Damage = this.m_Damage * ((0.01f * this.ShipStats.ReactorTempMax + 0.001f * this.ShipStats.ReactorTotalOutput) / (((1 - this.initialInstability) - (1 - this.ShipStats.Ship.CoreInstability))));
 			this.LastFireTime = Time.time;
@@ -689,10 +690,11 @@ namespace Exotic_Components
 					}
 					if (pldamageableSpaceObject_Collider != null)
 					{
-						pldamageableSpaceObject_Collider.MyDSO.TakeDamage_Location(this.GetDamageDoneWithTiming(this.m_VisibleChargeLevel, flag), hitInfo.point, hitInfo.normal);
+						pldamageableSpaceObject_Collider.MyDSO.TakeDamage_Location(this.m_Damage, hitInfo.point, hitInfo.normal);
 					}
 					else if (plproximityMine != null)
 					{
+						PulsarModLoader.Utilities.Messaging.Notification("Mine hit!");
 						PLServer.Instance.photonView.RPC("ProximityMineExplode", PhotonTargets.All, new object[]
 						{
 						plproximityMine.EncounterNetID
@@ -700,9 +702,10 @@ namespace Exotic_Components
 					}
 					else if (plshipInfoBase != null)
 					{
+						PulsarModLoader.Utilities.Messaging.Notification("Ship hit!");
 						if (plshipInfoBase != base.ShipStats.Ship)
 						{
-							base.ShipStats.Ship.StartCoroutine(this.DelayedMegaTurretDamage(plshipInfoBase, flag, hitInfo, this.m_VisibleChargeLevel));
+							base.ShipStats.Ship.StartCoroutine(this.DelayedMegaTurretDamage(plshipInfoBase, flag, hitInfo, this.m_VisibleChargeLevel,this.m_Damage));
 							PLServer.Instance.photonView.RPC("MegaTurretExplosion", PhotonTargets.Others, new object[]
 							{
 							hitInfo.point,
@@ -717,7 +720,7 @@ namespace Exotic_Components
 						PLProjectile component = hitInfo.collider.gameObject.GetComponent<PLProjectile>();
 						if (component != null && component.LaserCanCauseExplosion && component.OwnerShipID != -1 && component.OwnerShipID != base.ShipStats.Ship.ShipID)
 						{
-							component.TakeDamage(this.GetDamageDoneWithTiming(this.m_VisibleChargeLevel, flag), hitInfo.point, hitInfo.normal, playerFromPlayerID);
+							component.TakeDamage(this.m_Damage, hitInfo.point, hitInfo.normal, playerFromPlayerID);
 							flag2 = true;
 						}
 					}
@@ -725,7 +728,7 @@ namespace Exotic_Components
 					{
 						plspaceTarget.photonView.RPC("NetTakeDamage", PhotonTargets.All, new object[]
 						{
-						this.GetDamageDoneWithTiming(this.m_VisibleChargeLevel, flag)
+						m_Damage
 						});
 						PLServer.Instance.photonView.RPC("MegaTurretExplosion", PhotonTargets.Others, new object[]
 						{
@@ -770,9 +773,9 @@ namespace Exotic_Components
 					{
 						timeDiff = UnityEngine.Random.Range(0.01f, 0.1f);
 					}
-					float num3 = (150f + this.GetDmgPercentBasedOnTiming(timeDiff) * (this.m_Damage - 150f)) * base.LevelMultiplier(0.15f, 1f) * base.ShipStats.TurretDamageFactor;
+					float num3 = (150f + this.m_Damage * base.ShipStats.TurretDamageFactor);
 					num3 *= (float)num * 0.25f;
-					PLServer.Instance.photonView.RPC("MegaTurretDamage", PhotonTargets.Others, new object[]
+					PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.Auto_Turrets.LaserAutoTurretDamage", PhotonTargets.Others, new object[]
 					{
 					hitSwarmCollider.MyShipInfo.ShipID,
 					num3,
@@ -782,7 +785,7 @@ namespace Exotic_Components
 					this.TurretID,
 					this.m_StoredProjID
 					});
-					PLServer.Instance.MegaTurretDamage(hitSwarmCollider.MyShipInfo.ShipID, num3, num2, hitSwarmCollider.MyShipInfo.Exterior.transform.InverseTransformPoint(vector), base.ShipStats.Ship.ShipID, this.TurretID, this.m_StoredProjID);
+					InstabilityTurretDamage.InstabilityTurretDamager(hitSwarmCollider.MyShipInfo.ShipID, num3, num2, hitSwarmCollider.MyShipInfo.Exterior.transform.InverseTransformPoint(vector), base.ShipStats.Ship.ShipID, this.TurretID, this.m_StoredProjID);
 				}
 			}
 			catch
@@ -800,18 +803,21 @@ namespace Exotic_Components
 			this.m_IsVisiblyCharging = false;
 			this.m_ChargeLevel = 0f;
 			this.m_VisibleChargeLevel = 0f;
+			this.m_Damage = this.baseDamage;
+			/*
 			if (base.ShipStats.Ship.GetCurrentTurretControllerPlayerID(this.TurretID) != -1)
 			{
 				PulsarModLoader.Utilities.Messaging.Notification("Damage before reset: " + this.m_Damage, PLNetworkManager.Instance.LocalPlayer, default, 20000, default);
 				PulsarModLoader.Utilities.Logger.Info("Damage before reset: " + this.m_Damage);
 			}
-			this.m_Damage = this.baseDamage;
+			
 			if (base.ShipStats.Ship.GetCurrentTurretControllerPlayerID(this.TurretID) != -1)
 			{
 				PulsarModLoader.Utilities.Messaging.Notification("Damage after reset: " + this.m_Damage, PLNetworkManager.Instance.LocalPlayer, default, 20000, default);
 				PulsarModLoader.Utilities.Logger.Info("Damage after reset: " + this.m_Damage);
 			}
-			
+			*/
+
 		}
 
 		public float GetBaseTimeDiff()
@@ -830,37 +836,28 @@ namespace Exotic_Components
 		{
 			return 1f - Mathf.Clamp01(Mathf.Abs(Mathf.Pow(timeDiff * 200f, 2f) / 10000f));
 		}
-		private IEnumerator DelayedMegaTurretDamage(PLShipInfoBase hitShip, bool operatedByBot, RaycastHit hitInfo, float visibleChargeLevel)
+		private IEnumerator DelayedMegaTurretDamage(PLShipInfoBase hitShip, bool operatedByBot, RaycastHit hitInfo, float visibleChargeLevel, float damage)
 		{
-			yield return new WaitForSeconds(0.33f);
 			if (hitShip != null)
 			{
 				float num = UnityEngine.Random.Range(0f, 1f);
-				float damageDoneWithTiming = this.GetDamageDoneWithTiming(visibleChargeLevel, operatedByBot);
-				PLServer.Instance.photonView.RPC("MegaTurretDamage", PhotonTargets.Others, new object[]
+				PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.Auto_Turrets.LaserAutoTurretDamage", PhotonTargets.Others, new object[]
 				{
 				hitShip.ShipID,
-				damageDoneWithTiming,
+				damage,
 				num,
 				hitShip.Exterior.transform.InverseTransformPoint(hitInfo.point),
 				base.ShipStats.Ship.ShipID,
 				this.TurretID,
 				this.m_StoredProjID
 				});
-				PLServer.Instance.MegaTurretDamage(hitShip.ShipID, damageDoneWithTiming, num, hitShip.Exterior.transform.InverseTransformPoint(hitInfo.point), base.ShipStats.Ship.ShipID, this.TurretID, this.m_StoredProjID);
+				InstabilityTurretDamage.InstabilityTurretDamager(hitShip.ShipID, damage, num, hitShip.Exterior.transform.InverseTransformPoint(hitInfo.point), base.ShipStats.Ship.ShipID, this.TurretID, this.m_StoredProjID);
+				PulsarModLoader.Utilities.Messaging.Notification("Should Damage: " + this.ShouldProcessProj(this.m_StoredProjID));
+				this.m_StoredProjID++;
 			}
 			yield break;
 		}
 
-		private float GetDamageDoneWithTiming(float visibleChargeLevel, bool operatedByBot)
-		{
-			float timeDiff = this.GetBaseTimeDiff(visibleChargeLevel);
-			if (PhotonNetwork.isMasterClient && (operatedByBot || base.ShipStats.Ship.IsDrone))
-			{
-				timeDiff = UnityEngine.Random.Range(0f, 0.1f);
-			}
-			return (150f + this.GetDmgPercentBasedOnTiming(timeDiff) * (this.m_Damage - 150f)) * base.LevelMultiplier(0.15f, 1f) * base.ShipStats.TurretDamageFactor;
-		}
 		public override bool ApplyLeadingToAutoAimShot()
 		{
 			return false;
@@ -1095,4 +1092,64 @@ namespace Exotic_Components
 			}
 		}
 	}
+
+	class InstabilityTurretDamage : PulsarModLoader.ModMessage
+	{
+		public override void HandleRPC(object[] arguments, PhotonMessageInfo sender)
+		{
+			InstabilityTurretDamager((int)arguments[0], (float)arguments[1], (float)arguments[2], (Vector3)arguments[3], (int)arguments[4], (int)arguments[5], (int)arguments[6]);
+		}
+		public static void InstabilityTurretDamager(int shipID, float damage, float randomNum, Vector3 localPosition, int attackingShipID, int turretID, int projID)
+		{
+			PLShipInfoBase shipFromID = PLEncounterManager.Instance.GetShipFromID(shipID);
+			PLShipInfoBase shipFromID2 = PLEncounterManager.Instance.GetShipFromID(attackingShipID);
+			if (shipFromID != null && shipFromID2 != null)
+			{
+				InstabilityTurret plmegaTurret = shipFromID2.GetTurretAtID(turretID) as InstabilityTurret;
+				if (plmegaTurret != null && plmegaTurret.ShouldProcessProj(projID))
+				{
+					Vector3 a = shipFromID.Exterior.transform.TransformPoint(localPosition);
+					bool bottomHit = false;
+					Vector3 normalized = (a - shipFromID.Exterior.transform.position).normalized;
+					Vector3 rhs = -shipFromID.Exterior.transform.up;
+					if (Vector3.Dot(normalized, rhs) > -0.1f)
+					{
+						bottomHit = true;
+					}
+					shipFromID.TakeDamage(damage, bottomHit, plmegaTurret.DamageType, randomNum, -1, shipFromID2, turretID);
+				}
+			}
+		}
+	}
+
+	/*
+	 * Tool for checking main turret not doing damage
+	[HarmonyLib.HarmonyPatch(typeof(PLServer), "MegaTurretDamage")]
+	class turretlasertest 
+	{
+		static void Postfix(int shipID, float damage, float randomNum, Vector3 localPosition, int attackingShipID, int turretID, int projID) 
+		{
+			PulsarModLoader.Utilities.Messaging.Notification("Target Ship ID: " + shipID);
+			PulsarModLoader.Utilities.Messaging.Notification("Damage: " + damage);
+			PulsarModLoader.Utilities.Messaging.Notification("Random num: " + randomNum);
+			PulsarModLoader.Utilities.Messaging.Notification("local pos: " + localPosition.ToString());
+			PulsarModLoader.Utilities.Messaging.Notification("Attacking ship ID: " + attackingShipID);
+			PulsarModLoader.Utilities.Messaging.Notification("Attacking turret ID: " + turretID);
+			PulsarModLoader.Utilities.Messaging.Notification("Projectile ID: " + projID);
+			PLShipInfoBase shipFromID = PLEncounterManager.Instance.GetShipFromID(shipID);
+			PLShipInfoBase shipFromID2 = PLEncounterManager.Instance.GetShipFromID(attackingShipID);
+			PulsarModLoader.Utilities.Messaging.Notification("Target ship null: " + (shipFromID == null));
+			PulsarModLoader.Utilities.Messaging.Notification("Attack ship null: " + (shipFromID2 == null));
+            if (shipFromID2 != null) 
+			{
+				PLMegaTurret plmegaTurret = shipFromID2.GetTurretAtID(turretID) as PLMegaTurret;
+				PulsarModLoader.Utilities.Messaging.Notification("Mega Turret null: " + (plmegaTurret == null));
+				if(plmegaTurret != null) 
+				{
+					PulsarModLoader.Utilities.Messaging.Notification("Should process: " + (plmegaTurret.ShouldProcessProj(projID)));
+				}
+			}
+        }
+    }
+	*/
 }

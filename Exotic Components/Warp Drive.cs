@@ -28,7 +28,7 @@ namespace Exotic_Components
 
             public override int NumberOfChargesPerFuel => 3;
 
-            //public override float MaxPowerUsage_Watts => 15000f;
+            public override float MaxPowerUsage_Watts => 15000f;
             public override string GetStatLineLeft(PLShipComponent InComp)
             {
                 return string.Concat(new string[]
@@ -74,7 +74,7 @@ namespace Exotic_Components
 
             public override int NumberOfChargesPerFuel => 4;
 
-            //public override float MaxPowerUsage_Watts => 17000f;
+            public override float MaxPowerUsage_Watts => 17000f;
             public override string GetStatLineLeft(PLShipComponent InComp)
             {
                 return string.Concat(new string[]
@@ -113,7 +113,7 @@ namespace Exotic_Components
                         PLEncounterManager.Instance.PlayerShip.gameObject.AddComponent<Heart>();
                     }
                     Heart heart = PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>();
-                    if (destiny.IsPartOfLongRangeWarpNetwork || destiny.VisualIndication == ESectorVisualIndication.LCWBATTLE || destiny.VisualIndication == ESectorVisualIndication.TOPSEC) return;
+                    if (destiny.IsPartOfLongRangeWarpNetwork || destiny.VisualIndication == ESectorVisualIndication.LCWBATTLE || destiny.VisualIndication == ESectorVisualIndication.TOPSEC || destiny.VisualIndication == ESectorVisualIndication.UNSEEN_MS) return;
                     heart.StartCoroutine(heart.drivefailure(current, destiny));
                 }
             }
@@ -137,8 +137,7 @@ namespace Exotic_Components
             public override float EnergySignature => 30f;
 
             public override int NumberOfChargesPerFuel => 9001;
-
-            //public override float MaxPowerUsage_Watts => 17000f;
+            public override float MaxPowerUsage_Watts => 12000f;
             public override string GetStatLineLeft(PLShipComponent InComp)
             {
                 return string.Concat(new string[]
@@ -184,7 +183,7 @@ namespace Exotic_Components
 
             public override int NumberOfChargesPerFuel => 4;
 
-            //public override float MaxPowerUsage_Watts => 17000f;
+            public override float MaxPowerUsage_Watts => 20000f;
             public override string GetStatLineLeft(PLShipComponent InComp)
             {
                 return string.Concat(new string[]
@@ -281,9 +280,9 @@ namespace Exotic_Components
             PLEncounterManager.Instance.PlayerShip.LastBeginBlindWarpServerTime = PLServer.Instance.GetEstimatedServerMs();
             PLServer.Instance.photonView.RPC("AddCrewWarning", PhotonTargets.All, new object[]
             {
-                "WARP DRIVE MALFUNCTION DETECTED!",
+                "WARP DRIVE MALFUNCTION DETECTED! EMERGENCY STOP IMMINENT!",
                 Color.red,
-                5,
+                9,
                 "MSN"
             });
             Warp_Drive.UltimateExplorerMK2.LastFailure = Time.time;

@@ -228,7 +228,7 @@ namespace Exotic_Components
                     {
                         PLEncounterManager.Instance.PlayerShip.MyStats.TakeHullDamage(300, EDamageType.E_ARMOR_PIERCE_PHYS, null, null);
                     }
-                    if(PLEncounterManager.Instance.PlayerShip.MyStats != null && PLEncounterManager.Instance.PlayerShip.MyReactor != null) 
+                    if (PLEncounterManager.Instance.PlayerShip.MyStats != null && PLEncounterManager.Instance.PlayerShip.MyReactor != null)
                     {
                         PLEncounterManager.Instance.PlayerShip.MyStats.ReactorTempCurrent += PLEncounterManager.Instance.PlayerShip.MyStats.ReactorTempMax / 10;
                     }
@@ -236,7 +236,7 @@ namespace Exotic_Components
                     {
                         heart.StartCoroutine(heart.PhaseAway());
                     }
-                    else if(PLEncounterManager.Instance.PlayerShip.MyStats.HullCurrent <= 0) 
+                    else if (PLEncounterManager.Instance.PlayerShip.MyStats.HullCurrent <= 0)
                     {
                         PLEncounterManager.Instance.PlayerShip.DestroySelf(null);
                     }
@@ -377,9 +377,9 @@ namespace Exotic_Components
                             }
                         }
                     }
-                    if(ship is PLFluffyShipInfo || ship is PLFluffyShipInfo2) 
+                    if (ship is PLFluffyShipInfo || ship is PLFluffyShipInfo2)
                     {
-                        if((ship as PLFluffyShipInfo).MyVisibleBomb != null) 
+                        if ((ship as PLFluffyShipInfo).MyVisibleBomb != null)
                         {
                             (ship as PLFluffyShipInfo).MyVisibleBomb.gameObject.SetActive(false);
                         }
@@ -553,7 +553,6 @@ namespace Exotic_Components
                 __instance.WarpTargetID = PLServer.Instance.m_ShipCourseGoals[0];
             }
 			*/
-
             if (__instance.MyWarpDrive != null && (__instance.MyWarpDrive.Name == "Ultimate Explorer" || __instance.MyWarpDrive.Name == "Ultimate Explorer MK2") && PLServer.Instance.m_ShipCourseGoals.Count > 0)
             {
                 PLSectorInfo plsectorInfo3 = PLGlobal.Instance.Galaxy.AllSectorInfos[PLServer.Instance.GetCurrentHubID()];
@@ -578,19 +577,24 @@ namespace Exotic_Components
                 }
             }
             bool doorshouldstuck = false;
-            foreach (PLShipComponent component in __instance.MyStats.GetSlot(ESlotType.E_COMP_VIRUS))
+            if (__instance.MyStats != null)
             {
-                if (component.SubType == PulsarModLoader.Content.Components.Virus.VirusModManager.Instance.GetVirusIDFromName("Door Stuck"))
+                foreach (PLShipComponent component in __instance.MyStats.GetSlot(ESlotType.E_COMP_VIRUS))
                 {
-                    doorshouldstuck = true;
-                    break;
+                    if (component.SubType == PulsarModLoader.Content.Components.Virus.VirusModManager.Instance.GetVirusIDFromName("Door Stuck"))
+                    {
+                        doorshouldstuck = true;
+                        break;
+                    }
                 }
             }
-            foreach (PLDoor door in __instance.InteriorDynamic.GetComponentsInChildren<PLDoor>())
+            if (__instance.InteriorDynamic != null)
             {
-                door.Automatic = !doorshouldstuck;
+                foreach (PLDoor door in __instance.InteriorDynamic.GetComponentsInChildren<PLDoor>())
+                {
+                    door.Automatic = !doorshouldstuck;
+                }
             }
-
         }
     }
     [HarmonyPatch(typeof(PLGalaxy), "GetPathToSector")]

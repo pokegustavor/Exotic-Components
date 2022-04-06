@@ -413,7 +413,7 @@ namespace Exotic_Components
                                 float num3 = UnityEngine.Random.Range(0f, 1f);
                                 if (!PhotonNetwork.isMasterClient)
                                 {
-                                    PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.Auto_Turrets.LaserAutoTurretDamage", PhotonTargets.MasterClient, new object[]
+                                    PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.Auto_Turrets.ReciveAutoLaserDamage", PhotonTargets.MasterClient, new object[]
 									{
 									plshipInfoBase.ShipID,
 									base.ShipStats.Ship.ShipID,
@@ -437,7 +437,7 @@ namespace Exotic_Components
                                 float num4 = UnityEngine.Random.Range(0f, 1f);
                                 if (!PhotonNetwork.isMasterClient)
                                 {
-                                    PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.Auto_Turrets.LaserAutoTurretDamage", PhotonTargets.MasterClient, new object[]
+                                    PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.Auto_Turrets.ReciveAutoLaserDamage", PhotonTargets.MasterClient, new object[]
 									{
 									plspaceTarget.SpaceTargetID,
 									base.ShipStats.Ship.ShipID,
@@ -492,7 +492,7 @@ namespace Exotic_Components
                         hitSwarmCollider.MyShipInfo.HandleSwarmColliderHitVisuals(hitSwarmCollider, vector);
                         if (!PhotonNetwork.isMasterClient)
                         {
-                            /*PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.Auto_Turrets.LaserAutoTurretDamage", PhotonTargets.MasterClient, new object[]
+                            /*PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.Auto_Turrets.ReciveAutoLaserDamage", PhotonTargets.MasterClient, new object[]
 							{
 							hitSwarmCollider.MyShipInfo.SpaceTargetID,
 							base.ShipStats.Ship.ShipID,

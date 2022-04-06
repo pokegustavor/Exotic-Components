@@ -1184,20 +1184,6 @@ namespace Exotic_Components
 			}
 		}
 	}
-
-	[HarmonyLib.HarmonyPatch(typeof(PLIntrepidInfo), "SetupShipStats")]
-	class IntrepidTestingTurret 
-	{
-		static void Postfix(PLIntrepidInfo __instance, bool startingPlayerShip) 
-		{
-            if (__instance.ShouldCreateDefaultComponents && startingPlayerShip) 
-			{
-				PLMegaTurret turret = __instance.MyStats.GetShipComponent<PLMegaTurret>(ESlotType.E_COMP_MAINTURRET, false);
-				__instance.MyStats.AllComponents.Remove(turret);
-				__instance.MyStats.AddShipComponent(new InstabilityTurret(0), -1, ESlotType.E_COMP_NONE);
-			}
-		}
-	}
 	/*
 	 * Tool for checking main turret not doing damage
 	[HarmonyLib.HarmonyPatch(typeof(PLServer), "MegaTurretDamage")]

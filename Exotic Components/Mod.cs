@@ -6,7 +6,7 @@ namespace Exotic_Components
     {
         public override string Version => "3.3";
 
-        public override string Author => "pokegustavo";
+        public override string Author => "pokegustavo (with suggestions from EngBot, TheShribe and Kani)";
 
         public override string ShortDescription => "Adds new components to the game, new shop and some missions";
 

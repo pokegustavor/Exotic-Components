@@ -320,6 +320,35 @@ namespace Exotic_Components
                 }
             }
         }
+        public class ShieldMaster : CPUMod
+        {
+            public override string Name => "Shield Master";
+
+            public override string Description => "This special processor will heavily boost your shield max integrity, but it comes with the cost of really high power consumption, some may call it the second shield.";
+
+            public override int MarketPrice => 45000;
+
+            public override bool Experimental => true;
+
+            public override float MaxPowerUsage_Watts => 5000;
+
+            public override void FinalLateAddStats(PLShipComponent InComp)
+            {
+                PLCPU cpu = InComp as PLCPU;
+                InComp.ShipStats.ShieldsMax *= 1.2f * InComp.LevelMultiplier(0.2f, 1);
+                cpu.CalculatedMaxPowerUsage_Watts = 5000f * InComp.LevelMultiplier(0.1f, 1);
+            }
+
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return "Shield Percent Boost: ";
+            }
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                return (20f * InComp.LevelMultiplier(0.2f, 1))+"%";
+            }
+        }
 
     }
 

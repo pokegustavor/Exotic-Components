@@ -50,6 +50,12 @@ namespace Exotic_Components
 
 			public override PLShipComponent PLMegaTurret => new InstabilityTurret();
 		}
+		class PhaseShieldTurretMod : MegaTurretMod
+		{
+			public override string Name => "PhaseShieldTurret";
+
+			public override PLShipComponent PLMegaTurret => new PhaseShieldTurret();
+		}
 	}
 
 	class MachineGunTurret : PLMegaTurret_Proj
@@ -497,7 +503,7 @@ namespace Exotic_Components
 			this.m_Damage = 80f;
 			this.baseDamage = 80f;
 			this.SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("InstabilityTurret");
-			this.m_MarketPrice = 6200;
+			this.m_MarketPrice = 62000;
 			this.FireDelay = 20f;
 			this.m_MaxPowerUsage_Watts = 1f;
 			base.CargoVisualPrefabID = 5;
@@ -627,8 +633,10 @@ namespace Exotic_Components
 		}
 		public override string GetStatLineRight()
 		{
-			return string.Concat(new string[]
+			if (ShipStats != null && ShipStats.Ship != null)
 			{
+				return string.Concat(new string[]
+				{
 				(ShipStats.Ship.MyReactor != null ? ((this.ShipStats.ReactorTempMax + this.ShipStats.ReactorBoostedOutputMax / 10)/10 * LevelMultiplier(0.1f, 1f)).ToString("0") : "No Reactor"),
 				"\n",
 				(ShipStats.Ship.MyReactor != null ? ((this.ShipStats.ReactorTempMax + this.ShipStats.ReactorBoostedOutputMax / 10)/10 * 5 * LevelMultiplier(0.1f, 1f)).ToString("0") : "No Reactor"),
@@ -636,7 +644,21 @@ namespace Exotic_Components
 				(this.FireDelay / ((base.ShipStats != null) ? base.ShipStats.TurretChargeFactor : 1f)).ToString("0"),
 				"\n",
 				GetDamageTypeString()
-			});
+				});
+			}
+            else 
+			{
+				return string.Concat(new string[]
+					{
+				(PLEncounterManager.Instance.PlayerShip.MyReactor != null ? ((PLEncounterManager.Instance.PlayerShip.MyStats.ReactorTempMax + PLEncounterManager.Instance.PlayerShip.MyStats.ReactorBoostedOutputMax / 10)/10 * LevelMultiplier(0.1f, 1f)).ToString("0") : "No Reactor"),
+				"\n",
+				(PLEncounterManager.Instance.PlayerShip.MyReactor != null ? ((PLEncounterManager.Instance.PlayerShip.MyStats.ReactorTempMax + PLEncounterManager.Instance.PlayerShip.MyStats.ReactorBoostedOutputMax / 10)/10 * 5 * LevelMultiplier(0.1f, 1f)).ToString("0") : "No Reactor"),
+				"\n",
+				(this.FireDelay / ((PLEncounterManager.Instance.PlayerShip.MyStats != null) ? PLEncounterManager.Instance.PlayerShip.MyStats.TurretChargeFactor : 1f)).ToString("0"),
+				"\n",
+				GetDamageTypeString()
+					});
+			}
 		}
 		public bool ShouldProcessProj(int ProjID)
 		{
@@ -1096,7 +1118,35 @@ namespace Exotic_Components
 		public float stabilityCharge = 0;
 	}
 
-	[HarmonyLib.HarmonyPatch(typeof(PLUITurretUI), "Update")]
+    class PhaseShieldTurret : PLMegaTurret
+    {
+        public PhaseShieldTurret(int inLevel = 0) : base(inLevel)
+        {
+			this.Name = "The Shield Phaser";
+			this.Desc = "This Main Turret is an upgraded version of the Anti-Shield Turret, with the higher power usage it can now ignore any shield at any time. It may not do much hull damage, but at least no shield will save your targets.";
+			this.m_IconTexture = (Texture2D)Resources.Load("Icons/8_Weapons");
+			this.m_Damage = 320f;
+			this.SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("PhaseShieldTurret");
+			this.m_MarketPrice = 26000;
+			this.FireDelay = 3f;
+			this.m_MaxPowerUsage_Watts = 17000f;
+			base.CargoVisualPrefabID = 5;
+			this.TurretRange = 12000f;
+			this.BeamColor = new Color(11f, 139f, 30f, 0.8f);
+			this.MegaTurretExplosionID = 0;
+			this.Experimental = true;
+			base.Level = inLevel;
+			this.CoolingRateModifier = 0.5f;
+			this.m_AutoAimMinDotPrd = 0.93f;
+			this.HeatGeneratedOnFire = 0.4f;
+			this.IsMainTurret = true;
+			base.SysInstConduit = 10;
+			this.CanHitMissiles = true;
+			this.DamageType = EDamageType.E_PHASE;
+		}
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(PLUITurretUI), "Update")]
 	class CustomTurretUI 
 	{
 		static void Postfix(PLUITurretUI __instance) 

@@ -141,6 +141,52 @@ namespace Exotic_Components
             public override Texture2D IconTexture => PLGlobal.Instance.VirusBGTexture;
 
         }
+        class WarpNetwork : WarpDriveProgramMod 
+        {
+            public override string Name => "Warp Gate Jump";
+
+            public override string Description => "This program uses the remnants of the Warp Network Warp Fields to engage an emergency connection between you and the nearest warp gate, imagine as a portable warp gate, and nothing will trap you in!";
+
+            public override int MarketPrice => 25000;
+
+            public override string ShortName => "WGJ";
+
+            public override float ActiveTime => 0.1f;
+
+            public override int MaxLevelCharges => 6;
+
+            public override void Execute(PLWarpDriveProgram InWarpDriveProgram)
+            {
+                if(PLServer.GetCurrentSector() != null && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.UNSEEN_MS && PhotonNetwork.isMasterClient && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.LCWBATTLE && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.TOPSEC && !PLServer.GetCurrentSector().IsPartOfLongRangeWarpNetwork) 
+                {
+                    PLSectorInfo target = null;
+                    foreach(PLSectorInfo sector in PLGlobal.Instance.Galaxy.AllSectorInfos.Values) 
+                    {
+                        if (sector.IsPartOfLongRangeWarpNetwork && sector.VisualIndication != ESectorVisualIndication.GWG && sector.VisualIndication != ESectorVisualIndication.PT_WARP_GATE)
+                        {
+                            if (target == null) 
+                            {
+                                target = sector;
+                            }
+                            else if((sector.Position - PLServer.GetCurrentSector().Position).magnitude < (target.Position - PLServer.GetCurrentSector().Position).magnitude)
+                            {
+                                target = sector;
+                            }
+                        }
+                    }
+                    if(target != null) 
+                    {
+                        PLServer.Instance.photonView.RPC("NetworkBeginWarp", PhotonTargets.All, new object[]
+                        {
+                        PLEncounterManager.Instance.PlayerShip.ShipID,
+                        target.ID,
+                        PLServer.Instance.GetEstimatedServerMs(),
+                        -1
+                        });
+                    }
+                }
+            }
+        }
         class DoorStuckVirus : VirusMod
         {
             public override string Name => "Door Stuck";

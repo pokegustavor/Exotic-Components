@@ -201,6 +201,11 @@ namespace Exotic_Components
         {
             try
             {
+                if(turret != null && turret is PhaseShieldTurret) 
+                {
+                    __result = inDmg;
+                    return false;
+                }
                 if (turret != null && (turret is AntiShield || turret is TweakedAntiShield) && (__instance.Ship.ShieldFreqMode != 0 || __instance.Ship.IsSensorWeaknessActive(ESensorWeakness.SHLD_WEAKPOINT)))
                 {
                     __result = inDmg;

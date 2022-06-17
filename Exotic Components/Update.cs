@@ -1,19 +1,61 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Collections;
+using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 namespace Exotic_Components
 {
     [HarmonyLib.HarmonyPatch(typeof(PLShipInfo),"Update")]
     internal class Update
     {
-        
         static void Postfix(PLShipInfo __instance)
         {
             try
             {
+                if (__instance.MyWarpDrive != null && (__instance.MyWarpDrive.Name == "Ultimate Explorer" || __instance.MyWarpDrive.Name == "Ultimate Explorer MK2") && PLServer.Instance.m_ShipCourseGoals.Count > 0)
+                {
+                    PLSectorInfo plsectorInfo3 = PLGlobal.Instance.Galaxy.AllSectorInfos[PLServer.Instance.GetCurrentHubID()];
+                    PLSectorInfo plsectorInfo4 = PLGlobal.Instance.Galaxy.AllSectorInfos[PLServer.Instance.m_ShipCourseGoals[0]];
+                    if (PLEncounterManager.Instance.PlayerShip.WarpChargeStage != EWarpChargeStage.E_WCS_ACTIVE && plsectorInfo4 != null && plsectorInfo4.IsThisSectorWithinPlayerWarpRange() && plsectorInfo4.VisualIndication != ESectorVisualIndication.TOPSEC && plsectorInfo4.VisualIndication != ESectorVisualIndication.LCWBATTLE && (plsectorInfo4.VisualIndication == ESectorVisualIndication.COMET || PLStarmap.ShouldShowSectorBG(plsectorInfo4)))
+                    {
+                        float closestWarpTargetDot = 0f;
+                        Vector3 relPos_PlayerToSector = PLGlobal.GetRelPos_PlayerToSector(plsectorInfo4, plsectorInfo3);
+                        float num14 = Vector3.Dot(__instance.ExteriorTransformCached.forward, relPos_PlayerToSector.normalized);
+                        if (num14 > closestWarpTargetDot)
+                        {
+                            closestWarpTargetDot = num14;
+                            if (closestWarpTargetDot > 0.996f)
+                            {
+                                __instance.WarpTargetID = plsectorInfo4.ID;
+                            }
+                        }
+                    }
+                    else if (PLEncounterManager.Instance.PlayerShip.WarpChargeStage == EWarpChargeStage.E_WCS_ACTIVE && __instance.MyWarpDrive.Name == "Ultimate Explorer MK2" && Heart.failing)
+                    {
+                        __instance.WarpTargetID = Heart.destinyID;
+                    }
+                }
+                bool doorshouldstuck = false;
+                if (__instance.MyStats != null)
+                {
+                    foreach (PLShipComponent component in __instance.MyStats.GetSlot(ESlotType.E_COMP_VIRUS))
+                    {
+                        if (component.SubType == PulsarModLoader.Content.Components.Virus.VirusModManager.Instance.GetVirusIDFromName("Door Stuck"))
+                        {
+                            doorshouldstuck = true;
+                            break;
+                        }
+                    }
+                }
+                if (__instance.InteriorDynamic != null)
+                {
+                    foreach (PLDoor door in __instance.InteriorDynamic.GetComponentsInChildren<PLDoor>())
+                    {
+                        door.Automatic = !doorshouldstuck;
+                    }
+                }
+
+
                 if (!__instance.GetIsPlayerShip()) return;
                 if (PLServer.GetCurrentSector().Name == "The Core(MOD)" && !PLEncounterManager.Instance.PlayerShip.Get_IsInWarpMode())
                 {
@@ -140,6 +182,7 @@ namespace Exotic_Components
                         }
                     }
                 }
+                
                 if (!PLCampaignIO.Instance.m_CampaignData.MissionTypes.Contains(Missions.RecoverCPU.Missiondata)) 
                 {
                     PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.RecoverCPU.Missiondata);
@@ -156,6 +199,7 @@ namespace Exotic_Components
                 {
                     PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.DeliverBiscuit.Missiondata);
                 }
+                
             }
             catch { }
         }

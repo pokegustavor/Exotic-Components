@@ -542,72 +542,18 @@ namespace Exotic_Components
             }
         }
     }
-    [HarmonyPatch(typeof(PLShipInfo), "Update")]
-    class ShipUpdate
-    {
-        static void Postfix(PLShipInfo __instance)
-        {
-            /*
-            if(__instance.MyWarpDrive != null && __instance.MyWarpDrive.Name == "Ultimate Explorer" && PLServer.Instance.m_ShipCourseGoals.Count > 0) 
-            {
-                __instance.WarpTargetID = PLServer.Instance.m_ShipCourseGoals[0];
-            }
-			*/
-            if (__instance.MyWarpDrive != null && (__instance.MyWarpDrive.Name == "Ultimate Explorer" || __instance.MyWarpDrive.Name == "Ultimate Explorer MK2") && PLServer.Instance.m_ShipCourseGoals.Count > 0)
-            {
-                PLSectorInfo plsectorInfo3 = PLGlobal.Instance.Galaxy.AllSectorInfos[PLServer.Instance.GetCurrentHubID()];
-                PLSectorInfo plsectorInfo4 = PLGlobal.Instance.Galaxy.AllSectorInfos.GetValueSafe(PLServer.Instance.m_ShipCourseGoals[0]);
-                if (PLEncounterManager.Instance.PlayerShip.WarpChargeStage != EWarpChargeStage.E_WCS_ACTIVE && plsectorInfo4 != null && plsectorInfo4.IsThisSectorWithinPlayerWarpRange() && plsectorInfo4.VisualIndication != ESectorVisualIndication.TOPSEC && plsectorInfo4.VisualIndication != ESectorVisualIndication.LCWBATTLE && (plsectorInfo4.VisualIndication == ESectorVisualIndication.COMET || PLStarmap.ShouldShowSectorBG(plsectorInfo4)))
-                {
-                    float closestWarpTargetDot = 0f;
-                    Vector3 relPos_PlayerToSector = PLGlobal.GetRelPos_PlayerToSector(plsectorInfo4, plsectorInfo3);
-                    float num14 = Vector3.Dot(__instance.ExteriorTransformCached.forward, relPos_PlayerToSector.normalized);
-                    if (num14 > closestWarpTargetDot)
-                    {
-                        closestWarpTargetDot = num14;
-                        if (closestWarpTargetDot > 0.996f)
-                        {
-                            __instance.WarpTargetID = plsectorInfo4.ID;
-                        }
-                    }
-                }
-                else if (PLEncounterManager.Instance.PlayerShip.WarpChargeStage == EWarpChargeStage.E_WCS_ACTIVE && __instance.MyWarpDrive.Name == "Ultimate Explorer MK2" && Heart.failing)
-                {
-                    __instance.WarpTargetID = Heart.destinyID;
-                }
-            }
-            bool doorshouldstuck = false;
-            if (__instance.MyStats != null)
-            {
-                foreach (PLShipComponent component in __instance.MyStats.GetSlot(ESlotType.E_COMP_VIRUS))
-                {
-                    if (component.SubType == PulsarModLoader.Content.Components.Virus.VirusModManager.Instance.GetVirusIDFromName("Door Stuck"))
-                    {
-                        doorshouldstuck = true;
-                        break;
-                    }
-                }
-            }
-            if (__instance.InteriorDynamic != null)
-            {
-                foreach (PLDoor door in __instance.InteriorDynamic.GetComponentsInChildren<PLDoor>())
-                {
-                    door.Automatic = !doorshouldstuck;
-                }
-            }
-        }
-    }
     [HarmonyPatch(typeof(PLGalaxy), "GetPathToSector")]
     class PathToSector
     {
         static void Postfix(PLSectorInfo inStartSector, PLSectorInfo inEndSector, ref List<PLSectorInfo> __result)
         {
             List<PLSectorInfo> sectorInfos = new List<PLSectorInfo>();
-            if (PLServer.Instance.m_ShipCourseGoals.Count > 0 && (PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "Ultimate Explorer" || PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "Ultimate Explorer MK2"))
+            if (PLServer.Instance.m_ShipCourseGoals.Count > 0 && PLEncounterManager.Instance.PlayerShip != null && PLEncounterManager.Instance.PlayerShip.MyWarpDrive != null && (PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "Ultimate Explorer" || PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "Ultimate Explorer MK2"))
             {
                 foreach (int ID in PLServer.Instance.m_ShipCourseGoals)
                 {
-                    sectorInfos.Add(PLGlobal.Instance.Galaxy.AllSectorInfos.GetValueSafe(ID));
+                    PLSectorInfo sector = PLGlobal.Instance.Galaxy.AllSectorInfos.GetValueSafe(ID);
+                    if(sector != null) sectorInfos.Add(sector);
                 }
                 __result.Clear();
                 __result.AddRange(sectorInfos);

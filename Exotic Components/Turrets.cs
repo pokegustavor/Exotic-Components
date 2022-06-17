@@ -165,10 +165,31 @@ namespace Exotic_Components
         protected override void InnerCheckFire()
         {
             base.InnerCheckFire();
-            PLPathfinderGraphEntity pgeforShip = PLPathfinder.GetInstance().GetPGEforShip(this.ShipStats.Ship as PLShipInfo);
+            if (!(ShipStats.Ship is PLShipInfo)) return;
+            PLShipInfo motherShip = this.ShipStats.Ship as PLShipInfo;
+            PLPathfinderGraphEntity pgeforShip = PLPathfinder.GetInstance().GetPGEforShip(motherShip);
             if (pgeforShip != null)
             {
-                for (int i = 0; i < 3; i++)
+                int counter = 0;
+                foreach(PLCombatTarget plcombatTarget in PLGameStatic.Instance.AllCombatTargets) 
+                {
+                    if (plcombatTarget != null && plcombatTarget.GetPlayer() == null && plcombatTarget.Lifetime > 4f && plcombatTarget.ShouldShowInHUD() && !plcombatTarget.GetIsFriendly() && plcombatTarget.CurrentShip == motherShip)
+                    {
+                        counter++;
+                        if (counter >= 10) return;
+                    }
+                }
+                int amount = 0;
+                float random = Random.value;
+                if(random < 0.5f) 
+                {
+                    amount = 1;
+                }
+                else if(random < 0.75f) 
+                {
+                    amount = 2;
+                }
+                for (int i = 0; i < amount; i++)
                 {
 
                     NNConstraint nnconstraint = new NNConstraint();

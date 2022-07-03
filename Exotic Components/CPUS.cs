@@ -349,6 +349,28 @@ namespace Exotic_Components
                 return (20f * InComp.LevelMultiplier(0.2f, 1))+"%";
             }
         }
+        public class ResearchScanner : CPUMod
+        {
+            public override string Name => "Research Scanner";
+
+            public override string Description => "Did you ever get stuck trying to find a research in the middle of a blue rock? Now with this active scanner processor your scientist will never have to worry about that again!";
+
+            public override int MarketPrice => 15000;
+
+            public override float MaxPowerUsage_Watts => 500f;
+        }
+        public class Assembly : CPUMod
+        {
+            public override string Name => "Assembly Processor";
+
+            public override string Description => "With this special processor full of nano technology, you will be able to replace and upgrade components anywhere! Don't question the science behind it, it works, and that is all that matters.";
+
+            public override int MarketPrice => 45000;
+
+            public override bool Experimental => true;
+
+            public override float MaxPowerUsage_Watts => 4001;
+        }
 
     }
 
@@ -423,7 +445,7 @@ namespace Exotic_Components
                 foreach (PLShipComponent plshipComponent in componentsOfType2)
                 {
                     if (plshipComponent != null && plshipComponent.SubType == CPUModManager.Instance.GetCPUIDFromName("The Premonition") && !plshipComponent.IsFlaggedForSelfDestruction() && CPUS.The_Premonition.lastLive >= 20 &&
-                        PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.LCWBATTLE && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.TOPSEC && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.UNSEEN_MS)
+                        PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.LCWBATTLE && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.TOPSEC && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.UNSEEN_MS && plshipComponent.IsEquipped)
                     {
                         found = true;
                         if (PhotonNetwork.isMasterClient)
@@ -524,6 +546,46 @@ namespace Exotic_Components
                 if (subtypeformodded > -1 && subtypeformodded < CPUModManager.Instance.CPUTypes.Count && __instance.ShipStats != null)
                 {
                     CPUModManager.Instance.CPUTypes[subtypeformodded].OnWarp(__instance);
+                }
+            }
+        }
+    }
+    [HarmonyPatch(typeof(PLUIOutsideWorldUI), "UpdateKeenUIElements")]
+    class ReasearchLocator 
+    {
+        static void Postfix(PLUIOutsideWorldUI __instance) 
+        {
+            if(PLCameraSystem.Instance.GetModeString() == "SensorDish" && __instance.MyShipInfo != null && __instance.MyShipInfo.GetIsPlayerShip() && __instance.MyShipInfo.MyStats != null) 
+            {
+                foreach(PLShipComponent component in PLEncounterManager.Instance.PlayerShip.MyStats.AllComponents) 
+                {
+                    if(component.ActualSlotType == ESlotType.E_COMP_CPU && component.SubType == CPUModManager.Instance.GetCPUIDFromName("Research Scanner") && component.IsEquipped) 
+                    {
+                        foreach (PLProbePickup pLProbePickup in Object.FindObjectsOfType<PLProbePickup>())
+                        {
+                            if (pLProbePickup != null && !pLProbePickup.PickedUp)
+                            {
+                                __instance.RequestKeenUIElement(pLProbePickup.transform, "Research", null);
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(PLShipInfoBase), "CanSwapComponentsWithoutDepot")]
+    class AssemblyAbility 
+    { 
+        static void Postfix(PLShipInfoBase __instance, ref bool __result) 
+        {
+            foreach (PLShipComponent component in PLEncounterManager.Instance.PlayerShip.MyStats.AllComponents)
+            {
+                if (component.ActualSlotType == ESlotType.E_COMP_CPU && component.SubType == CPUModManager.Instance.GetCPUIDFromName("Assembly Processor") && component.IsEquipped)
+                {
+                    __result = true;
+                    break;
                 }
             }
         }

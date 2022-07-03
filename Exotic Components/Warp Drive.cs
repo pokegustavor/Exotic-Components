@@ -1,9 +1,12 @@
 ﻿using PulsarModLoader.Content.Components.WarpDrive;
 using HarmonyLib;
 using UnityEngine;
+using static UnityEngine.Object;
 using System.Collections.Generic;
 using System.Collections;
 using System;
+using System.Threading.Tasks;
+using System.Threading;
 namespace Exotic_Components
 {
     class Warp_Drive
@@ -108,13 +111,8 @@ namespace Exotic_Components
                 PLSectorInfo destiny = PLGlobal.Instance.Galaxy.AllSectorInfos.GetValueSafe(PLEncounterManager.Instance.PlayerShip.WarpTargetID);
                 if (UnityEngine.Random.Range(0, 100) <= Mathf.Min(1000 * Vector2.Distance(current.Position, destiny.Position), 35) && Time.time - LastFailure > 50f)
                 {
-                    if (PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>() == null)
-                    {
-                        PLEncounterManager.Instance.PlayerShip.gameObject.AddComponent<Heart>();
-                    }
-                    Heart heart = PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>();
                     if (destiny.IsPartOfLongRangeWarpNetwork || destiny.VisualIndication == ESectorVisualIndication.LCWBATTLE || destiny.VisualIndication == ESectorVisualIndication.TOPSEC || destiny.VisualIndication == ESectorVisualIndication.UNSEEN_MS) return;
-                    heart.StartCoroutine(heart.drivefailure(current, destiny));
+                    Heart.drivefailure(current, destiny);
                 }
             }
 
@@ -219,11 +217,6 @@ namespace Exotic_Components
                 Vector3 destiny = PLEncounterManager.Instance.PlayerShip.Exterior.transform.position + PLEncounterManager.Instance.PlayerShip.Exterior.transform.forward * 250;
                 if (!Physics.Linecast(PLEncounterManager.Instance.PlayerShip.Exterior.transform.position, destiny, 1))
                 {
-                    if (PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>() == null)
-                    {
-                        PLEncounterManager.Instance.PlayerShip.gameObject.AddComponent<Heart>();
-                    }
-                    Heart heart = PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>();
                     if (PLEncounterManager.Instance.PlayerShip.MyHull == null || PLEncounterManager.Instance.PlayerShip.MyHull.Name != "The Phase Driver Hull")
                     {
                         PLEncounterManager.Instance.PlayerShip.MyStats.TakeHullDamage(300, EDamageType.E_ARMOR_PIERCE_PHYS, null, null);
@@ -234,7 +227,7 @@ namespace Exotic_Components
                     }
                     if (PLEncounterManager.Instance.PlayerShip.MyStats != null && PLEncounterManager.Instance.PlayerShip.MyStats.HullCurrent > 0)
                     {
-                        heart.StartCoroutine(heart.PhaseAway());
+                        Heart.PhaseAway();
                     }
                     else if (PLEncounterManager.Instance.PlayerShip.MyStats.HullCurrent <= 0)
                     {
@@ -245,11 +238,11 @@ namespace Exotic_Components
             }
         }
     }
-    class Heart : MonoBehaviour
+    class Heart
     {
         public static int destinyID = 0;
         public static bool failing = false;
-        public IEnumerator drivefailure(PLSectorInfo current, PLSectorInfo destiny)
+        public static async void drivefailure(PLSectorInfo current, PLSectorInfo destiny)
         {
             float A = current.Position.y - destiny.Position.y;
             float B = destiny.Position.x - current.Position.x;
@@ -264,38 +257,39 @@ namespace Exotic_Components
                     possibleSectors.Add(sector);
                 }
             }
-            if (possibleSectors.Count == 0) yield break;
-            int ID = possibleSectors[(int)UnityEngine.Random.Range(0, possibleSectors.Count - 1)].ID;
-            yield return new WaitForSeconds(5f);
-            failing = true;
-            destinyID = ID;
-            PLEncounterManager.Instance.PlayerShip.WarpTargetID = ID;
-            PLEncounterManager.Instance.PlayerShip.NumberOfFuelCapsules++;
-            PLServer.Instance.photonView.RPC("CPEI_HandleActivateWarpDrive", PhotonTargets.MasterClient, new object[]
+            if (possibleSectors.Count > 0)
             {
+                int ID = possibleSectors[(int)UnityEngine.Random.Range(0, possibleSectors.Count - 1)].ID;
+                await Task.Delay(5000);
+                failing = true;
+                destinyID = ID;
+                PLEncounterManager.Instance.PlayerShip.WarpTargetID = ID;
+                PLEncounterManager.Instance.PlayerShip.NumberOfFuelCapsules++;
+                PLServer.Instance.photonView.RPC("CPEI_HandleActivateWarpDrive", PhotonTargets.MasterClient, new object[]
+                {
                 PLEncounterManager.Instance.PlayerShip.ShipID,
                 ID,
                 0
-            });
-            PLEncounterManager.Instance.PlayerShip.LastBeginBlindWarpServerTime = PLServer.Instance.GetEstimatedServerMs();
-            PLServer.Instance.photonView.RPC("AddCrewWarning", PhotonTargets.All, new object[]
-            {
-                "WARP DRIVE MALFUNCTION DETECTED! EMERGENCY STOP IMMINENT!",
+                });
+                PLEncounterManager.Instance.PlayerShip.LastBeginBlindWarpServerTime = PLServer.Instance.GetEstimatedServerMs();
+                PLServer.Instance.photonView.RPC("AddCrewWarning", PhotonTargets.All, new object[]
+                {
+                "WARP DRIVE MALFUNCTION DETECTED! EMERGENCY STOP!",
                 Color.red,
                 9,
                 "MSN"
-            });
-            Warp_Drive.UltimateExplorerMK2.LastFailure = Time.time;
-            yield break;
+                });
+                Warp_Drive.UltimateExplorerMK2.LastFailure = Time.time;
+            }
         }
 
-        public IEnumerator UpdateTimeLine()
+        public static async void UpdateTimeLine()
         {
-            foreach (PLShipInfoBase ship in FindObjectsOfType(typeof(PLShipInfoBase)))
+            foreach (PLShipInfoBase ship in UnityEngine.Object.FindObjectsOfType(typeof(PLShipInfoBase)))
             {
                 if (!ship.GetIsPlayerShip()) PhotonNetwork.Destroy(ship.gameObject);
             }
-            yield return new WaitForEndOfFrame();
+            await Task.Yield();
             PulsarModLoader.Utilities.Logger.Info("Enemies: " + CPUS.The_Premonition.others.Count);
             foreach (PLPersistantShipInfo ship in CPUS.The_Premonition.others)
             {
@@ -303,14 +297,13 @@ namespace Exotic_Components
                 ship.m_IsShipDestroyed = false;
                 ship.CreateShipInstance(PLEncounterManager.Instance.GetCPEI());
                 PulsarModLoader.Utilities.Logger.Info("Spawned: " + ship.Type);
-                yield return new WaitForSeconds(1f);
+                await Task.Delay(1000);
                 ship.ShipInstance.MyHull.Current = ship.ShipInstance.MyStats.HullMax;
                 if (ship.ShipInstance.MyShieldGenerator != null) ship.ShipInstance.MyShieldGenerator.Current = ship.ShipInstance.MyStats.ShieldsMax;
             }
-            yield break;
         }
 
-        public IEnumerator PhaseAway()
+        public static async void PhaseAway()
         {
             PLShipInfo ship = PLEncounterManager.Instance.PlayerShip;
             if (ship != null)
@@ -340,7 +333,7 @@ namespace Exotic_Components
                         }
                     }
                 }
-                StartCoroutine(DelayedEndPhasePS(ship));
+                DelayedEndPhasePS(ship);
                 List<MeshRenderer> exteriorRenderers = ship.ExteriorRenderers;
                 MeshRenderer[] hullplanting = ship.HullPlatingRenderers;
                 List<PLShipComponent> componentsOfType = ship.MyStats.GetComponentsOfType(ESlotType.E_COMP_TURRET, false);
@@ -391,7 +384,7 @@ namespace Exotic_Components
                     {
                         ship.ExteriorMeshCollider.enabled = false;
                     }
-                    yield return new WaitForEndOfFrame();
+                    await Task.Yield();
                 }
                 Warp_Drive.PhaseDrive.Phasing = false;
                 foreach (Renderer rend in exteriorRenderers)
@@ -436,13 +429,11 @@ namespace Exotic_Components
                 ship.MyStats.CanBeDetected = true;
                 PLMusic.PostEvent("stop_sx_ship_enemy_phasedrone_warp", ship.Exterior);
             }
-            yield break;
         }
-        private IEnumerator DelayedEndPhasePS(PLShipInfo ship)
+        private static async void DelayedEndPhasePS(PLShipInfo ship)
         {
-            yield return new WaitForSeconds(1f);
+            await Task.Delay(1000);
             Instantiate(PLGlobal.Instance.PhasePS, ship.Exterior.transform.position, Quaternion.identity);
-            yield break;
         }
     }
 
@@ -521,18 +512,13 @@ namespace Exotic_Components
             CPUS.The_Premonition.lastLive++;
             if (CPUS.The_Premonition.lastLive <= -1)
             {
-                if (PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>() == null)
-                {
-                    PLEncounterManager.Instance.PlayerShip.gameObject.AddComponent<Heart>();
-                }
-                Heart heart = PLEncounterManager.Instance.PlayerShip.gameObject.GetComponent<Heart>();
-                heart.StartCoroutine(heart.UpdateTimeLine());
+                Heart.UpdateTimeLine();
             }
             else if (CPUS.The_Premonition.lastLive > 0)
             {
                 CPUS.The_Premonition.lastHull = PLEncounterManager.Instance.PlayerShip.MyStats.HullCurrent;
                 CPUS.The_Premonition.others.Clear();
-                foreach (PLShipInfoBase ship in UnityEngine.Object.FindObjectsOfType(typeof(PLShipInfoBase)))
+                foreach (PLShipInfoBase ship in FindObjectsOfType(typeof(PLShipInfoBase)))
                 {
                     if (!ship.GetIsPlayerShip() && !CPUS.The_Premonition.others.Contains(ship.PersistantShipInfo))
                     {

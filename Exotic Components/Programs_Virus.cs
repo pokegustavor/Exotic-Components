@@ -1,6 +1,7 @@
 ﻿using PulsarModLoader.Content.Components.Virus;
 using PulsarModLoader.Content.Components.WarpDriveProgram;
 using UnityEngine;
+using HarmonyLib;
 
 namespace Exotic_Components
 {
@@ -187,6 +188,41 @@ namespace Exotic_Components
                 }
             }
         }
+        class SuperShield : WarpDriveProgramMod 
+        {
+            public override string Name => "Super Shield";
+
+            public override string Description => "This program will activate a shield overcharge after 1.5 seconds that will keep your ship invunerable for 10 seconds, but after that the shields will be depleated, to ensure your shields won't fry it can only be used once per sector.";
+
+            public override int MarketPrice => 80000;
+
+            public override string ShortName => "SS";
+
+            public override float ActiveTime => 11.5f;
+
+            public override int MaxLevelCharges => 6;
+
+            public bool Used = false;
+
+            public override void Execute(PLWarpDriveProgram InWarpDriveProgram)
+            {
+                if (InWarpDriveProgram.ShipStats != null && InWarpDriveProgram.ShipStats.Ship != null && !Used && InWarpDriveProgram.ShipStats.Ship.MyShieldGenerator != null)
+                {
+                    InWarpDriveProgram.ShipStats.Ship.SuperShieldActivateStartTime = PLServer.Instance.GetEstimatedServerMs();
+                    Used = true;
+                }
+                else 
+                {
+                    InWarpDriveProgram.Level = 6;
+                    InWarpDriveProgram.SubTypeData = 6;
+                    InWarpDriveProgram.Last_Active_Time = 0;
+                }
+            }
+            public override void OnWarp(PLShipComponent InComp)
+            {
+                Used = false;
+            }
+        }
         class DoorStuckVirus : VirusMod
         {
             public override string Name => "Door Stuck";
@@ -235,8 +271,9 @@ namespace Exotic_Components
                 mystats.EMDetection *= 0f;
             }
         }
+
     }
-    [HarmonyLib.HarmonyPatch(typeof(VirusModManager), "CreateVirus")]
+    [HarmonyPatch(typeof(VirusModManager), "CreateVirus")]
     class ManualFixVirus
     {
         static void Postfix(int Subtype, ref PLVirus __result)
@@ -253,7 +290,7 @@ namespace Exotic_Components
         }
     }
 
-    [HarmonyLib.HarmonyPatch(typeof(PLShipInfoBase), "ShouldBeHostileToShip")]
+    [HarmonyPatch(typeof(PLShipInfoBase), "ShouldBeHostileToShip")]
     class FriendlyDrones 
     {
         static void Postfix(PLShipInfoBase __instance, PLShipInfoBase inShip, ref bool __result) 
@@ -278,6 +315,38 @@ namespace Exotic_Components
                     }
                 }
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(PLShipInfoBase), "IsSupershieldActive")]
+    class SuperShield 
+    {
+        static void Postfix(PLShipInfoBase __instance, ref bool __result) 
+        {
+            if (PLServer.Instance != null && __instance.MyShieldGenerator != null)
+            {
+                int num = PLServer.Instance.GetEstimatedServerMs() - __instance.SuperShieldActivateStartTime;
+                if (num > 11500 && num < 12000) __instance.MyShieldGenerator.Current = 0;
+                __result = num > 1500 && num < 11500;
+                return;
+            }
+            __result = false;
+        }
+    }
+    [HarmonyPatch(typeof(PLShipComponent), "OnWarp")]
+    class OnWarpFix 
+    {
+        static bool Prefix(PLShipComponent __instance)
+        {
+            PLWarpDriveProgram pLReactor = __instance as PLWarpDriveProgram;
+            if (pLReactor == null) return true;
+            int subtypeformodded = pLReactor.SubType - WarpDriveProgramModManager.Instance.VanillaWarpDriveProgramMaxType;
+            if (subtypeformodded > -1 && subtypeformodded < WarpDriveProgramModManager.Instance.WarpDriveProgramTypes.Count && pLReactor.ShipStats != null)
+            {
+                WarpDriveProgramModManager.Instance.WarpDriveProgramTypes[subtypeformodded].OnWarp(pLReactor);
+                return false;
+            }
+            return true;
         }
     }
 }

@@ -197,129 +197,54 @@ namespace Exotic_Components
     [HarmonyPatch(typeof(PLShipStats), "TakeShieldDamage")]
     class ShieldDamage
     {
-        static bool Prefix(float inDmg, EDamageType dmgType, float DT_ShieldBoost, float shieldDamageMod, PLTurret turret, ref float __result, PLShipStats __instance)
+        static bool Prefix(ref float inDmg, EDamageType dmgType, float DT_ShieldBoost, float shieldDamageMod, PLTurret turret, ref float __result, PLShipStats __instance)
         {
-            try
+            if (turret != null && turret is PhaseShieldTurret)
             {
-                if(turret != null && turret is PhaseShieldTurret) 
-                {
-                    __result = inDmg;
-                    return false;
-                }
-                if (turret != null && (turret is AntiShield || turret is TweakedAntiShield) && (__instance.Ship.ShieldFreqMode != 0 || __instance.Ship.IsSensorWeaknessActive(ESensorWeakness.SHLD_WEAKPOINT)))
-                {
-                    __result = inDmg;
-                    return false;
-                }
-                if (turret != null && turret is HullSmasher && (__instance.Ship.ShieldFreqMode != 1 || __instance.Ship.IsSensorWeaknessActive(ESensorWeakness.SHLD_WEAKPOINT)))
-                {
-                    __result = inDmg;
-                    return false;
-                }
-                __instance.GetComponentsOfType(ESlotType.E_COMP_SHLD, false);
-                PLShieldGenerator shipComponent = __instance.GetShipComponent<PLShieldGenerator>(ESlotType.E_COMP_SHLD, false);
-                if (shipComponent == null || inDmg <= 0f)
-                {
-                    __result = 0f;
-                    return false;
-                }
-                if (dmgType == EDamageType.E_INFECTED && inDmg == 10 && shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("Anti-Infected Shield")) 
-                {
-                    __result = 0f;
-                    return false;
-                }
-                if ((float)shipComponent.MinIntegrityToCreateBubble <= shipComponent.Current)
-                {
-                    shipComponent.MinIntegrityToCreateBubble = 0;
-                    float num = shipComponent.Current;
-                    float num2 = 1f;
-                    if (dmgType == EDamageType.E_BEAM)
-                    {
-                        if (shipComponent.SubType == 9)
-                        {
-                            num2 = 1.1764705f;
-                        }
-                        if (shipComponent.SubType == 12)
-                        {
-                            num2 = 1.4285715f;
-                        }
-                        if (shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("Eletric Wall"))
-                        {
-                            num2 = 1.1145238f;
-                        }
-                    }
-                    else if (PLShipInfoBase.IsDamageTypePhysical(dmgType))
-                    {
-                        if (shipComponent.SubType == 7)
-                        {
-                            num2 = 1.0526316f;
-                        }
-                        if (shipComponent.SubType == 8)
-                        {
-                            num2 = 1.1111112f;
-                        }
-                        if (shipComponent.SubType == 15)
-                        {
-                            num2 = 1.25f;
-                        }
-                    }
-                    else if (shipComponent.SubType == 16)
-                    {
-                        num2 = 1.1764705f;
-                    }
-                    if (turret != null && (turret is HullSmasher || turret is AntiShield || turret is TweakedAntiShield))
-                    {
-                        num2 += 0.3f;
-                    }
-                    if(dmgType == EDamageType.E_PHYSICAL && shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("Anti-Infected Shield") && turret != null && turret is PLSporeTurret) 
-                    {
-                        num2 = 1.5f;
-                        inDmg *= 0.1f;
-                        DT_ShieldBoost = 1f;
-                    }
-                    num2 *= 1f / DT_ShieldBoost * (1f / shieldDamageMod);
-                    num2 += (__instance.ShieldsDeflection - (0.6f * __instance.Ship.MyShieldGenerator.LevelMultiplier(0.1f, 1f))) * 1.5f;
-                    float num3 = Mathf.Min(inDmg, shipComponent.Current * num2);
-                    float num4 = num3 / num2;
-                    shipComponent.Current -= num4;
-                    __instance.ShieldsCurrent -= num4;
-                    __instance.Ship.VisibleDamage += num4;
-                    __instance.Ship.LerpedShieldBaseIllum += num4 * 0.02f;
-                    if (__instance.Ship.IsTestShip)
-                    {
-                        string text = "None";
-                        if (turret != null)
-                        {
-                            text = turret.GetItemName(false);
-                        }
-                        if (!__instance.Ship.TestDPSDamageByTurretName.ContainsKey(text))
-                        {
-                            __instance.Ship.TestDPSDamageByTurretName[text] = 0f;
-                        }
-                        Dictionary<string, float> testDPSDamageByTurretName = __instance.Ship.TestDPSDamageByTurretName;
-                        string key = text;
-                        testDPSDamageByTurretName[key] += num4;
-                    }
-                    float value = inDmg - num3;
-                    if (shipComponent.Current <= 0f)
-                    {
-                        shipComponent.MinIntegrityToCreateBubble = shipComponent.MinIntegrityAfterDamage;
-                    }
-                    __result = Mathf.Clamp(value, 0f, float.MaxValue);
-                    return false;
-                }
                 __result = inDmg;
                 return false;
             }
-            catch
+            if (turret != null && (turret is AntiShield || turret is TweakedAntiShield) && (__instance.Ship.ShieldFreqMode != 0 || __instance.Ship.IsSensorWeaknessActive(ESensorWeakness.SHLD_WEAKPOINT)))
             {
-                return true;
+                __result = inDmg;
+                return false;
             }
+            if (turret != null && turret is HullSmasher && (__instance.Ship.ShieldFreqMode != 1 || __instance.Ship.IsSensorWeaknessActive(ESensorWeakness.SHLD_WEAKPOINT)))
+            {
+                __result = inDmg;
+                return false;
+            }
+            __instance.GetComponentsOfType(ESlotType.E_COMP_SHLD, false);
+            PLShieldGenerator shipComponent = __instance.GetShipComponent<PLShieldGenerator>(ESlotType.E_COMP_SHLD, false);
+            if (shipComponent == null || inDmg <= 0f)
+            {
+                __result = 0f;
+                return false;
+            }
+            if (dmgType == EDamageType.E_INFECTED && inDmg == 10 && shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("Anti-Infected Shield"))
+            {
+                __result = 0f;
+                return false;
+            }
+            if (turret != null && (turret is HullSmasher || turret is AntiShield || turret is TweakedAntiShield))
+            {
+                inDmg *= 0.7f;
+            }
+            if (shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("Eletric Wall"))
+            {
+                inDmg *= 0.9f;
+            }
+            else if (shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("Layered Shield"))
+            {
+                inDmg *= Mathf.Max(0.2f,shipComponent.Current/shipComponent.CurrentMax);
+            }
+            else if (dmgType == EDamageType.E_PHYSICAL && shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("Anti-Infected Shield") && turret != null && turret is PLSporeTurret)
+            {
+                inDmg *= 0.2f;
+            }
+            return true;
         }
     }
-
-
-
     [HarmonyPatch(typeof(PLServer), "SetStartupSwitchStatus")]
     class EMPPulse 
     {

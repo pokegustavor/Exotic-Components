@@ -76,7 +76,7 @@ namespace Exotic_Components
 
             public override void AddStats(PLShipComponent InComp)
             {
-                MaxHeat = 1.1f + 0.3f * InComp.LevelMultiplier(0.31f, 1);
+                MaxHeat += 0.3f * InComp.LevelMultiplier(0.31f, 1);
             }
         }
         public class Researcher : CPUMod
@@ -134,14 +134,10 @@ namespace Exotic_Components
                                         -1,
                                         PLServer.Instance.GetEstimatedServerMs() + 3000,
                                         true,
-                                        money.ToString()
+                                        (10000 + (int)(10000 * InComp.LevelMultiplier(0.61f, 1))).ToString()
                                 });
-                    PLServer.Instance.CurrentCrewCredits += money;
+                    PLServer.Instance.CurrentCrewCredits += 10000 + (int)(10000 * InComp.LevelMultiplier(0.61f, 1));
                 }
-            }
-            public override void AddStats(PLShipComponent InComp)
-            {
-                money = 10000 + (int)(10000 * InComp.LevelMultiplier(0.61f, 1));
             }
             public override string GetStatLineLeft(PLShipComponent InComp)
             {

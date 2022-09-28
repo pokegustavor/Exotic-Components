@@ -56,6 +56,12 @@ namespace Exotic_Components
 
 			public override PLShipComponent PLMegaTurret => new PhaseShieldTurret();
 		}
+		class ProjectileChargeMod : MegaTurretMod
+		{
+			public override string Name => "ProjectileChargeTurret";
+
+			public override PLShipComponent PLMegaTurret => new ProjectileChargeTurret();
+		}
 	}
 
 	class MachineGunTurret : PLMegaTurret_Proj
@@ -492,7 +498,6 @@ namespace Exotic_Components
 			return num < 1f - heatGeneratedOnFire;
 		}
 	}
-
 	class InstabilityTurret : PLTurret
 	{
 		public InstabilityTurret(int inLevel = 0) : base(ESlotType.E_COMP_MAINTURRET)
@@ -1117,7 +1122,6 @@ namespace Exotic_Components
 		private float turretChargeSpeed_ToVisualChargeSpeed = 0.75f;
 		public float stabilityCharge = 0;
 	}
-
     class PhaseShieldTurret : PLMegaTurret
     {
         public PhaseShieldTurret(int inLevel = 0) : base(inLevel)
@@ -1145,7 +1149,142 @@ namespace Exotic_Components
 			this.DamageType = EDamageType.E_PHASE;
 		}
     }
+	class ProjectileChargeTurret : PLMegaTurret 
+	{
+		public ProjectileChargeTurret(int inLevel = 0) : base(inLevel)
+		{
+			this.Name = "Supreme Plasma Turret";
+			this.Desc = "This special railgun turret uses hot plasma as projectile, you can charge it for a hotter and stronger plasma, but it does use quite some power. At least my prototypes don't overheat your reactor.";
+			this.m_Damage = 100f;
+			this.Experimental = true;
+			this.MinFireDelay = 0.75f;
+			this.FireDelay = 0.02f;
+			this.HeatGeneratedOnFire = 0.8f;
+			this.m_MaxPowerUsage_Watts = 20000f;
+			this.m_ProjSpeed = 9000f;
+			base.SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("ProjectileChargeTurret");
+			this.m_MarketPrice = 48530;
+			base.CargoVisualPrefabID = 5;
+			this.m_SlotType = ESlotType.E_COMP_MAINTURRET;
+			this.m_KickbackForceMultiplier = 0.7f;
+			this.m_IconTexture = (Texture2D)Resources.Load("Icons/8_Weapons");
+			this.OnFire_CameraShakeAmt = 0.2f;
+			this.m_AutoAimMinDotPrd = 0.99f;
+			this.AutoAimEnabled = true;
+			this.IsMainTurret = true;
+			this.HasTrackingMissileCapability = true;
+			this.HasPulseLaser = true;
+		}
+		protected override string GetTurretPrefabPath()
+		{
+			return "NetworkPrefabs/Component_Prefabs/MegaTurret_Proj";
+		}
+		protected override bool AutoAimTrackingIsEnabled()
+		{
+			PLPlayer playerFromPlayerID = PLServer.Instance.GetPlayerFromPlayerID(base.ShipStats.Ship.GetCurrentTurretControllerPlayerID(this.TurretID));
+			bool flag = false;
+			if (playerFromPlayerID != null && playerFromPlayerID.IsBot)
+			{
+				flag = true;
+			}
+			return flag || base.ShipStats.Ship.IsDrone;
+		}
+        public override void Tick()
+        {
+			if (this.m_IsCharging && PLServer.Instance != null && base.ShipStats.Ship.MainTurretActivationTimeServerMilliseconds - PLServer.Instance.GetEstimatedServerMs() < 0)
+			{
+				this.m_IsCharging = false;
+				this.m_IsVisiblyCharging = false;
+				this.ChargeComplete(this.StoredProjID, this.TurretInstance.RefJoint.transform.forward);
+			}
+			IsCharging = false;
+			base.Tick();
+			IsCharging = m_IsCharging;
 
+		}
+        protected override void ChargeComplete(int inProjID, Vector3 dir)
+		{
+			if (this.TurretInstance != null)
+			{
+				foreach (object obj in this.TurretInstance.GetComponent<Animation>())
+				{
+					((AnimationState)obj).speed = 8f;
+				}
+			}
+			this.ChargeAmount = 0f;
+			this.LastFireTime = Time.time;
+			this.Heat += this.HeatGeneratedOnFire;
+			if (this.TurretInstance == null || this.TurretInstance.FiringLoc == null || this.TurretInstance.Proj == null)
+			{
+				return;
+			}
+			GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(this.TurretInstance.Proj, this.TurretInstance.FiringLoc.transform.position, this.TurretInstance.FiringLoc.transform.rotation);
+			if (gameObject == null)
+			{
+				return;
+			}
+			if (this.UseShipVelocityWhenFiringProj && base.ShipStats.Ship.ExteriorRigidbody != null)
+			{
+				gameObject.GetComponent<Rigidbody>().velocity = base.ShipStats.Ship.ExteriorRigidbody.velocity + dir * this.m_ProjSpeed;
+			}
+			else
+			{
+				gameObject.GetComponent<Rigidbody>().velocity = dir * this.m_ProjSpeed;
+			}
+			gameObject.GetComponent<PLProjectile>().ProjID = inProjID;
+			gameObject.GetComponent<PLProjectile>().OwnerShipID = base.ShipStats.Ship.ShipID;
+			gameObject.GetComponent<PLProjectile>().TurretID = this.TurretID;
+			gameObject.GetComponent<PLProjectile>().Damage = this.m_Damage * base.LevelMultiplier(0.15f, 1f) * base.ShipStats.TurretDamageFactor;
+			gameObject.GetComponent<PLProjectile>().MyDamageType = EDamageType.E_PHYSICAL;
+			if (base.ShipStats.Ship.GetExteriorMeshCollider() != null)
+			{
+				Physics.IgnoreCollision(base.ShipStats.Ship.GetExteriorMeshCollider(), gameObject.GetComponent<Collider>());
+			}
+			foreach (Collider collider in base.ShipStats.Ship.ExtraColliders)
+			{
+				if (collider != null)
+				{
+					Physics.IgnoreCollision(collider, gameObject.GetComponent<Collider>());
+				}
+			}
+			this.CurrentCameraShake += this.OnFire_CameraShakeAmt;
+			if (this.FireTurretSoundSFX != "")
+			{
+				PLMusic.PostEvent(this.FireTurretSoundSFX, this.TurretInstance.gameObject);
+			}
+			if (Time.time - base.ShipStats.Ship.LastCloakingSystemActivatedTime > 2f)
+			{
+				base.ShipStats.Ship.SetIsCloakingSystemActive(false);
+			}
+			PLServer.Instance.m_ActiveProjectiles.Add(gameObject.GetComponent<PLProjectile>());
+			if (this.TurretInstance != null && this.TurretInstance.GetComponent<Animation>() != null)
+			{
+				this.TurretInstance.GetComponent<Animation>().Play(this.TurretInstance.FireAnimationName);
+			}
+			ParticleSystem component = this.TurretInstance.OptionalGameObjects[0].GetComponent<ParticleSystem>();
+			if (component != null)
+			{
+				component.Emit(2);
+			}
+			ParticleSystem component2 = this.TurretInstance.OptionalGameObjects[1].GetComponent<ParticleSystem>();
+			if (component2 != null)
+			{
+				component2.Emit(12);
+			}
+			if (this.TurretInstance != null)
+			{
+				base.ShipStats.Ship.Exterior.GetComponent<Rigidbody>().AddForceAtPosition(-1200f * dir * this.m_KickbackForceMultiplier, this.TurretInstance.transform.position, ForceMode.Impulse);
+			}
+		}
+        public override void Fire(int inProjID, Vector3 dir)
+        {
+			this.m_IsCharging = true;
+			base.ShipStats.Ship.MainTurretActivationTimeServerMilliseconds = PLServer.Instance.GetEstimatedServerMs() + 5000;
+		}
+		private int StoredProjID = 0;
+		private bool m_IsCharging = false;
+		private bool m_IsVisiblyCharging = false;
+	}
     [HarmonyLib.HarmonyPatch(typeof(PLUITurretUI), "Update")]
 	class CustomTurretUI 
 	{

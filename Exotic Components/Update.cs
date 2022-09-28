@@ -62,6 +62,7 @@ namespace Exotic_Components
                     InitialStore.UpdateCore();
                 }
                 bool found = false;
+                /*
                 foreach(PLCPU cpu in PLEncounterManager.Instance.PlayerShip.MyStats.GetComponentsOfType(ESlotType.E_COMP_CPU,false)) 
                 {
                     if (cpu.Name == "Turret Thermo Boost")
@@ -72,6 +73,7 @@ namespace Exotic_Components
                 }
                 if (!found) CPUS.ThermoBoost.MaxHeat = 1.1f;
                 found = false;
+                */
                 if(PLServer.GetCurrentSector().MissionSpecificID == 702) 
                 {
                     PLShipInfo judge = null;
@@ -183,23 +185,6 @@ namespace Exotic_Components
                     }
                 }
                 
-                if (!PLCampaignIO.Instance.m_CampaignData.MissionTypes.Contains(Missions.RecoverCPU.Missiondata)) 
-                {
-                    PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.RecoverCPU.Missiondata);
-                }
-                if (!PLCampaignIO.Instance.m_CampaignData.MissionTypes.Contains(Missions.KillTaitor.Missiondata))
-                {
-                    PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.KillTaitor.Missiondata);
-                }
-                if (!PLCampaignIO.Instance.m_CampaignData.MissionTypes.Contains(Missions.ProtectJudge.Missiondata))
-                {
-                    PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.ProtectJudge.Missiondata);
-                }
-                if (!PLCampaignIO.Instance.m_CampaignData.MissionTypes.Contains(Missions.DeliverBiscuit.Missiondata))
-                {
-                    PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.DeliverBiscuit.Missiondata);
-                }
-                
             }
             catch { }
         }
@@ -209,7 +194,7 @@ namespace Exotic_Components
     {
         static void Postfix(PLShipStats __instance)
         {
-            __instance.ReactorCoolantCapacity = 800f;
+            CPUS.ThermoBoost.MaxHeat = 1.1f;
             switch (__instance.Ship.ShipTypeID)
             {
                 default:

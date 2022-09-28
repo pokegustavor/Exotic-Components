@@ -113,10 +113,18 @@ namespace Exotic_Components
         }
     }
     [HarmonyPatch(typeof(PLServer), "StartPlayer")]
-    class Patch
+    class CreateStoreAndMissions
     {
-        static void Postfix()
+        static void Postfix(int inID)
         {
+            PLPlayer player = PLServer.Instance.GetPlayerFromPlayerID(inID);
+            if (player != null && player == PLNetworkManager.Instance.LocalPlayer)
+            {
+                PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.RecoverCPU.Missiondata);
+                PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.KillTaitor.Missiondata);
+                PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.ProtectJudge.Missiondata);
+                PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.DeliverBiscuit.Missiondata);
+            }
             foreach (PLSectorInfo sectors in PLGlobal.Instance.Galaxy.AllSectorInfos.Values)
             {
                 if (sectors.Name == "The Core(MOD)") return;

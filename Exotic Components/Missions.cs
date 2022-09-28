@@ -44,7 +44,7 @@ namespace Exotic_Components
                     ObjType = 2,
                     Data = new Dictionary<string, string>
                     {
-                        {"PC_ComponentType","23"},
+                        {"PC_ComponentType","E_COMP_MISSION_COMPONENT"},
                         {"PC_SubType",MissionShipComponentModManager.Instance.GetMissionShipComponentIDFromName("Intergalatic Jump Processor Core").ToString()},
                         {"PC_CompName","Intergalatic Jump Processor Core"},
                         {"PC_AmountNeeded","1"},

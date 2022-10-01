@@ -693,7 +693,7 @@ namespace Exotic_Components
     {
         static void Prefix(PLShipInfoBase __instance)
         {
-            if (!__instance.GetIsPlayerShip() && __instance.MyStats.HullCurrent <= 0f)
+            if (!__instance.GetIsPlayerShip() && __instance.MyStats != null && __instance.MyStats.HullCurrent <= 0f)
             {
                 if (__instance.ShipNameValue == "Run's Dead" && PLServer.GetCurrentSector().MissionSpecificID == 702)
                 {

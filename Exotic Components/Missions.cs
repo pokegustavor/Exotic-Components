@@ -154,7 +154,189 @@ namespace Exotic_Components
                 PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(missionData);
             }
         }
+        public class Testa
+        {
+            public static ComponentOverrideData data = new ComponentOverrideData() { CompType = 23, CompSubType = MissionShipComponentModManager.Instance.GetMissionShipComponentIDFromName("Intergalatic Jump Processor Core"), IsCargo = true };
+            public static PickupMissionData Missiondata
+            {
+                get
+                {
+                    return CreateData();
+                }
+            }
 
+            private static PickupMissionData CreateData()
+            {
+                PickupMissionData missionData = new PickupMissionData
+                {
+                    Desc = "Me testing",
+                    Name = "Long Range Test",
+                    CanBeAbandonedByPlayers = true,
+                    MissionID = 769,
+                    Rarity = 0,
+                    CallOnStart = true,
+                    LongRangeDialogueActorID = "Exotic_1",
+                    LongRangeDialogueDisplayName = "The Core (Long Comms)",
+                    LongRangeDialogueDisplayNameOriginal = "The Core (Long Comms)",
+            };
+                List<RewardData> rewards = new List<RewardData>
+            {
+                new RewardData()
+                {
+                    RewardAmount = 0,
+                    RewardDataA = 7,
+                    RewardDataB = PulsarModLoader.Content.Components.CPU.CPUModManager.Instance.GetCPUIDFromName("Research Processor"),
+                    RwdType = 3
+                }
+            };
+                List<ObjectiveData> objectivesData = new List<ObjectiveData>
+            {
+                new ObjectiveData
+                {
+                    ObjType = 2,
+                    Data = new Dictionary<string, string>
+                    {
+                        {"PC_ComponentType","E_COMP_MISSION_COMPONENT"},
+                        {"PC_SubType",MissionShipComponentModManager.Instance.GetMissionShipComponentIDFromName("Intergalatic Jump Processor Core").ToString()},
+                        {"PC_CompName","Intergalatic Jump Processor Core"},
+                        {"PC_AmountNeeded","1"},
+                        {"PC_RemoveComponents","false"},
+                    },
+                },
+                new ObjectiveData
+                {
+                    ObjType = 10,
+                    Data = new Dictionary<string, string>
+                    {
+                        {"CMIJC_Value","14"},
+                    },
+                },
+                new ObjectiveData
+                {
+                    ObjType = 0,
+                    Data = new Dictionary<string, string>
+                    {
+                        {"CustomText","Sell processor to The Core"},
+                    },
+                }
+            };
+                List<RequirementData> startRequirement = new List<RequirementData>
+                {
+                    new RequirementData()
+                    {
+                        ReqType = 5,
+                        Data = new Dictionary<string, string>()
+                        {
+                            {"MissionIDCompleted_ID","700" }
+                        }
+                    }
+                };
+                missionData.SuccessRewards.AddRange(rewards);
+                missionData.Objectives.AddRange(objectivesData);
+                missionData.StartingRequirements.AddRange(startRequirement);
+                ActorTypeData actor = new ActorTypeData
+                {
+                    Name = "Exotic_1",
+                    HostileByDefault = false,
+                    CloseCommsIfWarpDriveCharging = false,
+                    HailOnStart = true,
+                    ShipIsFlagged = false
+                };
+                actor.OpeningLines.Add(new LineData()
+                {
+                    ID = 55555555,
+                    TextOptions = new List<string> { "Hello there my dude" },
+                    Actions = new List<LineActionData>
+                {
+                    new LineActionData() { Type = "1" },
+                    new LineActionData() {Type = "2"}
+                }
+                });
+                PLCampaignIO.Instance.m_CampaignData.ActorTypes.Add(actor);
+                return missionData;
+            }
+            //public static PLMissionObjective_PickupComponent objective = new PLMissionObjective_PickupComponent(ESlotType.E_COMP_MISSION_COMPONENT, MissionShipComponentModManager.Instance.GetMissionShipComponentIDFromName("Intergalatic Jump Processor Core"), "Intergalatic Jump Processor Core") { RawCustomText = ""};
+            //public static PLMissionObjective_CompleteWithinJumpCount objective2 = new PLMissionObjective_CompleteWithinJumpCount(14) { RawCustomText = "" };
+            //public static PLMissionObjective_Custom objective3 = new PLMissionObjective_Custom() { CustomTextOriginal = "Sell processor to The Core", RawCustomText = "Sell processor to The Core" };
+            public static void StartMission(bool loading = false)
+            {
+                if (!loading)
+                {
+                    PLServer.Instance.photonView.RPC("AddCrewWarning", PhotonTargets.All, new object[]
+                        {
+                        "NEW MISSION ACCEPTED",
+                        Color.yellow,
+                        0,
+                        "MSN"
+                        });
+                }
+                GameObject gameObject = PhotonNetwork.Instantiate("NetworkPrefabs/Missions/PickupMission", Vector3.zero, Quaternion.identity, 0, null);
+                PLPickupMissionBase mission = gameObject.GetComponent<PLPickupMissionBase>();
+                MissionDataBlock missionDataBlock = new MissionDataBlock
+                {
+                    MissionID = 769,
+                    IsPickupMission = false
+                };
+                PickupMissionData missionData = Missiondata;
+                List<PLMissionObjective> objectives = new List<PLMissionObjective>
+                {
+                new PLMissionObjective_PickupComponent(ESlotType.E_COMP_MISSION_COMPONENT, MissionShipComponentModManager.Instance.GetMissionShipComponentIDFromName("Intergalatic Jump Processor Core"), "Intergalatic Jump Processor Core") { RawCustomText = ""},
+                new PLMissionObjective_CompleteWithinJumpCount(14) { RawCustomText = "" },
+                new PLMissionObjective_Custom() { CustomTextOriginal = "Sell processor to The Core", RawCustomText = "Sell processor to The Core" }
+                };
+                foreach (PLMissionObjective objective in objectives)
+                {
+                    objective.Init();
+                }
+                mission.MyData = missionDataBlock;
+                mission.MyMissionData = missionData;
+                mission.MissionTypeID = 769;
+                //mission.Objectives.Add(objective);
+                //mission.Objectives.Add(objective2);
+                //mission.Objectives.Add(objective3);
+                mission.Objectives.AddRange(objectives);
+                if (!loading)
+                {
+                    int minimumFreeSectorNumber = PLGlobal.Instance.Galaxy.GetMinimumFreeSectorNumber();
+                    if (minimumFreeSectorNumber != -1)
+                    {
+                        PLSectorInfo plsectorInfo = new PLSectorInfo();
+                        plsectorInfo.Discovered = false;
+                        plsectorInfo.Visited = false;
+                        PLGlobal.Instance.Galaxy.AllSectorInfos.Add(minimumFreeSectorNumber, plsectorInfo);
+                        plsectorInfo.ID = minimumFreeSectorNumber;
+                        plsectorInfo.MySPI = SectorProceduralInfo.Create(PLGlobal.Instance.Galaxy, ref plsectorInfo, plsectorInfo.ID);
+                        plsectorInfo.FactionStrength = 0.5f;
+                        plsectorInfo.VisualIndication = ESectorVisualIndication.BLACKHOLE;
+                        plsectorInfo.MySPI.Faction = 5;
+                        plsectorInfo.Position = PLServer.GetSectorPositionAtDistance(10);
+                        plsectorInfo.MissionSpecificID = 769;
+                        PLServer.Instance.photonView.RPC("ClientInitialGetSectorData", PhotonTargets.Others, new object[]
+                                {
+                                PLServer.StarmapDataFromSector(plsectorInfo),
+                                plsectorInfo.Position
+                                });
+                        PLServer.Instance.photonView.RPC("ClientUpdateSectorName", PhotonTargets.Others, new object[]
+                        {
+                                plsectorInfo.ID,
+                                plsectorInfo.Name
+                        });
+                        PLServer.Instance.photonView.RPC("ClientUpdateMissionID", PhotonTargets.Others, new object[]
+                        {
+                                plsectorInfo.ID,
+                                plsectorInfo.MissionSpecificID
+                        });
+                        PLPersistantShipInfo ship = new PLPersistantShipInfo(EShipType.E_OUTRIDER, 1, plsectorInfo, 0, false, false, true);
+                        ship.ShipName = "The Retriver";
+
+                        ship.CompOverrides.Add(data);
+                        PLServer.Instance.AllPSIs.Add(ship);
+                    }
+                }
+                PLServer.Instance.AllMissions.Add(mission);
+                PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(missionData);
+            }
+        }
         public class KillTaitor
         {
             public static PickupMissionData Missiondata
@@ -261,8 +443,10 @@ namespace Exotic_Components
                                 plsectorInfo.ID,
                                 plsectorInfo.MissionSpecificID
                         });
-                        PLPersistantShipInfo ship = new PLPersistantShipInfo(EShipType.E_CIVILIAN_STARTING_SHIP, 1, plsectorInfo, 0, false, false, false);
-                        ship.ShipName = "Intergalatic Overloards";
+                        PLPersistantShipInfo ship = new PLPersistantShipInfo(EShipType.E_CIVILIAN_STARTING_SHIP, 1, plsectorInfo, 0, false, false, false)
+                        {
+                            ShipName = "Intergalatic Overloards"
+                        };
                         PLRand shipDeterministicRand = PLShipInfoBase.GetShipDeterministicRand(ship, 0);
                         List<ComponentOverrideData> overrides = new List<ComponentOverrideData>
                     {
@@ -286,7 +470,6 @@ namespace Exotic_Components
                 PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(missionData);
             }
         }
-
         public class ProtectJudge
         {
             public static PickupMissionData Missiondata
@@ -462,7 +645,6 @@ namespace Exotic_Components
                 PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(missionData);
             }
         }
-
         public class DeliverBiscuit
         {
             public static PLPersistantShipInfo BiscuitShip = null;
@@ -604,7 +786,7 @@ namespace Exotic_Components
                 PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(missionData);
             }
 
-            public static void SpawnEnemy(PLSectorInfo sector, int maxEnemy = 2) 
+            public static void SpawnEnemy(PLSectorInfo sector, int maxEnemy = 2)
             {
                 List<EShipType> possibleHunters = new List<EShipType>()
                 {
@@ -630,146 +812,197 @@ namespace Exotic_Components
                 }
             }
         }
-    }
-
-    class MissionItems
-    {
-        class IntergalaticJumpProcessorCore : MissionShipComponentMod
+        class MissionItems
         {
-            public override string Name => "Intergalatic Jump Processor Core";
-
-            public override string Description => "This is a very special Jump Processor Core that can be used to create a Intergalatic Jump Processor. Still needs a very special blueprint to not damage on assembly!";
-
-            public override int MarketPrice => 1;
-        }
-    }
-    [HarmonyPatch(typeof(PLBlackHole), "FixedUpdate")]
-    class BlackHoleDamage
-    {
-        static void Postfix(PLBlackHole __instance)
-        {
-            bool damage = false;
-            foreach (PLShipInfoBase plshipInfoBase in PLEncounterManager.Instance.AllShips.Values)
+            class IntergalaticJumpProcessorCore : MissionShipComponentMod
             {
-                if (plshipInfoBase != null && !plshipInfoBase.InWarp && plshipInfoBase.ExteriorRigidbody != null)
-                {
-                    Vector3 normalized2 = (__instance.transform.position - plshipInfoBase.Exterior.transform.position).normalized;
-                    plshipInfoBase.ExteriorRigidbody.AddForce(normalized2 * Mathf.Clamp(300f * plshipInfoBase.MyShipControl.TimeSinceWarp, 1000f, 30000f));
-                    float magnitude = (__instance.transform.position - plshipInfoBase.Exterior.transform.position).magnitude;
-                    float num = 9000f;
-                    if (magnitude < num && Time.time - __instance.LastDamageTime > 0.8f)
-                    {
+                public override string Name => "Intergalatic Jump Processor Core";
 
-                        float num2 = Mathf.Pow((num - magnitude) / num, 1.65f) * 260f;
-                        if (num2 > 20f)
-                        {
-                            plshipInfoBase.TakeDamage(num2, true, EDamageType.E_BEAM, 0f, -1, null, -1);
-                        }
-                        if (magnitude < 350f)
-                        {
-                            plshipInfoBase.TakeDamage(1600f, true, EDamageType.E_BEAM, 0f, -1, null, -1);
-                        }
-                        damage = true;
-                    }
-                }
-            }
-            if (damage) __instance.LastDamageTime = Time.time;
-        }
-    }
-    [HarmonyPatch(typeof(PLLocalize), "Localize", new Type[] { typeof(string), typeof(string), typeof(bool) })]
-    class LocalizationNegation
-    {
-        static void Postfix(ref string __result, string value)
-        {
-            if (__result == string.Empty)
-            {
-                __result = value;
+                public override string Description => "This is a very special Jump Processor Core that can be used to create a Intergalatic Jump Processor. Still needs a very special blueprint to not damage on assembly!";
+
+                public override int MarketPrice => 1;
             }
         }
-    }
-
-    [HarmonyPatch(typeof(PLShipInfoBase), "AboutToBeDestroyed")]
-    class OnShipDeath
-    {
-        static void Prefix(PLShipInfoBase __instance)
+        [HarmonyPatch(typeof(PLBlackHole), "FixedUpdate")]
+        class BlackHoleDamage
         {
-            if (!__instance.GetIsPlayerShip() && __instance.MyStats != null && __instance.MyStats.HullCurrent <= 0f)
+            static void Postfix(PLBlackHole __instance)
             {
-                if (__instance.ShipNameValue == "Run's Dead" && PLServer.GetCurrentSector().MissionSpecificID == 702)
+                bool damage = false;
+                foreach (PLShipInfoBase plshipInfoBase in PLEncounterManager.Instance.AllShips.Values)
                 {
-                    foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
+                    if (plshipInfoBase != null && !plshipInfoBase.InWarp && plshipInfoBase.ExteriorRigidbody != null)
                     {
-                        if (mission.MissionTypeID == 702 && !mission.Abandoned)
+                        Vector3 normalized2 = (__instance.transform.position - plshipInfoBase.Exterior.transform.position).normalized;
+                        plshipInfoBase.ExteriorRigidbody.AddForce(normalized2 * Mathf.Clamp(300f * plshipInfoBase.MyShipControl.TimeSinceWarp, 1000f, 30000f));
+                        float magnitude = (__instance.transform.position - plshipInfoBase.Exterior.transform.position).magnitude;
+                        float num = 9000f;
+                        if (magnitude < num && Time.time - __instance.LastDamageTime > 0.8f)
                         {
-                            mission.FailMission();
-                            break;
+
+                            float num2 = Mathf.Pow((num - magnitude) / num, 1.65f) * 260f;
+                            if (num2 > 20f)
+                            {
+                                plshipInfoBase.TakeDamage(num2, true, EDamageType.E_BEAM, 0f, -1, null, -1);
+                            }
+                            if (magnitude < 350f)
+                            {
+                                plshipInfoBase.TakeDamage(1600f, true, EDamageType.E_BEAM, 0f, -1, null, -1);
+                            }
+                            damage = true;
                         }
                     }
                 }
+                if (damage) __instance.LastDamageTime = Time.time;
+            }
+        }
+        [HarmonyPatch(typeof(PLLocalize), "Localize", new Type[] { typeof(string), typeof(string), typeof(bool) })]
+        class LocalizationNegation
+        {
+            static void Postfix(ref string __result, string value)
+            {
+                if (__result == string.Empty)
+                {
+                    __result = value;
+                }
+            }
+        }
+
+        [HarmonyPatch(typeof(PLShipInfoBase), "AboutToBeDestroyed")]
+        class OnShipDeath
+        {
+            static void Prefix(PLShipInfoBase __instance)
+            {
+                if (!__instance.GetIsPlayerShip() && __instance.MyStats != null && __instance.MyStats.HullCurrent <= 0f)
+                {
+                    if (__instance.ShipNameValue == "Run's Dead" && PLServer.GetCurrentSector().MissionSpecificID == 702)
+                    {
+                        foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
+                        {
+                            if (mission.MissionTypeID == 702 && !mission.Abandoned)
+                            {
+                                mission.FailMission();
+                                break;
+                            }
+                        }
+                    }
+                    if (Missions.DeliverBiscuit.BiscuitShip != null && Missions.DeliverBiscuit.BiscuitShip.ShipInstance == __instance)
+                    {
+                        foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
+                        {
+                            if (mission.MissionTypeID == 703 && !mission.Abandoned)
+                            {
+                                mission.FailMission();
+                                Missions.DeliverBiscuit.BiscuitShip = null;
+                                PLServer.Instance.ActiveBountyHunter_SectorID = -1;
+                                PLServer.Instance.ActiveBountyHunter_TypeID = -1;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        [HarmonyPatch(typeof(PLServer), "ClaimShip")]
+        class ClaimRemove
+        {
+            static void Prefix(int inShipID)
+            {
+                PLShipInfo ship = PLEncounterManager.Instance.GetShipFromID(inShipID) as PLShipInfo;
+                if (ship != null)
+                {
+                    if (ship.ShipNameValue == "Run's Dead" && PLServer.GetCurrentSector().MissionSpecificID == 702)
+                    {
+                        foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
+                        {
+                            if (mission.MissionTypeID == 702 && !mission.Abandoned)
+                            {
+                                mission.FailMission();
+                                break;
+                            }
+                        }
+                    }
+                    if (Missions.DeliverBiscuit.BiscuitShip != null && Missions.DeliverBiscuit.BiscuitShip.ShipInstance == ship)
+                    {
+                        foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
+                        {
+                            if (mission.MissionTypeID == 703 && !mission.Abandoned)
+                            {
+                                mission.FailMission();
+                                Missions.DeliverBiscuit.BiscuitShip.m_IsShipDestroyed = true;
+                                Missions.DeliverBiscuit.BiscuitShip = null;
+                                PLServer.Instance.ActiveBountyHunter_SectorID = -1;
+                                PLServer.Instance.ActiveBountyHunter_TypeID = -1;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        [HarmonyPatch(typeof(PLShipInfoBase), "Ship_WarpOutNow")]
+        class AvoidWarping
+        {
+            static bool Prefix(PLShipInfoBase __instance)
+            {
                 if (Missions.DeliverBiscuit.BiscuitShip != null && Missions.DeliverBiscuit.BiscuitShip.ShipInstance == __instance)
                 {
-                    foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
-                    {
-                        if (mission.MissionTypeID == 703 && !mission.Abandoned)
-                        {
-                            mission.FailMission();
-                            Missions.DeliverBiscuit.BiscuitShip = null;
-                            PLServer.Instance.ActiveBountyHunter_SectorID = -1;
-                            PLServer.Instance.ActiveBountyHunter_TypeID = -1;
-                            break;
-                        }
-                    }
+                    return false;
                 }
+                return true;
             }
-        }
-    }
-    [HarmonyPatch(typeof(PLServer), "ClaimShip")]
-    class ClaimRemove
-    {
-        static void Prefix(int inShipID)
-        {
-            PLShipInfo ship = PLEncounterManager.Instance.GetShipFromID(inShipID) as PLShipInfo;
-            if (ship != null)
-            {
-                if (ship.ShipNameValue == "Run's Dead" && PLServer.GetCurrentSector().MissionSpecificID == 702)
-                {
-                    foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
-                    {
-                        if (mission.MissionTypeID == 702 && !mission.Abandoned)
-                        {
-                            mission.FailMission();
-                            break;
-                        }
-                    }
-                }
-                if (Missions.DeliverBiscuit.BiscuitShip != null && Missions.DeliverBiscuit.BiscuitShip.ShipInstance == ship)
-                {
-                    foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
-                    {
-                        if (mission.MissionTypeID == 703 && !mission.Abandoned)
-                        {
-                            mission.FailMission();
-                            Missions.DeliverBiscuit.BiscuitShip.m_IsShipDestroyed = true;
-                            Missions.DeliverBiscuit.BiscuitShip = null;
-                            PLServer.Instance.ActiveBountyHunter_SectorID = -1;
-                            PLServer.Instance.ActiveBountyHunter_TypeID = -1;
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    [HarmonyPatch(typeof(PLShipInfoBase), "Ship_WarpOutNow")]
-    class AvoidWarping 
-    {
-        static bool Prefix(PLShipInfoBase __instance) 
-        {
-            if(Missions.DeliverBiscuit.BiscuitShip != null && Missions.DeliverBiscuit.BiscuitShip.ShipInstance == __instance) 
-            {
-                return false;
-            }
-            return true;
         }
     }
 }
+
+/*
+   All Requirements/ requirement ID:
+BiscuitsSoldMax_Value
+BiscuitsSoldMin_Value
+ChaosLevelMax_Level 4
+ChaosLevelMin_Level 3
+Comment 7
+Comments
+CreateCountMax_Value
+CreateCountMin_Value
+CrewFactionEquals_Value 12
+CrewFactionNOTEquals_Value 13
+CrewLevelMax_Level 2
+CrewLevelMin_Level 1
+CustomText 7
+HasComp_SubType 8
+HasComp_Type 8
+HasItem_SubType 9
+HasItem_Type 9
+MissionIDCompleted_ID 5
+MissionIDInProgress_ID 18
+MissionIDNotCompleted_ID 6
+PercentSectorsFaction_ID 16
+PercentSectorsFaction_Percent 16
+PercentSectorsFaction_Range 16
+PlayerShipRegEquals_Value 14
+PlayerShipRegNOTEquals_Value 15
+RankPercentileMax_Value
+RankPercentileMin_Value
+RepMax_ID 11
+RepMax_Value 11
+RepMin_ID 10
+RepMin_Value 10
+ScriptName 7
+SectorTypeInRange_Range 17
+SectorTypeInRange_Type 17
+
+*/
+
+/*
+    All reward data:
+    0: (custom)
+    1: Credits (reward amount)
+    2: Item in captain locker (Reward amount = level, RewardDataA = type, RewardDataB = subtype)
+    3: Component in cargo (Reward amount = level, RewardDataA = type, RewardDataB = subtype)
+    4: XP (reward amount)
+    5: Chaos (RewardDataD)
+    6: Rep (RewardDataA = factionID, reward amount = amount)
+    7: Flag
+    8: Unflag
+ */

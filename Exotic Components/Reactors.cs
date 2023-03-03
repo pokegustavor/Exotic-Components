@@ -5,11 +5,13 @@ using UnityEngine;
 using HarmonyLib;
 namespace Exotic_Components
 {
-    class Reactors
+    public class Reactors
     {
         static public bool CollectedColor = false;
         static public Color lightColor = Color.black;
         static public Color particleColor = Color.black;
+        static public float BaseHeat = 5f;
+        static public float MaxCool = 11f;
         class ColdReactor : ReactorMod
         {
             public override string Name => "CryoCore MK2";
@@ -504,8 +506,10 @@ namespace Exotic_Components
                 PLReactor me = InComp as PLReactor;
                 if (me.IsEquipped)
                 {
-                    me.HeatOutput = 12f - me.ShipStats.ReactorTotalUsagePercent * 22f;
-                    if (me.HeatOutput < 0) me.HeatOutput = 0f;
+                    me.HeatOutput = Reactors.BaseHeat - me.ShipStats.ReactorTotalUsagePercent * Reactors.MaxCool;
+                    //float minTemp = -0.5f;
+                    //if (me.HeatOutput < minTemp) me.HeatOutput = minTemp;
+                    if (me.ShipStats.ReactorTotalUsagePercent < 10 && !me.ShipStats.Ship.IsReactorOverheated()) me.ShipStats.ReactorTempCurrent += 200 * Time.deltaTime;
                 }
             }
             public override string GetStatLineRight(PLShipComponent InComp)
@@ -586,7 +590,7 @@ namespace Exotic_Components
 
             public override float MaxTemp => 12007f;
 
-            public override float EmergencyCooldownTime => 360f;
+            public override float EmergencyCooldownTime => 3600f;
 
             public override float EnergySignatureAmount => 500f;
 
@@ -727,14 +731,6 @@ namespace Exotic_Components
                     PLLocalize.Localize("Max Output", false),
                 });
             }
-
-            public override void OnWarp(PLShipComponent InComp)
-            {
-                if (InComp.IsEquipped && InComp.ShipStats != null)
-                {
-                    InComp.ShipStats.TakeHullDamage(InComp.ShipStats.HullMax * 0.05f, EDamageType.E_INFECTED, null, null);
-                }
-            }
             public override void Tick(PLShipComponent InComp)
             {
                 if (InComp.IsEquipped && InComp.ShipStats != null && (InComp.ShipStats.Ship is PLShipInfo) && (InComp.ShipStats.Ship as PLShipInfo).ReactorInstance != null)
@@ -806,30 +802,6 @@ namespace Exotic_Components
                 }
             }
         }
-        [HarmonyPatch(typeof(PLReactor), "GetStatLineLeft")]
-        class LeftDescFix
-        {
-            static void Postfix(PLReactor __instance, ref string __result)
-            {
-                int subtypeformodded = __instance.SubType - ReactorModManager.Instance.VanillaReactorMaxType;
-                if (subtypeformodded > -1 && subtypeformodded < ReactorModManager.Instance.ReactorTypes.Count && __instance.ShipStats != null)
-                {
-                    __result = ReactorModManager.Instance.ReactorTypes[subtypeformodded].GetStatLineLeft(__instance);
-                }
-            }
-        }
-        [HarmonyPatch(typeof(PLReactor), "GetStatLineRight")]
-        class RightDescFix
-        {
-            static void Postfix(PLReactor __instance, ref string __result)
-            {
-                int subtypeformodded = __instance.SubType - ReactorModManager.Instance.VanillaReactorMaxType;
-                if (subtypeformodded > -1 && subtypeformodded < ReactorModManager.Instance.ReactorTypes.Count && __instance.ShipStats != null)
-                {
-                    __result = ReactorModManager.Instance.ReactorTypes[subtypeformodded].GetStatLineRight(__instance);
-                }
-            }
-        }
         [HarmonyPatch(typeof(PLShipComponent), "FinalLateAddStats")]
         class AddStatsFix
         {
@@ -895,8 +867,6 @@ namespace Exotic_Components
             }
         }
 
-
-
         [HarmonyPatch(typeof(PLReactor), "Tick")]
         class ManualTick
         {
@@ -918,11 +888,6 @@ namespace Exotic_Components
                     {
                         particle.startColor = particleColor;
                     }
-                }
-                int subtypeformodded = __instance.SubType - ReactorModManager.Instance.VanillaReactorMaxType;
-                if (subtypeformodded > -1 && subtypeformodded < ReactorModManager.Instance.ReactorTypes.Count && __instance.ShipStats != null)
-                {
-                    ReactorModManager.Instance.ReactorTypes[subtypeformodded].Tick(__instance);
                 }
             }
         }

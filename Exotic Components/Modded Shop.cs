@@ -124,6 +124,7 @@ namespace Exotic_Components
                 PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.KillTaitor.Missiondata);
                 PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.ProtectJudge.Missiondata);
                 PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.DeliverBiscuit.Missiondata);
+                PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.Testa.Missiondata);
             }
             foreach (PLSectorInfo sectors in PLGlobal.Instance.Galaxy.AllSectorInfos.Values)
             {

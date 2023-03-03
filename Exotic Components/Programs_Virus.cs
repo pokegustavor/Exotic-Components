@@ -273,22 +273,6 @@ namespace Exotic_Components
         }
 
     }
-    [HarmonyPatch(typeof(VirusModManager), "CreateVirus")]
-    class ManualFixVirus
-    {
-        static void Postfix(int Subtype, ref PLVirus __result)
-        {
-            if (Subtype >= VirusModManager.Instance.VanillaVirusMaxType)
-            {
-                int subtypeformodded = Subtype - VirusModManager.Instance.VanillaVirusMaxType;
-                if (subtypeformodded <= VirusModManager.Instance.VirusTypes.Count && subtypeformodded > -1)
-                {
-                    VirusMod VirusType = VirusModManager.Instance.VirusTypes[Subtype - VirusModManager.Instance.VanillaVirusMaxType];
-                    __result.InfectionTimeLimitMs = VirusType.InfectionTimeLimitMs;
-                }
-            }
-        }
-    }
 
     [HarmonyPatch(typeof(PLShipInfoBase), "ShouldBeHostileToShip")]
     class FriendlyDrones 

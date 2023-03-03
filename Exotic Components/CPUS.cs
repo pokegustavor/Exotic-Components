@@ -174,7 +174,9 @@ namespace Exotic_Components
             public override string GetStatLineRight(PLShipComponent InComp)
             {
                 PLCPU me = InComp as PLCPU;
-                return "+" + (0.7f * me.LevelMultiplier(0.5f, 1f) * 10f).ToString("0") + "\n" + (0.36f * me.LevelMultiplier(0.75f, 1f)).ToString("0.0") + "\n" +(1.7f * me.LevelMultiplier(0.25f, 1f) * 10f).ToString("0");
+                return "+" + (0.7f * me.LevelMultiplier(0.5f, 1f) * 10f).ToString("0") + "\n" 
+                    + (0.36f * me.LevelMultiplier(0.75f, 1f)).ToString("0.0") + "\n" 
+                    +(1.7f * me.LevelMultiplier(0.25f, 1f)).ToString("0");
             }
 
             public override void AddStats(PLShipComponent InComp)

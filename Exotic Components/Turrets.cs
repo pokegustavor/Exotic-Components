@@ -58,7 +58,6 @@ namespace Exotic_Components
             this.Name = "Supreme RailGun";
             this.Desc = "Recovered Ancient Human technology, this Railgun is the strongest of its kind, even if not as powerful as the original";
             this.m_Damage = 450f;
-            base.SubType = TurretModManager.Instance.GetTurretIDFromName("Supreme RailGun");
             this.m_MarketPrice = 12000;
             this.m_MaxPowerUsage_Watts = 7000f;
             this.m_ProjSpeed = 230f;

@@ -212,18 +212,6 @@ namespace Exotic_Components
                 });
             }
         }
-        [HarmonyLib.HarmonyPatch(typeof(PLHull), "Tick")]
-        class ManualTick
-        {
-            static void Postfix(PLHull __instance)
-            {
-                int subtypeformodded = __instance.SubType - HullModManager.Instance.VanillaHullMaxType;
-                if (subtypeformodded > -1 && subtypeformodded < HullModManager.Instance.HullTypes.Count && __instance.ShipStats != null)
-                {
-                    HullModManager.Instance.HullTypes[subtypeformodded].Tick(__instance);
-                }
-            }
-        }
 
         [HarmonyLib.HarmonyPatch(typeof(PLShipStats), "TakeHullDamage")]
         class HullDamage

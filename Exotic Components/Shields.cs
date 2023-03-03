@@ -168,18 +168,6 @@ namespace Exotic_Components
                 me.ShipStats.ShieldsCurrent = me.Current;
             }
         }
-        [HarmonyPatch(typeof(PLShieldGenerator), "Tick")]
-        class ManualTick
-        {
-            static void Postfix(PLShieldGenerator __instance)
-            {
-                int subtypeformodded = __instance.SubType - ShieldModManager.Instance.VanillaShieldMaxType;
-                if (subtypeformodded > -1 && subtypeformodded < ShieldModManager.Instance.ShieldTypes.Count && __instance.ShipStats != null)
-                {
-                    ShieldModManager.Instance.ShieldTypes[subtypeformodded].Tick(__instance);
-                }
-            }
-        }
         [HarmonyPatch(typeof(PLShieldGenerator), "AddStats")]
         class ManualAddStats
         {

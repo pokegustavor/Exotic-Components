@@ -56,7 +56,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\PULSARLostColony\PULSAR_LostColony_Data\Managed\PLInputBase.dll</HintPath>
     </Reference>
-    <Reference Include="PulsarModLoader">
+    <Reference Include="PulsarModLoader, Version=0.10.5.21, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\PULSARLostColony\PULSAR_LostColony_Data\Managed\PulsarModLoader.dll</HintPath>
     </Reference>
     <Reference Include="System" />

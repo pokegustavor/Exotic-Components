@@ -106,26 +106,14 @@ namespace Exotic_Components
             public override string GetStatLineLeft(PLShipComponent InComp)
             {
                 return string.Concat(new string[]
-                {
-                PLLocalize.Localize("Integrity", false),
-                "\n",
-                PLLocalize.Localize("Armor", false),
-                "\n",
-                PLLocalize.Localize("Armor (Max)", false)
-                });
+                {PLLocalize.Localize("Integrity", false), "\n", PLLocalize.Localize("Armor", false)});
             }
 
             public override string GetStatLineRight(PLShipComponent InComp)
             {
                 PLHull me = InComp as PLHull;
                 return string.Concat(new string[]
-                {
-                (me.Max * InComp.LevelMultiplier(0.2f, 1f)).ToString("0"),
-                "\n",
-                (me.Armor * 250f * InComp.LevelMultiplier(0.15f, 1f)).ToString("0"),
-                "\n",
-                (200f * InComp.LevelMultiplier(0.15f, 1f)).ToString("0")
-                });
+                {(me.Max * InComp.LevelMultiplier(0.2f, 1f)).ToString("0"), "\n",(me.Armor * 250f * InComp.LevelMultiplier(0.15f, 1f)).ToString("0")});
             }
 
             public override void FinalLateAddStats(PLShipComponent InComp)
@@ -190,6 +178,45 @@ namespace Exotic_Components
             public override float Armor => 0.35f;
 
             public override float Defense => 0.2f;
+
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return string.Concat(new string[]
+                {
+                PLLocalize.Localize("Integrity", false),
+                "\n",
+                PLLocalize.Localize("Armor", false),
+                });
+            }
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLHull me = InComp as PLHull;
+                return string.Concat(new string[]
+                {
+                (me.Max * InComp.LevelMultiplier(0.2f, 1f)).ToString("0"),
+                "\n",
+                (me.Armor * 250f * InComp.LevelMultiplier(0.15f, 1f)).ToString("0"),
+                });
+            }
+        }
+        class TheWall : HullMod
+        {
+            public override string Name => "\"The Wall\"";
+
+            public override string Description => "This special hull may not have much integrity, but it has extremely high defense, so it should still be an extremely valuable defense.";
+
+            public override int MarketPrice => 13000;
+
+            public override bool CanBeDroppedOnShipDeath => false;
+
+            public override float HullMax => 150f;
+
+            public override float Armor => 4.5f;
+
+            public override float Defense => 0.6f;
+
+            public override bool Experimental => true;
 
             public override string GetStatLineLeft(PLShipComponent InComp)
             {

@@ -100,6 +100,7 @@
     <Compile Include="CPUS.cs" />
     <Compile Include="Hulls.cs" />
     <Compile Include="Main Turrets.cs" />
+    <Compile Include="Missiles.cs" />
     <Compile Include="Missions.cs" />
     <Compile Include="Mod.cs" />
     <Compile Include="Modded Shop.cs" />

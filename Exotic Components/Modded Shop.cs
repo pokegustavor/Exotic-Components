@@ -3,8 +3,43 @@ using PulsarModLoader;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using System.Collections.Generic;
+
 namespace Exotic_Components
 {
+    [HarmonyPatch(typeof(PLShipInfo), "UpdateAllHailTargetsList")]
+    public class EnsureCoreComms
+    {
+        static void Postfix()
+        {
+            TheCoreComms comms = UnityEngine.Object.FindObjectOfType<TheCoreComms>();
+            if (comms != null)
+            {
+                ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.RecieveCore", PhotonTargets.Others, new object[]
+                {
+                    comms.GetHailTargetID()
+                });
+            }
+        }
+
+        public static void CreateCore(int ID)
+        {
+            foreach (PLHailTarget target in PLHailTarget.AllHailTargets)
+            {
+                if (target is TheCoreComms) return;
+            }
+            InitialStore.UpdateCore();
+            TheCoreComms comms = UnityEngine.Object.FindObjectOfType<TheCoreComms>();
+            comms.HailTargetID = ID;
+        }
+    }
+    public class RecieveCore : ModMessage
+    {
+        public override void HandleRPC(object[] arguments, PhotonMessageInfo sender)
+        {
+            EnsureCoreComms.CreateCore((int)arguments[0]);
+        }
+    }
+
     [HarmonyPatch(typeof(PLTraderInfo), "SellPawnItem")]
     class SellIntergalatic
     {
@@ -14,7 +49,7 @@ namespace Exotic_Components
             if (PLServer.Instance.GetPlayerFromPlayerID(inPlayer).MyInventory.GetItemAtNetID(inNetID).GetItemName(true) == "Flagship Intergalactic Warp Schematics" && PLServer.GetCurrentSector().Name == "The Core(MOD)")
             {
                 TheCoreComms.soldIntergalatic = true;
-                PLServer.Instance.photonView.RPC("CaptainBuy_Fuel", PhotonTargets.All, new object[]
+                PLServer.Instance.photonView.RPC("CaptainBuy_Fuel", PhotonTargets.MasterClient, new object[]
                              {
                          PLEncounterManager.Instance.PlayerShip.ShipID,
                         -500000
@@ -376,6 +411,7 @@ namespace Exotic_Components
     class TheCoreComms : PLHailTarget_CustomGeneralShop
     {
         private int missionID = -1;
+        private float LastAdded = Time.time;
         public static bool soldIntergalatic = false;
         private string defaultText = "Welcome to the core, not sure how you found me in here, but doesn't matter. I have the most exotic components of all the galaxy, the other shops have no chance against me. Also ignore the big shiny center of the galaxy and buy something!";
         public override void Start()
@@ -386,6 +422,58 @@ namespace Exotic_Components
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Install Ship Components", false), new PLHailChoiceDelegate(this.OnSelectInstallComp)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Tell me more about you", new PLHailChoiceDelegate(this.OnTalkWith)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Missions", new PLHailChoiceDelegate(this.Mission)));
+        }
+        private void UpdateText()
+        {
+            PLShipInfo player = PLEncounterManager.Instance.PlayerShip;
+            if (player != null && player.CurrentHailTargetSelection != null)
+            {
+                string currentDialogueLeft = player.lastDisplayedDialogueLeftHash;
+                currentDialogueLeft = player.CurrentHailTargetSelection.GetCurrentDialogueLeft();
+                string currentDialogueRight = player.CurrentHailTargetSelection.GetCurrentDialogueRight();
+                if (currentDialogueLeft != player.lastDisplayedDialogueLeftHash || currentDialogueRight != player.lastDisplayedDialogueRightHash || UnityEngine.Random.Range(0, 1250) == 0)
+                {
+                    currentDialogueLeft = player.CurrentHailTargetSelection.GetCurrentDialogueLeft();
+                    string[] array = currentDialogueLeft.Replace("[newline]", "\n").Split(new char[]
+                    {
+                        '\n'
+                    });
+                    string[] array2 = currentDialogueRight.Split(new char[]
+                    {
+                        '\n'
+                    });
+                    if (player.newDialogueTextLeft.Length > 0)
+                    {
+                        player.newDialogueTextLeft.Remove(0, player.newDialogueTextLeft.Length);
+                    }
+                    if (player.newDialogueTextRight.Length > 0)
+                    {
+                        player.newDialogueTextRight.Remove(0, player.newDialogueTextRight.Length);
+                    }
+                    int num8 = 19;
+                    for (int m = Mathf.Max(0, array.Length - num8); m < array.Length; m++)
+                    {
+                        if (m < array.Length - 1)
+                        {
+                            player.newDialogueTextLeft.Append("\n");
+                        }
+                        player.newDialogueTextLeft.Append(array[m]);
+                    }
+                    for (int n = Mathf.Max(0, array2.Length - num8); n < array2.Length; n++)
+                    {
+                        if (n < array2.Length - 1)
+                        {
+                            player.newDialogueTextRight.Append("\n");
+                        }
+                        player.newDialogueTextRight.Append(array2[n]);
+                    }
+                    player.lastDisplayedDialogueLeftCache = player.newDialogueTextLeft.ToString();
+                    player.lastDisplayedDialogueRightCache = player.newDialogueTextRight.ToString();
+                    player.lastDisplayedDialogueLeftHash = currentDialogueLeft;
+                    player.lastDisplayedDialogueRightHash = currentDialogueRight;
+                    player.FormatNewCacheStrings();
+                }
+            }
         }
         private void OnSelectInstallComp(bool authority, bool local)
         {
@@ -407,7 +495,7 @@ namespace Exotic_Components
             if (local)
             {
                 m_AllChoices.Clear();
-                currentText += "\n\nMore about me? Sure, ask away";
+                currentText = "More about me? Sure, ask away";
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Why did you come to this galaxy?", new PLHailChoiceDelegate(this.WhyMoveHere)));
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("How did you get all this components?", new PLHailChoiceDelegate(this.HowGotThing)));
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Why did you set your shop in the core of the galaxy?", new PLHailChoiceDelegate(this.WhyCore)));
@@ -420,7 +508,7 @@ namespace Exotic_Components
         {
             missionID = -1;
             m_AllChoices.Clear();
-            currentText = "\n\nWant some money? I guess I have some jobs for you.";
+            currentText = "Want some money? I guess I have some jobs for you.                              ";
             if (!PLServer.Instance.HasMissionWithID(700))
             {
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Recover a jump processor", new PLHailChoiceDelegate(this.RetriveCPU)));
@@ -438,12 +526,18 @@ namespace Exotic_Components
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Protect Biscuit Delivery", new PLHailChoiceDelegate(this.DeliverBiscuit)));
             }
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Nevermind, just want to go back to buying", new PLHailChoiceDelegate(this.BackToBuy)));
+            UpdateText();
         }
         private void RetriveCPU(bool authority, bool local)
         {
             missionID = 700;
             m_AllChoices.Clear();
-            currentText += "\n\nThis is a very simple job. A crew was supposed to bring me a special jump processor core for a... project. But I lost communication with them while they were in a black hole sector. I don't know if they are alive, but what I know is the ship probably won't survive for much time, so hurry with collecting the processor core. As a reward I will give you a special processor of mine.";
+            if (Time.time - LastAdded > 1)
+            {
+                currentText += "\n\nThis is a very simple job. A crew was supposed to bring me a special jump processor core for a... project. But I lost communication with them while they were in a black hole sector. I don't know if they are alive, but what I know is the ship probably won't survive for much time, so hurry with collecting the processor core. As a reward I will give you a special processor of mine.";
+                LastAdded = Time.time;
+            }
+            UpdateText();
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
         }
@@ -451,7 +545,12 @@ namespace Exotic_Components
         {
             missionID = 701;
             m_AllChoices.Clear();
-            currentText += "\n\nThere is this crew who dared to steal some of my components, and now think they are the most powerful crew in the galaxy. Show them wrong by killing them. I will pay you a good amount of money, and you can keep any component that survives the destruction of their ship. I also heared that they modified the anti-shield turret and the machine gun they stole from me.";
+            if (Time.time - LastAdded > 1)
+            {
+                currentText += "\n\nThere is this crew who dared to steal some of my components, and now think they are the most powerful crew in the galaxy. Show them wrong by killing them. I will pay you a good amount of money, and you can keep any component that survives the destruction of their ship. I also heared that they modified the anti-shield turret and the machine gun they stole from me.";
+                LastAdded = Time.time;
+            }
+            UpdateText();
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
 
@@ -461,7 +560,12 @@ namespace Exotic_Components
         {
             missionID = 702;
             m_AllChoices.Clear();
-            currentText += "\n\nI am not a political guy, but you may remember that my relations with the C.U. goverment is not the best one, but I found this Matthew judge that maybe can make things a lot easier to me. Only problem is he has enemies, and I got a quick SOS before the assassins were able to block long range comms, they are not far away, so I need you to quickly go there and protect him. I will give you some money and a special pair of turrets (it would all be easier if he got that witness protection).";
+            if (Time.time - LastAdded > 1)
+            {
+                currentText += "\n\nI am not a political guy, but you may remember that my relations with the C.U. goverment is not the best one, but I found this Matthew judge that maybe can make things a lot easier to me. Only problem is he has enemies, and I got a quick SOS before the assassins were able to block long range comms, they are not far away, so I need you to quickly go there and protect him. I will give you some money and a special pair of turrets (it would all be easier if he got that witness protection).";
+                LastAdded = Time.time;
+            }
+            UpdateText();
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
 
@@ -471,15 +575,20 @@ namespace Exotic_Components
         {
             missionID = 703;
             m_AllChoices.Clear();
-            currentText += "\n\nI am a really big fan of the Fluffy Biscuits, mostly the funky biscuit. Sadly with the intergalatic warp network deactivated, the number of funky biscuits has being falling really fast, but I got notice of a ship currently near some kind of ancient warpgate and they have a lot of funky recipes. They are, however, being hunted, so please make sure they arrive in the Fluffy Factory 1, and I will pay you a good amount of cash.";
+            if (Time.time - LastAdded > 1)
+            {
+                currentText += "\n\nI am a really big fan of the Fluffy Biscuits, mostly the funky biscuit. Sadly with the intergalatic warp network deactivated, the number of funky biscuits has being falling really fast, but I got notice of a ship currently near some kind of ancient warpgate and they have a lot of funky recipes. They are, however, being hunted, so please make sure they arrive in the Fluffy Factory 1, and I will pay you a good amount of cash.";
+            }
             if (PLServer.Instance.m_ActiveBountyHunter_TypeID < 0)
             {
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Accept", new PLHailChoiceDelegate(this.AcceptMission)));
             }
-            else
+            else if (Time.time - LastAdded > 1)
             {
-                currentText += "I just noted that you guys have a bounty hunter after you, please kill them before starting this mission!";
+                currentText += "\n\nI just noted that you guys have a bounty hunter after you, please kill them before starting this mission!";
             }
+            LastAdded = Time.time;
+            UpdateText();
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
         }
         private void AcceptMission(bool authority, bool local)
@@ -518,42 +627,61 @@ namespace Exotic_Components
         }
         private void WhyMoveHere(bool authority, bool local)
         {
-            currentText = "Why did I move here? I guess it was the weather, I hearded Karattis has a good weather or something like that. Also I did cross almost all galaxies on the known universe serching for some components for my fine collection and I heard about these Infected" +
-                " that were spreading through your sectors and thought maybe there is something useful coming from them, and I wasn't wrong! I got this cool infected turret. And with the intergalatic warp network disabled I am now stuck here (maybe I should have bought that ultimate explorer MK3)";
-
+            if (Time.time - LastAdded > 1)
+            {
+                currentText += "\n\nWhy did I move here? I guess it was the weather, I hearded Karattis has a good weather or something like that. Also I did cross almost all galaxies on the known universe serching for some components for my fine collection and I heard about these Infected" +
+                    " that were spreading through your sectors and thought maybe there is something useful coming from them, and I wasn't wrong! I got this cool infected turret. And with the intergalatic warp network disabled I am now stuck here (maybe I should have bought that ultimate explorer MK3)";
+                LastAdded = Time.time;
+            }
+            UpdateText();
         }
         private void HowGotThing(bool authority, bool local)
         {
-            currentText = "My components? I found them during the years talking with exotic dealers from multiple galaxies, still didn't have time to buy from the dealers from this galaxy, I have heard about this ThermoCore and the Corbin's Wall, maybe I will buy them before the intergalatic warp network is activated again. If you bring them I will buy... And that's it. " +
-                    "If you think I don't sell enough components, maybe visit me in another timeline, at least that is what Skarg said.";
-
+            if (Time.time - LastAdded > 1)
+            {
+                currentText += "\n\nMy components? I found them during the years talking with exotic dealers from multiple galaxies, still didn't have time to buy from the dealers from this galaxy, I have heard about this ThermoCore and the Corbin's Wall, maybe I will buy them before the intergalatic warp network is activated again. If you bring them I will buy... And that's it. " +
+                        "If you think I don't sell enough components, maybe visit me in another timeline, at least that is what Skarg said.";
+                LastAdded = Time.time;
+            }
+            UpdateText();
         }
         private void WhyCore(bool authority, bool local)
         {
-            currentText = "Why the Core? I came here to the center of the galaxy mostly to avoid the C.U actually. Even if the outpost is not far, my low EM is hidden in the galaxy's core (still not sure how you found me here). ";
-            if (PLServer.Instance.CrewFactionID == 0)
+            if (Time.time - LastAdded > 1)
             {
-                currentText += "And I know you guys are a C.U crew, but I have a felling you won't report me. ";
+                currentText += "\n\nWhy the Core? I came here to the center of the galaxy mostly to avoid the C.U actually. Even if the outpost is not far, my low EM is hidden in the galaxy's core (still not sure how you found me here). ";
+                LastAdded = Time.time;
+                if (PLServer.Instance.CrewFactionID == 0)
+                {
+                    currentText += "And I know you guys are a C.U crew, but I have a felling you won't report me. ";
+                }
+                currentText += "Anyway, talking about hiding, I heard the Estate is actually in this galaxy, apperently with the warp drive malfunctioning or something.";
+                if (!soldIntergalatic) currentText += " But they could be my ticket to getting out of here, just need to find them first. If you find the schematics for a flagship drive, you could bring it to me, I would pay good for it *laughs*";
+                else
+                {
+                    currentText += " But since you got me the schematics somehow, I will be building my own intergalatic warpdrive soon to get out of this galaxy";
+                }
             }
-            currentText += "Anyway, talking about hiding, I heard the Estate is actually in this galaxy, apperently with the warp drive malfunctioning or something.";
-            if (!soldIntergalatic) currentText += " But they could be my ticket to getting out of here, just need to find them first. If you find the schematics for a flagship drive, you could bring it to me, I would pay good for it *laughs*";
-            else
-            {
-                currentText += " But since you got me the schematics somehow, I will be building my own intergalatic warpdrive soon to get out of this galaxy";
-            }
-
+            UpdateText();
         }
         private void WhyStore(bool authority, bool local)
         {
-            currentText = "The general shop? I don't sell exotic items here, only components. That robot that came with is just Davey, he probably will sell you things normally found around. And don't worry he is not a slave, I pay him.... with energy. If you want some food the biscuit shop came with.";
-
+            if (Time.time - LastAdded > 1)
+            {
+                currentText += "\n\nThe general shop? I don't sell exotic items here, only components. That robot that came with is just Davey, he probably will sell you things normally found around. And don't worry he is not a slave, I pay him.... with energy. If you want some food the biscuit shop came with.";
+                LastAdded = Time.time;
+            }
+            UpdateText();
         }
         private void Colony(bool authority, bool local)
         {
 
-            currentText = "The Lost Colony? I didn't recive anything due to the Core interference....\nOh, some kind of hidden treasure and big power that could change the course of history forever? I am no treasure hunter, whatever is there, if it is something interesting I might buy it later. This galaxy of yours" +
-                " has a lot of random shit happening, at this point I wouldn't be surprised if some alien robot army was trying to kill us all.";
-
+            if (Time.time - LastAdded > 1)
+            {
+                currentText += "\n\nThe Lost Colony? I didn't recive anything due to the Core interference....\nOh, some kind of hidden treasure and big power that could change the course of history forever? I am no treasure hunter, whatever is there, if it is something interesting I might buy it later. This galaxy of yours" + " has a lot of random shit happening, at this point I wouldn't be surprised if some alien robot army was trying to kill us all.";
+                LastAdded = Time.time;
+            }
+            UpdateText();
         }
         private void BackToBuy(bool authority, bool local)
         {
@@ -564,7 +692,7 @@ namespace Exotic_Components
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Install Ship Components", false), new PLHailChoiceDelegate(this.OnSelectInstallComp)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Tell me more about you", new PLHailChoiceDelegate(this.OnTalkWith)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Missions", new PLHailChoiceDelegate(this.Mission)));
-
+            UpdateText();
         }
         public override string GetName()
         {
@@ -589,7 +717,7 @@ namespace Exotic_Components
                 currentText = defaultText;
             }
             if (currentText == null) currentText = defaultText;
-            return currentText;
+            return PLDialogueActorInstance.AddNewLinesToText(currentText, false, 70, true);
         }
         private string currentText;
     }

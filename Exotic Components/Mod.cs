@@ -1,10 +1,12 @@
 ﻿using PulsarModLoader;
+using PulsarModLoader.MPModChecks;
+
 [assembly: System.Runtime.CompilerServices.IgnoresAccessChecksTo("Assembly-CSharp")]
 namespace Exotic_Components
 {
     public class Mod : PulsarMod
     {
-        public override string Version => "3.7.1";
+        public override string Version => "3.9";
 
         public override string Author => "pokegustavo (with suggestions from EngBot, TheShribe and Kani)";
 
@@ -12,7 +14,7 @@ namespace Exotic_Components
 
         public override string Name => "Exotic Components";
 
-        public override int MPFunctionality => base.MPFunctionality;//(int)MPFunction.All;
+        public override int MPRequirements => 3;
 
         public override string HarmonyIdentifier()
         {

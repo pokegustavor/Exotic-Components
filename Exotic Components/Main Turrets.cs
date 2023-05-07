@@ -56,7 +56,7 @@ namespace Exotic_Components
 
 			public override PLShipComponent PLMegaTurret => new PhaseShieldTurret();
 		}
-		/*
+        /*
 		class ProjectileChargeMod : MegaTurretMod
 		{
 			public override string Name => "ProjectileChargeTurret";
@@ -64,7 +64,13 @@ namespace Exotic_Components
 			public override PLShipComponent PLMegaTurret => new ProjectileChargeTurret();
 		}
 		*/
-	}
+        class PhaserTurretMod : MegaTurretMod
+        {
+            public override string Name => "PhaserTurret";
+
+            public override PLShipComponent PLMegaTurret => new PhaserTurret();
+        }
+    }
 
 	class MachineGunTurret : PLMegaTurret_Proj
 	{
@@ -1302,6 +1308,246 @@ namespace Exotic_Components
 		private bool m_IsCharging = false;
 		private bool m_IsVisiblyCharging = false;
 	}
+	class PhaserTurret : PLMegaTurret 
+	{
+        public PhaserTurret(int inLevel = 0, int inSubTypeData = 1) : base(0)
+        {
+            this.Name = "The Matter Phaser";
+            this.Desc = "This Phase Turret has been modified to work as a main turret and go through any object, including ships! It has lost some of its potential damage due to this.";
+            this.m_Damage = 105f;
+            base.SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("PhaserTurret");
+			Experimental = true;
+            this.m_MarketPrice = 50200;
+            this.FireDelay = 10f;
+            this.m_MaxPowerUsage_Watts = 17000f;
+            base.CargoVisualPrefabID = 5;
+            this.TurretRange = 7000f;
+            this.BeamColor = Color.green;
+            this.MegaTurretExplosionID = 0;
+            this.m_KickbackForceMultiplier = 0.8f;
+            this.HeatGeneratedOnFire = 0.3f;
+            this.IsMainTurret = true;
+            this.HasTrackingMissileCapability = true;
+			DamageType = EDamageType.E_PHASE;
+        }
+		static int ShotID = -1;
+        protected override void ChargeComplete(int inProjID, Vector3 dir)
+        {
+            this.LastFireTime = Time.time;
+            if (this.TurretInstance == null)
+            {
+                return;
+            }
+            base.ShipStats.Ship.Exterior.GetComponent<Rigidbody>().AddForceAtPosition(-1200f * dir * this.m_KickbackForceMultiplier, this.TurretInstance.transform.position, ForceMode.Impulse);
+            this.CurrentCameraShake += 2f;
+            this.Heat += this.HeatGeneratedOnFire;
+            PLMusic.PostEvent("play_ship_generic_external_weapon_maingun_shoot", this.TurretInstance.gameObject);
+            PLPlayer playerFromPlayerID = PLServer.Instance.GetPlayerFromPlayerID(base.ShipStats.Ship.GetCurrentTurretControllerPlayerID(this.TurretID));
+            bool flag = false;
+            if (playerFromPlayerID != null)
+            {
+                flag = playerFromPlayerID.IsBot;
+            }
+            if (((PhotonNetwork.isMasterClient && (flag || base.ShipStats.Ship.IsDrone)) || PLNetworkManager.Instance.LocalPlayerID == base.ShipStats.Ship.GetCurrentTurretControllerPlayerID(this.TurretID)) && PLNetworkManager.Instance.LocalPlayerID != -1)
+            {
+                Ray ray = new Ray(this.TurretInstance.FiringLoc.position, this.TurretInstance.FiringLoc.forward);
+                //RaycastHit hitInfo = default(RaycastHit);
+				RaycastHit[] allhits;
+                int layerMask = 524289;
+                int layer = 0;
+                if (base.ShipStats.Ship.GetExteriorMeshCollider() != null)
+                {
+                    layer = base.ShipStats.Ship.GetExteriorMeshCollider().gameObject.layer;
+                    base.ShipStats.Ship.GetExteriorMeshCollider().gameObject.layer = 31;
+                }
+                try
+                {
+					bool hit = false;
+					allhits = Physics.SphereCastAll(TurretInstance.FiringLoc.position,4f, TurretInstance.FiringLoc.forward,10600f,layerMask);
+					foreach(RaycastHit hitInfo in allhits) 
+					{
+                        PLShipInfoBase plshipInfoBase = null;
+                        PLDamageableSpaceObject_Collider pldamageableSpaceObject_Collider = null;
+                        bool flag2 = false;
+                        if (hitInfo.collider != null)
+                        {
+                            plshipInfoBase = hitInfo.collider.GetComponentInParent<PLShipInfoBase>();
+                            pldamageableSpaceObject_Collider = hitInfo.collider.GetComponent<PLDamageableSpaceObject_Collider>();
+                        }
+                        PLProximityMine plproximityMine = null;
+                        if (plshipInfoBase == null)
+                        {
+                            plproximityMine = hitInfo.collider.GetComponentInParent<PLProximityMine>();
+                        }
+                        PLSpaceTarget plspaceTarget = null;
+                        if (plproximityMine == null)
+                        {
+                            plspaceTarget = hitInfo.collider.GetComponentInParent<PLSpaceTarget>();
+                        }
+                        if (pldamageableSpaceObject_Collider != null && pldamageableSpaceObject_Collider.MyDSO != null)
+                        {
+                            if (pldamageableSpaceObject_Collider.MyDSO.photonView != null)
+                            {
+                                pldamageableSpaceObject_Collider.MyDSO.photonView.RPC("TakeDamage_Location", PhotonTargets.All, new object[]
+                                {
+                                this.GetDamageDoneWithTiming(this.m_VisibleChargeLevel, flag),
+                                hitInfo.point,
+                                hitInfo.normal
+                                });
+								hit = true;
+                            }
+                            else
+                            {
+                                pldamageableSpaceObject_Collider.MyDSO.TakeDamage_Location(this.GetDamageDoneWithTiming(this.m_VisibleChargeLevel, flag), hitInfo.point, hitInfo.normal);
+                            }
+                        }
+                        else if (plproximityMine != null)
+                        {
+                            PLServer.Instance.photonView.RPC("ProximityMineExplode", PhotonTargets.All, new object[]
+                            {
+                            plproximityMine.EncounterNetID
+                            });
+                            hit = true;
+                        }
+                        else if (plshipInfoBase != null)
+                        {
+                            if (plshipInfoBase != base.ShipStats.Ship)
+                            {
+                                PLServer.Instance.photonView.RPC("MegaTurretExplosion", PhotonTargets.Others, new object[]
+                                {
+                                hitInfo.point,
+                                plshipInfoBase.ShipID,
+                                this.MegaTurretExplosionID
+                                });
+                                PLServer.Instance.MegaTurretExplosion(hitInfo.point, plshipInfoBase.ShipID, this.MegaTurretExplosionID);
+                                this.TriggerMegaTurretDamage(plshipInfoBase, flag, hitInfo, this.m_VisibleChargeLevel);
+                                PulsarModLoader.Utilities.Messaging.Notification("Hits: " + plshipInfoBase.ShipNameValue);
+                                hit = true;
+                            }
+                        }
+                        else if (hitInfo.collider != null && hitInfo.collider.CompareTag("Projectile"))
+                        {
+                            PLProjectile component = hitInfo.collider.gameObject.GetComponent<PLProjectile>();
+                            if (component != null && component.LaserCanCauseExplosion && component.OwnerShipID != -1 && component.OwnerShipID != base.ShipStats.Ship.ShipID)
+                            {
+                                component.TakeDamage(this.GetDamageDoneWithTiming(this.m_VisibleChargeLevel, flag), hitInfo.point, hitInfo.normal, playerFromPlayerID);
+                                flag2 = true;
+                                hit = true;
+                            }
+                        }
+                        else if (plspaceTarget != null)
+                        {
+                            plspaceTarget.photonView.RPC("NetTakeDamage", PhotonTargets.All, new object[]
+                            {
+                            this.GetDamageDoneWithTiming(this.m_VisibleChargeLevel, flag)
+                            });
+                            PLServer.Instance.photonView.RPC("MegaTurretExplosion", PhotonTargets.Others, new object[]
+                            {
+                            hitInfo.point,
+                            -1,
+                            this.MegaTurretExplosionID
+                            });
+                            PLServer.Instance.MegaTurretExplosion(hitInfo.point, -1, this.MegaTurretExplosionID);
+                            hit = true;
+                        }
+                        else
+                        {
+                            PLServer.Instance.photonView.RPC("MegaTurretExplosion", PhotonTargets.Others, new object[]
+                            {
+                            hitInfo.point,
+                            -1,
+                            this.MegaTurretExplosionID
+                            });
+                            PLServer.Instance.MegaTurretExplosion(hitInfo.point, -1, this.MegaTurretExplosionID);
+                        }
+                        if (!flag2)
+                        {
+                            this.LaserDist = (hitInfo.point - this.TurretInstance.FiringLoc.position).magnitude;
+                        }
+                        else
+                        {
+                            this.LaserDist = 20000f;
+                        }
+                    }
+                    if(!hit)
+                    {
+                        this.LaserDist = 20000f;
+                    }
+                    Vector3 vector;
+                    int num;
+                    PLSwarmCollider hitSwarmCollider = GetHitSwarmCollider(this.LaserDist, out vector, out num, this.TurretInstance);
+                    if (hitSwarmCollider != null)
+                    {
+                        float num2 = UnityEngine.Random.Range(0f, 1f);
+                        hitSwarmCollider.MyShipInfo.HandleSwarmColliderHitVisuals(hitSwarmCollider, vector);
+                        float timeDiff = this.GetBaseTimeDiff();
+                        if (PhotonNetwork.isMasterClient && (flag || base.ShipStats.Ship.IsDrone))
+                        {
+                            timeDiff = UnityEngine.Random.Range(0.01f, 0.1f);
+                        }
+                        float num3 = (150f + this.GetDmgPercentBasedOnTiming(timeDiff) * (this.m_Damage - 150f)) * base.LevelMultiplier(0.15f, 1f) * base.ShipStats.TurretDamageFactor;
+                        num3 *= (float)num * 0.25f;
+                        PLServer.Instance.photonView.RPC("MegaTurretDamage", PhotonTargets.Others, new object[]
+                        {
+                        hitSwarmCollider.MyShipInfo.ShipID,
+                        num3,
+                        num2,
+                        hitSwarmCollider.MyShipInfo.Exterior.transform.InverseTransformPoint(vector),
+                        base.ShipStats.Ship.ShipID,
+                        this.TurretID,
+                        this.m_StoredProjID
+                        });
+                        PLServer.Instance.MegaTurretDamage(hitSwarmCollider.MyShipInfo.ShipID, num3, num2, hitSwarmCollider.MyShipInfo.Exterior.transform.InverseTransformPoint(vector), base.ShipStats.Ship.ShipID, this.TurretID, this.m_StoredProjID);
+                    
+					}
+                }
+                catch
+                {
+                }
+                if (base.ShipStats.Ship.GetExteriorMeshCollider() != null)
+                {
+                    base.ShipStats.Ship.GetExteriorMeshCollider().gameObject.layer = layer;
+                }
+            }
+            this.m_IsCharging = false;
+            this.m_IsVisiblyCharging = false;
+            this.m_ChargeLevel = 0f;
+            this.m_VisibleChargeLevel = 0f;
+        }
+        public new void TriggerMegaTurretDamage(PLShipInfoBase hitShip, bool operatedByBot, RaycastHit hitInfo, float visibleChargeLevel)
+        {
+            if (hitShip != null)
+            {
+                float num = UnityEngine.Random.Range(0f, 1f);
+                float damageDoneWithTiming = this.GetDamageDoneWithTiming(visibleChargeLevel, operatedByBot);
+                PLServer.Instance.photonView.RPC("MegaTurretDamage", PhotonTargets.Others, new object[]
+                {
+                hitShip.ShipID,
+                damageDoneWithTiming,
+                num,
+                hitShip.Exterior.transform.InverseTransformPoint(hitInfo.point),
+                base.ShipStats.Ship.ShipID,
+                this.TurretID,
+                ShotID
+                });
+                PLServer.Instance.MegaTurretDamage(hitShip.ShipID, damageDoneWithTiming, num, hitShip.Exterior.transform.InverseTransformPoint(hitInfo.point), base.ShipStats.Ship.ShipID, this.TurretID, ShotID);
+				ShotID--;
+            }
+        }
+        private float GetDamageDoneWithTiming(float visibleChargeLevel, bool operatedByBot)
+        {
+            float num = Mathf.Clamp01(Mathf.Abs(visibleChargeLevel - 0.569565f));
+            if (PhotonNetwork.isMasterClient && (operatedByBot || base.ShipStats.Ship.IsDrone))
+            {
+                num = UnityEngine.Random.Range(0.01f, 0.1f);
+            }
+            return (150f + (1f - Mathf.Clamp01(Mathf.Abs(Mathf.Pow(num * 100f, 2f) / 10000f))) * (this.m_Damage - 150f)) * base.LevelMultiplier(0.15f, 1f) * base.ShipStats.TurretDamageFactor;
+        }
+        private float m_VisibleChargeLevel;
+        private bool m_IsCharging;
+        private bool m_IsVisiblyCharging;
+        private float m_ChargeLevel;
+    }
     [HarmonyLib.HarmonyPatch(typeof(PLUITurretUI), "Update")]
 	class CustomTurretUI 
 	{
@@ -1350,7 +1596,6 @@ namespace Exotic_Components
 			}
 		}
 	}
-
 	class InstabilityTurretDamage : PulsarModLoader.ModMessage
 	{
 		public override void HandleRPC(object[] arguments, PhotonMessageInfo sender)

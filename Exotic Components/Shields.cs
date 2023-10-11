@@ -37,7 +37,7 @@ namespace Exotic_Components
                 PLShieldGenerator me = InComp as PLShieldGenerator;
                 if (me != null && me.ShipStats != null && me.ShipStats.Ship.MyShieldGenerator.Name == "Layered Shield")
                 {
-                    me.Deflection = (2.8f - Mathf.Clamp01(me.ShipStats.ShieldsCurrent / me.ShipStats.ShieldsMax)*4.2f);
+                    me.Deflection = (2.8f - Mathf.Clamp01(me.ShipStats.ShieldsCurrent / me.ShipStats.ShieldsMax) * 4.2f);
                     if (me.Deflection < 0.6f) me.Deflection = 0.6f;
                     float multiplier = (1 / Mathf.Clamp01(me.ShipStats.ShieldsCurrent / me.ShipStats.ShieldsMax));
                     if (multiplier > 5f) multiplier = 5f;
@@ -92,7 +92,7 @@ namespace Exotic_Components
                 InComp.ShipStats.Mass += 2500f;
             }
         }
-        class GustavFrortress : ShieldMod 
+        class GustavFrortress : ShieldMod
         {
             public override string Name => "Gustav's Fortress";
 
@@ -125,7 +125,7 @@ namespace Exotic_Components
                 if (me.Current < 0) me.Current = 0f;
             }
         }
-        class AntiInfected : ShieldMod 
+        class AntiInfected : ShieldMod
         {
             public override string Name => "Anti-Infected Shield";
 
@@ -151,7 +151,7 @@ namespace Exotic_Components
             {
                 PLShieldGenerator me = InComp as PLShieldGenerator;
                 PLShipStats inStats = me.ShipStats;
-                if(PLEncounterManager.Instance.GetCPEI() != null && PLEncounterManager.Instance.GetCPEI().DisableShieldsInSector) 
+                if (PLEncounterManager.Instance.GetCPEI() != null && PLEncounterManager.Instance.GetCPEI().DisableShieldsInSector)
                 {
                     inStats.ShieldsChargeRate += me.ChargeRateCurrent;
                     inStats.ShieldsChargeRateMax += me.ChargeRateMax * me.LevelMultiplier(0.5f, 1f);
@@ -168,6 +168,139 @@ namespace Exotic_Components
                 me.ShipStats.ShieldsCurrent = me.Current;
             }
         }
+        class RegenerationShield : ShieldMod
+        {
+            public override string Name => "Extreme Particle Shield";
+
+            public override string Description => "This shield has a very special design that allows for extremely quick reboot rate and low energy usage, at the cost of no recharge rate and low durability";
+
+            public override int MarketPrice => 12000;
+
+            public override bool Experimental => true;
+
+            public override float ShieldMax => 320f;
+
+            public override float ChargeRateMax => 0;
+
+            public override float RecoveryRate => 100;
+
+            public override float MinIntegrityPercentForQuantumShield => 0.15f;
+
+            public override float MaxPowerUsage_Watts => 3200f;
+
+            public override int MinIntegrityAfterDamage => 320;
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                base.Tick(InComp);
+                PLShieldGenerator shield = InComp as PLShieldGenerator;
+                shield.MinIntegrityAfterDamage = Mathf.RoundToInt(shield.CurrentMax) - 5;
+                shield.RecoveryRate = shield.CurrentMax / 3;
+            }
+
+            public override void FinalLateAddStats(PLShipComponent InComp)
+            {
+                base.FinalLateAddStats(InComp);
+                PLShipInfoBase ship = InComp.ShipStats.Ship;
+                if (ship != null)
+                {
+                    if (ship.ShieldIsActive)
+                    {
+                        InComp.ShipStats.ShieldsChargeRateMax = 0;
+                        InComp.ShipStats.ShieldsChargeRate = 0;
+                    }
+                    else
+                    {
+                        InComp.ShipStats.ShieldsChargeRateMax += (InComp as PLShieldGenerator).RecoveryRate;
+                        InComp.ShipStats.ShieldsChargeRate += (InComp as PLShieldGenerator).RecoveryRate * (InComp as PLShieldGenerator).GetPowerPercentInput();
+                    }
+                }
+            }
+        }
+        class ImunityShield : ShieldMod
+        {
+            public override string Name => "Quantum Shield";
+
+            public override string Description => "A shield made with top of the line technology, this shield will allow complete immunity to damage based on the shield frequency, however the counterpart damage will be multiplied in strengh. Your scientist will surely enjoy some extra work";
+
+            public override int MarketPrice => 53000;
+
+            public override bool Experimental => true;
+
+            public override float ShieldMax => 1600;
+
+            public override float ChargeRateMax => 7;
+
+            public override float MinIntegrityPercentForQuantumShield => 0.70f;
+
+            public override float MaxPowerUsage_Watts => 18000;
+
+            public override int MinIntegrityAfterDamage => 1500;
+        }
+        class AbsortionShield : ShieldMod
+        {
+            public override string Name => "The Absortion Field";
+
+            public override string Description => "This \"Shield Generator\" doesn't actually block incoming damage, instead using a special system connected with the ship reactor, this field will absorve up to 75% of the incoming damage, but for that half of the reactor power is needed!";
+
+            public override int MarketPrice => 45000;
+
+            public override bool Experimental => true;
+
+            public override float ShieldMax => 1;
+
+            public override float ChargeRateMax => 1;
+
+            public override float MinIntegrityPercentForQuantumShield => 0.5f;
+
+            public override float MaxPowerUsage_Watts => 0;
+
+            public override int MinIntegrityAfterDamage => 0;
+
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return string.Concat(new string[]
+                {
+                    PLLocalize.Localize("Damage Reduction", false),
+                    "\n",
+                    PLLocalize.Localize("Min Pow for QT Shields", false)
+                });
+            }
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                return string.Concat(new string[]
+                {
+                    (InComp as PLShieldGenerator).IsEquipped ? (InComp as PLShieldGenerator).GetPowerPercentInput() * 100 + "%" : "?%" ,
+                    "\n",
+                    "50%"
+                });
+            }
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                base.Tick(InComp);
+                PLShieldGenerator shieldGenerator = InComp as PLShieldGenerator;
+                if (shieldGenerator.IsEquipped)
+                {
+                    float Power = shieldGenerator.GetPowerPercentInput();
+                    shieldGenerator.ShipStats.Ship.IsQuantumShieldActive = Power >= 0.5f;
+                    shieldGenerator.m_MaxPowerUsage_Watts = Mathf.Round(shieldGenerator.ShipStats.ReactorBoostedOutputMax)/2;
+                    shieldGenerator.RequestPowerUsage_Percent = 1f;
+                    shieldGenerator.MinIntegrityForBubble = 0f;
+                    shieldGenerator.MinIntegrityToCreateBubble = 0;
+                }
+            }
+
+            public override void FinalLateAddStats(PLShipComponent InComp)
+            {
+                base.FinalLateAddStats(InComp);
+                InComp.ShipStats.ShieldsMax = 1;
+                InComp.ShipStats.ShieldsCurrent = 1;
+                InComp.ShipStats.ShieldsChargeRate = InComp.ShipStats.ShieldsChargeRateMax;
+            }
+        }
+
         [HarmonyPatch(typeof(PLShieldGenerator), "AddStats")]
         class ManualAddStats
         {
@@ -224,22 +357,41 @@ namespace Exotic_Components
             }
             else if (shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("Layered Shield"))
             {
-                inDmg *= Mathf.Max(0.2f,shipComponent.Current/shipComponent.CurrentMax);
+                inDmg *= Mathf.Max(0.2f, shipComponent.Current / shipComponent.CurrentMax);
             }
             else if (dmgType == EDamageType.E_PHYSICAL && shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("Anti-Infected Shield") && turret != null && turret is PLSporeTurret)
             {
                 inDmg *= 0.2f;
             }
+            else if (shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("Quantum Shield"))
+            {
+                bool isPhysical = PLShipInfoBase.IsDamageTypePhysical(dmgType);
+                if ((__instance.Ship.ShieldFreqMode == 0 && !isPhysical) || (__instance.Ship.ShieldFreqMode == 1 && isPhysical))
+                {
+                    __result = 0;
+                    return false;
+                }
+                else
+                {
+                    inDmg *= 3;
+                    return true;
+                }
+            }
+            else if (shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("The Absortion Field")) 
+            {
+                __result = inDmg - inDmg * (shipComponent.GetPowerPercentInput() * 0.75f);
+                return false;
+            }
             return true;
         }
     }
     [HarmonyPatch(typeof(PLServer), "SetStartupSwitchStatus")]
-    class EMPPulse 
+    class EMPPulse
     {
-        static void Postfix(int shipID, bool status) 
+        static void Postfix(int shipID, bool status)
         {
             PLShipStats mystats = PLEncounterManager.Instance.GetShipFromID(shipID).MyStats;
-            if (PLEncounterManager.Instance.GetShipFromID(shipID).MyShieldGenerator.Name == "Eletric Wall" && !status &&  mystats.ShieldsCurrent/mystats.ShieldsMax >= 0.9f)
+            if (PLEncounterManager.Instance.GetShipFromID(shipID).MyShieldGenerator.Name == "Eletric Wall" && !status && mystats.ShieldsCurrent / mystats.ShieldsMax >= 0.9f)
             {
                 Object.Instantiate(PLGlobal.Instance.EMPExplosionPrefab, PLEncounterManager.Instance.PlayerShip.Exterior.transform.position, Quaternion.identity);
                 if (!PhotonNetwork.isMasterClient) return;
@@ -252,7 +404,7 @@ namespace Exotic_Components
                 PLEncounterManager.Instance.PlayerShip.WeaponsSystem.TakeDamage(Random.Range(0, 20));
                 PLEncounterManager.Instance.PlayerShip.LifeSupportSystem.TakeDamage(Random.Range(0, 20));
                 PLEncounterManager.Instance.GetShipFromID(shipID).MyShieldGenerator.Current = 0f;
-                if (Random.Range(0,20) == 4) PLEncounterManager.Instance.PlayerShip.photonView.RPC("Overcharged", PhotonTargets.All, new object[0]);
+                if (Random.Range(0, 20) == 4) PLEncounterManager.Instance.PlayerShip.photonView.RPC("Overcharged", PhotonTargets.All, new object[0]);
             }
         }
     }

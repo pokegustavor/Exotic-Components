@@ -246,7 +246,8 @@ namespace Exotic_Components
             static bool Prefix(ref float inDmg, EDamageType inDmgType, PLShipInfoBase attackingShip, PLTurret turret, PLShipStats __instance) 
             {
                 PLHull shipComponent = __instance.GetShipComponent<PLHull>(ESlotType.E_COMP_HULL, false);
-                if(inDmgType == EDamageType.E_INFECTED && inDmg == 10 && HullModManager.Instance.GetHullIDFromName("Anti-Infected Hull") == shipComponent.SubType) 
+                PLHullPlating plating = __instance.GetShipComponent<PLHullPlating>(ESlotType.E_COMP_HULLPLATING, false);
+                if (inDmgType == EDamageType.E_INFECTED && inDmg == 10 && HullModManager.Instance.GetHullIDFromName("Anti-Infected Hull") == shipComponent.SubType) 
                 {
                     return false;
                 }
@@ -266,6 +267,10 @@ namespace Exotic_Components
                         true
                         });
                     }
+                }
+                if(plating is Hull_Plating.AntiBreach) 
+                {
+                    inDmg *= 2;
                 }
                 return true;
             }

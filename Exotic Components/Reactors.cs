@@ -775,7 +775,52 @@ namespace Exotic_Components
                 }
             }
         }
+        class OverStrongReactor : ReactorMod
+        {
+            public override string Name => "Modified Strongpoint Reactor";
 
+            public override string Description => "This Strongpoint reactor has been modified to not lose power when systems are damaged and has even more power, however it now may... explode if you don't take care of your systems";
+
+            public override int MarketPrice => 27000;
+
+            public override bool Experimental => true;
+
+            public override float EnergyOutputMax => 36000f;
+
+            public override float EnergySignatureAmount => 12f;
+
+            public override float MaxTemp => 4000f;
+
+            public override float EmergencyCooldownTime => 10f;
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                if (InComp.IsEquipped)
+                {
+                    float num = 0f;
+                    int num2 = 0;
+                    for (int i = 0; i < 4; i++)
+                    {
+                        PLMainSystem systemFromID = InComp.ShipStats.Ship.GetSystemFromID(i);
+                        if (systemFromID != null)
+                        {
+                            num += systemFromID.GetHealthRatio();
+                            num2++;
+                        }
+                    }
+                    if (num2 != 0)
+                    {
+                        num /= (float)num2;
+                    }
+                    else
+                    {
+                        num = 1f;
+                    }
+
+                    InComp.ShipStats.Ship.CoreInstability += Time.deltaTime * 0.2f * (1 - num);
+                }
+            }
+        }
         [HarmonyPatch(typeof(PLSpaceHeatVolume), "Update")]
         class HeatOustide
         {

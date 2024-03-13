@@ -98,6 +98,7 @@
   <ItemGroup>
     <Compile Include="Auto Turrets.cs" />
     <Compile Include="CPUS.cs" />
+    <Compile Include="Hull Plating.cs" />
     <Compile Include="Hulls.cs" />
     <Compile Include="Main Turrets.cs" />
     <Compile Include="Missiles.cs" />

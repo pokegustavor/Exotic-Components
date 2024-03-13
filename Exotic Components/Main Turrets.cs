@@ -1178,7 +1178,7 @@ namespace Exotic_Components
 		public ProjectileChargeTurret(int inLevel = 0) : base(inLevel)
 		{
 			this.Name = "Supreme Plasma Turret";
-			this.Desc = "This special railgun turret uses hot plasma as projectile, you can charge it for a hotter and stronger plasma, but it does use quite some power. At least my prototypes don't overheat your reactor.";
+			this.Desc = "If you are reading this something went wrong, this is not ready! This special railgun turret uses hot plasma as projectile, you can charge it for a hotter and stronger plasma, but it does use quite some power. At least my prototypes don't overheat your reactor.";
 			this.m_Damage = 100f;
 			this.Experimental = true;
 			this.MinFireDelay = 0.75f;

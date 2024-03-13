@@ -271,7 +271,7 @@ namespace Exotic_Components
             {
                 return string.Concat(new string[]
                 {
-                    (InComp as PLShieldGenerator).IsEquipped ? (InComp as PLShieldGenerator).GetPowerPercentInput() * 100 + "%" : "?%" ,
+                    (InComp as PLShieldGenerator).IsEquipped ? (InComp as PLShieldGenerator).GetPowerPercentInput() * 75 + "%" : "?%" ,
                     "\n",
                     "50%"
                 });

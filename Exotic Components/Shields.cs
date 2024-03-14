@@ -271,7 +271,7 @@ namespace Exotic_Components
             {
                 return string.Concat(new string[]
                 {
-                    (InComp as PLShieldGenerator).IsEquipped ? (InComp as PLShieldGenerator).GetPowerPercentInput() * 75 + "%" : "?%" ,
+                    (InComp as PLShieldGenerator).IsEquipped ? ((InComp as PLShieldGenerator).GetPowerPercentInput() * 75).ToString("N1") + "%" : "?%" ,
                     "\n",
                     "50%"
                 });
@@ -283,12 +283,13 @@ namespace Exotic_Components
                 PLShieldGenerator shieldGenerator = InComp as PLShieldGenerator;
                 if (shieldGenerator.IsEquipped)
                 {
-                    float Power = shieldGenerator.GetPowerPercentInput();
-                    shieldGenerator.ShipStats.Ship.IsQuantumShieldActive = Power >= 0.5f;
-                    shieldGenerator.m_MaxPowerUsage_Watts = Mathf.Round(shieldGenerator.ShipStats.ReactorBoostedOutputMax)/2;
+                    shieldGenerator.IsPowerActive = true;
+                    shieldGenerator.m_MaxPowerUsage_Watts = Mathf.Round(shieldGenerator.ShipStats.ReactorBoostedOutputMax) / 2;
                     shieldGenerator.RequestPowerUsage_Percent = 1f;
                     shieldGenerator.MinIntegrityForBubble = 0f;
                     shieldGenerator.MinIntegrityToCreateBubble = 0;
+                    float Power = shieldGenerator.GetPowerPercentInput();
+                    shieldGenerator.ShipStats.Ship.IsQuantumShieldActive = Power >= 0.5f;
                 }
             }
 

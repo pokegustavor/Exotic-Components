@@ -272,6 +272,10 @@ namespace Exotic_Components
                 {
                     inDmg *= 2;
                 }
+                else if(plating is Hull_Plating.MegaHullP) 
+                {
+                    inDmg /= 2;
+                }
                 return true;
             }
         }

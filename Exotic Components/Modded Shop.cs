@@ -40,6 +40,23 @@ namespace Exotic_Components
         }
     }
 
+    public class DeliverProcessor : ModMessage 
+    {
+        public override void HandleRPC(object[] arguments, PhotonMessageInfo sender)
+        {
+            completeMission();
+        }
+
+        void completeMission() 
+        {
+            PLMissionBase mission = PLServer.Instance.GetActiveMissionWithID(700);
+            if (mission != null && PhotonNetwork.isMasterClient)
+            {
+                mission.Objectives[2].IsCompleted = true;
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(PLTraderInfo), "SellPawnItem")]
     class SellIntergalatic
     {
@@ -49,57 +66,11 @@ namespace Exotic_Components
             if (PLServer.Instance.GetPlayerFromPlayerID(inPlayer).MyInventory.GetItemAtNetID(inNetID).GetItemName(true) == "Flagship Intergalactic Warp Schematics" && PLServer.GetCurrentSector().Name == "The Core(MOD)")
             {
                 TheCoreComms.soldIntergalatic = true;
-                PLServer.Instance.photonView.RPC("CaptainBuy_Fuel", PhotonTargets.MasterClient, new object[]
-                             {
-                         PLEncounterManager.Instance.PlayerShip.ShipID,
-                        -500000
-                             });
+                PLServer.Instance.CurrentCrewCredits += 500000;
             }
         }
     }
-    [HarmonyPatch(typeof(PLTraderInfo), "SellComponent")]
-    class SellMissionComp
-    {
-        static bool Prefix(int inShipID, int inNetID)
-        {
-            if (PLServer.GetCurrentSector().Name != "The Core(MOD)") return true;
-            PLShipInfo ship = PLEncounterManager.Instance.GetShipFromID(inShipID) as PLShipInfo;
-            if (ship != null)
-            {
-                PLShipComponent target = ship.MyStats.GetComponentFromNetID(inNetID);
-                if (target.Name_NoTranslation == "Intergalatic Jump Processor Core")
-                {
-                    /*
-                    foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
-                    {
-                        if (mission.MissionTypeID == 700)
-                        {
-                            mission.Ended = true;
-                        }
-                    }
-                    PLEncounterManager.Instance.PlayerShip.MyStats.AddShipComponent(PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(7, PulsarModLoader.Content.Components.CPU.CPUModManager.Instance.GetCPUIDFromName("Research Processor"), 0, 0, 12), null), -1, ESlotType.E_COMP_CARGO);
-                    ship.MyStats.RemoveShipComponentByNetID(inNetID);
-                    PLServer.Instance.photonView.RPC("AddCrewWarning", PhotonTargets.All, new object[]
-                    {
-                        "MISSION COMPLETED",
-                         Color.yellow,
-                        2,
-                        "MSN"
-                    });
-                    */
-                    foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
-                    {
-                        if (mission != null && mission.MissionTypeID == 700 && !mission.Ended)
-                        {
-                            mission.Objectives[2].IsCompleted = true;
-                        }
-                    }
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
+    
     [HarmonyPatch(typeof(PLTraderInfo), "ServerAddWare")]
     class SellItem
     {
@@ -113,29 +84,6 @@ namespace Exotic_Components
                 {
                     if (items.Value.GetItemName(true) == "Flagship Intergalactic Warp Schematics")
                     {
-                        //PulsarModLoader.Utilities.Messaging.Notification("Removing");
-                        __instance.photonView.RPC("RemoveWare", PhotonTargets.All, new object[]
-                        {
-                        items.Key
-                        });
-                        return;
-                    }
-                }
-                //PulsarModLoader.Utilities.Messaging.Notification("Nothing Removed");
-            }
-            /*
-            if(maybeFlag.GetItemName(true) == "Intergalatic Jump Processor Core") 
-            {
-                PLServer.Instance.photonView.RPC("AttemptForceEndMissionOfTypeID", PhotonTargets.MasterClient, new object[]
-                            {
-                                700,
-                            });
-                PLEncounterManager.Instance.PlayerShip.MyStats.AddShipComponent(PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(23, PulsarModLoader.Content.Components.CPU.CPUModManager.Instance.GetCPUIDFromName("Research Processor"), 0, 0, 12), null), -1, ESlotType.E_COMP_CARGO);
-                foreach (KeyValuePair<int, PLWare> items in __instance.MyPDE.Wares)
-                {
-                    if (items.Value.GetItemName(true) == "Intergalatic Jump Processor Core")
-                    {
-                        //PulsarModLoader.Utilities.Messaging.Notification("Removing");
                         __instance.photonView.RPC("RemoveWare", PhotonTargets.All, new object[]
                         {
                         items.Key
@@ -144,7 +92,6 @@ namespace Exotic_Components
                     }
                 }
             }
-            */
         }
     }
     [HarmonyPatch(typeof(PLServer), "StartPlayer")]
@@ -166,14 +113,16 @@ namespace Exotic_Components
                 if (sectors.Name == "The Core(MOD)") return;
             }
             int ID = PLGlobal.Instance.Galaxy.GetMinimumFreeSectorNumber();
-            PLSectorInfo plsectorInfo3 = new PLSectorInfo();
-            plsectorInfo3.Discovered = false;
-            plsectorInfo3.Visited = false;
+            PLSectorInfo plsectorInfo3 = new PLSectorInfo
+            {
+                Discovered = false,
+                Visited = false
+            };
             PLGlobal.Instance.Galaxy.AllSectorInfos.Add(ID, plsectorInfo3);
             plsectorInfo3.ID = ID;
             plsectorInfo3.MySPI = SectorProceduralInfo.Create(PLGlobal.Instance.Galaxy, ref plsectorInfo3, plsectorInfo3.ID);
             plsectorInfo3.MySPI.Faction = 5;
-            plsectorInfo3.VisualIndication = ESectorVisualIndication.GENERAL_STORE;
+            plsectorInfo3.VisualIndication = ESectorVisualIndication.EXOTIC4;
             plsectorInfo3.Position = new Vector3(0, 0, 0.0001f);
             plsectorInfo3.FactionStrength = 0.5f;
             plsectorInfo3.Name = "The Core(MOD)";
@@ -183,10 +132,9 @@ namespace Exotic_Components
     class KeepStock
     {
         static bool reseted = false;
-        static float lastReset = Time.time;
         static void Postfix(PLTraderInfo __instance)
         {
-            if (PLEncounterManager.Instance.PlayerShip != null && PLServer.GetCurrentSector() != null && PLServer.GetCurrentSector().Name == "The Core(MOD)" && __instance is PLShop_General)
+            if (PLEncounterManager.Instance.PlayerShip != null && PLServer.GetCurrentSector() != null && PLServer.GetCurrentSector().Name == "The Core(MOD)" && __instance is PLShop_Sylvassi)
             {
                 if (PLEncounterManager.Instance.PlayerShip.InWarp)
                 {
@@ -198,15 +146,14 @@ namespace Exotic_Components
                     __instance.MyPDE = new TraderPersistantDataEntry();
                     __instance.CreateInitialWares(__instance.MyPDE);
                     reseted = true;
-                    lastReset = Time.time;
                 }
             }
         }
     }
-    [HarmonyPatch(typeof(PLShop_General), "CreateInitialWares")]
+    [HarmonyPatch(typeof(PLShop_Sylvassi), "CreateInitialWares")]
     class InitialStore
     {
-        static void Postfix(PLShop_General __instance, TraderPersistantDataEntry inPDE)
+        static void Postfix(PLShop_Sylvassi __instance, TraderPersistantDataEntry inPDE)
         {
             if (PLServer.GetCurrentSector().Name == "The Core(MOD)" || (PLEncounterManager.Instance.PlayerShip.WarpTargetID != -1 && PLGlobal.Instance.Galaxy.AllSectorInfos.GetValueSafe(PLEncounterManager.Instance.PlayerShip.WarpTargetID).Name == "The Core(MOD)"))
             {
@@ -373,13 +320,13 @@ namespace Exotic_Components
         public static void UpdateCore()
         {
             TheCoreComms comms;
-            PLHailTarget_CustomGeneralShop old = Object.FindObjectOfType<PLHailTarget_CustomGeneralShop>();
+            PLHailTarget_ExoticShop old = Object.FindObjectOfType<PLHailTarget_ExoticShop>();
             if (old == null) return;
             if (!(old is TheCoreComms))
             {
                 if (Object.FindObjectOfType<TheCoreComms>() == null)
                 {
-                    Object.FindObjectOfType<PLShop_General>().gameObject.AddComponent<TheCoreComms>();
+                    Object.FindObjectOfType<PLShop_Sylvassi>().gameObject.AddComponent<TheCoreComms>();
                 }
                 comms = Object.FindObjectOfType<TheCoreComms>();
                 comms.MyShop = old.MyShop;
@@ -391,6 +338,14 @@ namespace Exotic_Components
             PLShopkeeper keep = Object.FindObjectOfType<PLShopkeeper>();
             keep.Name = "Davey";
             keep.ActorInstance.DisplayName = "Davey";
+            List<PLTeleportationLocationInstance> teleporters = PLEncounterManager.Instance.PlayerShip.GetAllTeleporterLocationInstances();
+            foreach(PLTeleportationLocationInstance teleporter in teleporters) 
+            {
+                if (teleporter.TeleporterLocationName == "Sylvassi Shop") 
+                {
+                    teleporter.TeleporterLocationName = "Davey's Shop";
+                }
+            }
         }
     }
     [HarmonyPatch(typeof(PLDialogueActorInstance), "BeginDialogue")]
@@ -401,15 +356,15 @@ namespace Exotic_Components
             if (__instance.DisplayName == "Davey" && __instance.GetCurrentLine() != null)
             {
                 LineData data = __instance.GetCurrentLine();
-                data.TextOptions = new List<string>() { "How you doing? Please buy stuff, I need energy :(." };
+                data.TextOptions = new List<string>() { "How you doing? Please buy stuff, I need food :(." };
                 __instance.SetCurrentLine(data);
             }
-            if (__instance.DisplayName == "AUTOMATED SALES UNIT" && PLServer.GetCurrentSector().Name == "The Core(MOD)") __instance.DisplayName = "Biscuit Davey";
         }
     }
 
-    class TheCoreComms : PLHailTarget_CustomGeneralShop
+    class TheCoreComms : PLHailTarget_ExoticShop
     {
+        private bool showingDeliver = false;
         private int missionID = -1;
         private float LastAdded = Time.time;
         public static bool soldIntergalatic = false;
@@ -418,10 +373,28 @@ namespace Exotic_Components
         {
             base.Start();
             this.m_AllChoices.Clear();
-            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Browse Goods", false), new PLHailChoiceDelegate(this.OnSelectBrowseGoods)));
+            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Browse Exotic Goods", false), new PLHailChoiceDelegate(this.OnSelectBrowseGoods)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Install Ship Components", false), new PLHailChoiceDelegate(this.OnSelectInstallComp)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Tell me more about you", new PLHailChoiceDelegate(this.OnTalkWith)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Missions", new PLHailChoiceDelegate(this.Mission)));
+            if (PLServer.Instance.HasActiveMissionWithID(700))
+            {
+                PLMissionBase mission = PLServer.Instance.GetActiveMissionWithID(700);
+                if (mission.Objectives[0].IsCompleted)
+                {
+                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Deliver Jump Processor", new PLHailChoiceDelegate(this.DeliverCPU)));
+                    showingDeliver = true;
+                }
+            }
+        }
+        public override void Update()
+        {
+            base.Update();
+            if (showingDeliver && PLServer.Instance.HasCompletedMissionWithID(700)) 
+            {
+                this.m_AllChoices.RemoveAt(m_AllChoices.Count - 1);
+                showingDeliver = false;
+            }
         }
         private void UpdateText()
         {
@@ -494,18 +467,20 @@ namespace Exotic_Components
         {
             if (local)
             {
+                showingDeliver = false;
                 m_AllChoices.Clear();
                 currentText = "More about me? Sure, ask away";
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Why did you come to this galaxy?", new PLHailChoiceDelegate(this.WhyMoveHere)));
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("How did you get all this components?", new PLHailChoiceDelegate(this.HowGotThing)));
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Why did you set your shop in the core of the galaxy?", new PLHailChoiceDelegate(this.WhyCore)));
-                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("What is that general store I can teleport?", new PLHailChoiceDelegate(this.WhyStore)));
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("What is that store I can teleport to?", new PLHailChoiceDelegate(this.WhyStore)));
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Will you search the Lost Colony?", new PLHailChoiceDelegate(this.Colony)));
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Nevermind, just want to go back to buying", new PLHailChoiceDelegate(this.BackToBuy)));
             }
         }
         private void Mission(bool authority, bool local)
         {
+            showingDeliver = false;
             missionID = -1;
             m_AllChoices.Clear();
             currentText = "Want some money? I guess I have some jobs for you.                              ";
@@ -555,7 +530,6 @@ namespace Exotic_Components
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
 
         }
-
         private void ProtectJudge(bool authority, bool local)
         {
             missionID = 702;
@@ -570,7 +544,6 @@ namespace Exotic_Components
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Decline", new PLHailChoiceDelegate(this.Mission)));
 
         }
-
         private void DeliverBiscuit(bool authority, bool local)
         {
             missionID = 703;
@@ -668,7 +641,7 @@ namespace Exotic_Components
         {
             if (Time.time - LastAdded > 1)
             {
-                currentText += "\n\nThe general shop? I don't sell exotic items here, only components. That robot that came with is just Davey, he probably will sell you things normally found around. And don't worry he is not a slave, I pay him.... with energy. If you want some food the biscuit shop came with.";
+                currentText += "\n\nThe physical shop? I don't sell exotic items here, only components. That sylvassi in there is just Davey, he probably will sell you things normally found around. And don't worry he is not a slave, I pay him.... with food. I also like the sylvassi sense of decoration so I let him decorate the shop.";
                 LastAdded = Time.time;
             }
             UpdateText();
@@ -692,8 +665,26 @@ namespace Exotic_Components
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Install Ship Components", false), new PLHailChoiceDelegate(this.OnSelectInstallComp)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Tell me more about you", new PLHailChoiceDelegate(this.OnTalkWith)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Missions", new PLHailChoiceDelegate(this.Mission)));
+            if (PLServer.Instance.HasActiveMissionWithID(700)) 
+            {
+                PLMissionBase mission = PLServer.Instance.GetActiveMissionWithID(700);
+                if (mission.Objectives[0].IsCompleted)
+                {
+                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Deliver Jump Processor", new PLHailChoiceDelegate(this.DeliverCPU)));
+                    showingDeliver = true;
+                }
+            }
             UpdateText();
         }
+        private void DeliverCPU(bool authority, bool local) 
+        {
+            showingDeliver = false;
+            currentText = "Nicely done, you have no idea how important this processor is for me, so you have my deepest gratitude, and for your success you will recieve the promissed processor, this one will make research every time you jump to a new sector, ins't that nifty?";
+            ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.DeliverProcessor", PhotonTargets.MasterClient, new object[0]);
+            UpdateText();
+            this.m_AllChoices.RemoveAt(m_AllChoices.Count-1);
+        }
+
         public override string GetName()
         {
             return "The Core";
@@ -702,7 +693,7 @@ namespace Exotic_Components
         {
             if (currentText == defaultText && soldIntergalatic && !currentText.Contains("Flagship"))
             {
-                defaultText = "Welcome to the core, you... sold me the Flagship Intergalactic Warp Schematics? Thanks, how did you get that? Doesn't matter, I should be able to build this in the next month with Davy's help. In the time being, I have the most exotic components of all the galaxy, the other shops have no chance against me." +
+                defaultText = "Welcome to the core, you... sold me the Flagship Intergalactic Warp Schematics? Thanks, how did you get that? Doesn't matter, I should be able to build this in the next month with Davey's help. In the time being, I have the most exotic components of all the galaxy, the other shops have no chance against me." +
                     " Also ignore the big shiny center of the galaxy and buy something!";
                 currentText = defaultText;
             }
@@ -719,6 +710,8 @@ namespace Exotic_Components
             if (currentText == null) currentText = defaultText;
             return PLDialogueActorInstance.AddNewLinesToText(currentText, false, 70, true);
         }
+
+
         private string currentText;
     }
 }

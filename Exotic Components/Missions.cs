@@ -22,7 +22,7 @@ namespace Exotic_Components
             {
                 PickupMissionData missionData = new PickupMissionData
                 {
-                    Desc = "I need you to find this ship who was supposed to deliver me a special jump processor core for a... project. The ship is really resistant and in a dangerous sector, so get the component and leave ASAP. When you get the thing just sell it to me, also bring it fast!",
+                    Desc = "I need you to find this ship who was supposed to deliver me a special jump processor core for a... project. The ship is really resistant and in a dangerous sector, so get the component and leave ASAP. Just deliver it to me through the comms once you return",
                     Name = "Recover Jump Processor Core",
                     CanBeAbandonedByPlayers = true,
                     MissionID = 700,
@@ -48,7 +48,7 @@ namespace Exotic_Components
                         {"PC_SubType",MissionShipComponentModManager.Instance.GetMissionShipComponentIDFromName("Intergalatic Jump Processor Core").ToString()},
                         {"PC_CompName","Intergalatic Jump Processor Core"},
                         {"PC_AmountNeeded","1"},
-                        {"PC_RemoveComponents","false"},
+                        {"PC_RemoveComponents","true"},
                     },
                 },
                 new ObjectiveData
@@ -64,7 +64,7 @@ namespace Exotic_Components
                     ObjType = 0,
                     Data = new Dictionary<string, string>
                     {
-                        {"CustomText","Sell processor to The Core"},
+                        {"CustomText","Deliver the processor to The Core"},
                     },
                 }
             };
@@ -99,7 +99,7 @@ namespace Exotic_Components
                 {
                 new PLMissionObjective_PickupComponent(ESlotType.E_COMP_MISSION_COMPONENT, MissionShipComponentModManager.Instance.GetMissionShipComponentIDFromName("Intergalatic Jump Processor Core"), "Intergalatic Jump Processor Core") { RawCustomText = ""},
                 new PLMissionObjective_CompleteWithinJumpCount(14) { RawCustomText = "" },
-                new PLMissionObjective_Custom() { CustomTextOriginal = "Sell processor to The Core", RawCustomText = "Sell processor to The Core" }
+                new PLMissionObjective_Custom() { CustomTextOriginal = "Deliver processor to The Core", RawCustomText = "Deliver processor to The Core" }
                 };
                 foreach (PLMissionObjective objective in objectives)
                 {
@@ -143,11 +143,14 @@ namespace Exotic_Components
                                 plsectorInfo.ID,
                                 plsectorInfo.MissionSpecificID
                         });
-                        PLPersistantShipInfo ship = new PLPersistantShipInfo(EShipType.E_OUTRIDER, 1, plsectorInfo, 0, false, false, true);
-                        ship.ShipName = "The Retriver";
+                        if (PhotonNetwork.isMasterClient)
+                        {
+                            PLPersistantShipInfo ship = new PLPersistantShipInfo(EShipType.E_OUTRIDER, 1, plsectorInfo, 0, false, false, true);
+                            ship.ShipName = "The Retriver";
 
-                        ship.CompOverrides.Add(data);
-                        PLServer.Instance.AllPSIs.Add(ship);
+                            ship.CompOverrides.Add(data);
+                            PLServer.Instance.AllPSIs.Add(ship);
+                        }
                     }
                 }
                 PLServer.Instance.AllMissions.Add(mission);
@@ -216,7 +219,7 @@ namespace Exotic_Components
                     ObjType = 0,
                     Data = new Dictionary<string, string>
                     {
-                        {"CustomText","Sell processor to The Core"},
+                        {"CustomText","Deliver processor to The Core"},
                     },
                 }
             };
@@ -282,7 +285,7 @@ namespace Exotic_Components
                 {
                 new PLMissionObjective_PickupComponent(ESlotType.E_COMP_MISSION_COMPONENT, MissionShipComponentModManager.Instance.GetMissionShipComponentIDFromName("Intergalatic Jump Processor Core"), "Intergalatic Jump Processor Core") { RawCustomText = ""},
                 new PLMissionObjective_CompleteWithinJumpCount(14) { RawCustomText = "" },
-                new PLMissionObjective_Custom() { CustomTextOriginal = "Sell processor to The Core", RawCustomText = "Sell processor to The Core" }
+                new PLMissionObjective_Custom() { CustomTextOriginal = "Deliver processor to The Core", RawCustomText = "Deliver processor to The Core" }
                 };
                 foreach (PLMissionObjective objective in objectives)
                 {
@@ -828,6 +831,7 @@ namespace Exotic_Components
         {
             static void Postfix(PLBlackHole __instance)
             {
+                if (!PhotonNetwork.isMasterClient) return;
                 bool damage = false;
                 foreach (PLShipInfoBase plshipInfoBase in PLEncounterManager.Instance.AllShips.Values)
                 {
@@ -922,15 +926,15 @@ namespace Exotic_Components
                             }
                         }
                     }
-                    if (Missions.DeliverBiscuit.BiscuitShip != null && Missions.DeliverBiscuit.BiscuitShip.ShipInstance == ship)
+                    if (DeliverBiscuit.BiscuitShip != null && DeliverBiscuit.BiscuitShip.ShipInstance == ship)
                     {
                         foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
                         {
                             if (mission.MissionTypeID == 703 && !mission.Abandoned)
                             {
                                 mission.FailMission();
-                                Missions.DeliverBiscuit.BiscuitShip.m_IsShipDestroyed = true;
-                                Missions.DeliverBiscuit.BiscuitShip = null;
+                                DeliverBiscuit.BiscuitShip.m_IsShipDestroyed = true;
+                                DeliverBiscuit.BiscuitShip = null;
                                 PLServer.Instance.ActiveBountyHunter_SectorID = -1;
                                 PLServer.Instance.ActiveBountyHunter_TypeID = -1;
                                 break;

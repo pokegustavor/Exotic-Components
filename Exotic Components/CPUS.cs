@@ -202,9 +202,9 @@ namespace Exotic_Components
             public override void Tick(PLShipComponent InComp)
             {
                 PLCPU me = InComp as PLCPU;
+                me.m_MaxPowerUsage_Watts = 6900f * me.LevelMultiplier(0.12f, 1f);
                 if (me.IsEquipped)
                 {
-                    me.m_MaxPowerUsage_Watts = 6900f * me.LevelMultiplier(0.12f, 1f);
                     me.IsPowerActive = true;
                     me.m_RequestPowerUsage_Percent = 1f;
                 }
@@ -254,7 +254,6 @@ namespace Exotic_Components
                     float timerequired = (30f - 1 * me.LevelMultiplier(2, 1)) / me.GetPowerPercentInput();
                     if (timerequired > 120) timerequired = 120f;
                     if (timerequired < 10) timerequired = 10f;
-                    me.m_MaxPowerUsage_Watts = 6000;
                     me.IsPowerActive = true;
                     me.m_RequestPowerUsage_Percent = 1f;
                     if(Time.time - lastRemoval > timerequired) 
@@ -322,7 +321,7 @@ namespace Exotic_Components
         {
             public override string Name => "Shield Master";
 
-            public override string Description => "This special processor will heavily boost your shield max integrity, but it comes with the cost of really high power consumption, some may call it the second shield.";
+            public override string Description => "This special processor will heavily boost your shield max integrity and give a little extra charge rate, but it comes with the cost of really high power consumption, lack of power will colapse any extra shields this processor gave.";
 
             public override int MarketPrice => 45000;
 
@@ -333,18 +332,31 @@ namespace Exotic_Components
             public override void FinalLateAddStats(PLShipComponent InComp)
             {
                 PLCPU cpu = InComp as PLCPU;
-                InComp.ShipStats.ShieldsMax *= 1.2f * InComp.LevelMultiplier(0.2f, 1);
-                cpu.CalculatedMaxPowerUsage_Watts = 5000f * InComp.LevelMultiplier(0.1f, 1);
+                cpu.IsPowerActive = true;
+                cpu.RequestPowerUsage_Percent = 1f;
+                if (cpu.GetPowerPercentInput() > 0.75)
+                {
+                    InComp.ShipStats.ShieldsMax += 0.2f * InComp.LevelMultiplier(0.2f, 1) * InComp.ShipStats.ShieldsMax;
+                    InComp.ShipStats.ShieldsChargeRateMax += 0.05f * InComp.LevelMultiplier(0.3f, 1) * InComp.ShipStats.ShieldsChargeRateMax;
+                }
+                
+            }
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                base.Tick(InComp);
+                PLCPU cpu = (PLCPU)InComp;
+                cpu.m_MaxPowerUsage_Watts = 5000f * cpu.LevelMultiplier(0.1f, 1);
             }
 
             public override string GetStatLineLeft(PLShipComponent InComp)
             {
-                return "Shield Percent Boost: ";
+                return "Shield Percent Boost: \nShield Charge Rate:";
             }
 
             public override string GetStatLineRight(PLShipComponent InComp)
             {
-                return (20f * InComp.LevelMultiplier(0.2f, 1))+"%";
+                return $"{20f * InComp.LevelMultiplier(0.2f, 1)}%\n{5 * InComp.LevelMultiplier(0.3f, 1)}%";
             }
         }
         public class ResearchScanner : CPUMod

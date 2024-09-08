@@ -3,6 +3,7 @@ using PulsarModLoader;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using System.Collections.Generic;
+using PulsarModLoader.Utilities;
 
 namespace Exotic_Components
 {
@@ -40,14 +41,14 @@ namespace Exotic_Components
         }
     }
 
-    public class DeliverProcessor : ModMessage 
+    public class DeliverProcessor : ModMessage
     {
         public override void HandleRPC(object[] arguments, PhotonMessageInfo sender)
         {
             completeMission();
         }
 
-        void completeMission() 
+        void completeMission()
         {
             PLMissionBase mission = PLServer.Instance.GetActiveMissionWithID(700);
             if (mission != null && PhotonNetwork.isMasterClient)
@@ -56,6 +57,43 @@ namespace Exotic_Components
             }
         }
     }
+
+    public class StartExoticMission : ModMessage
+    {
+        public override void HandleRPC(object[] arguments, PhotonMessageInfo sender)
+        {
+            int missionID = (int)arguments[0];
+            switch (missionID)
+            {
+                case 700:
+                    if (!PLServer.Instance.HasMissionWithID(700))
+                    {
+                        Missions.RecoverCPU.StartMission(false);
+                    }
+                    break;
+                case 701:
+                    if (!PLServer.Instance.HasMissionWithID(701))
+                    {
+                        Missions.KillTaitor.StartMission(false);
+                    }
+                    break;
+                case 702:
+                    if (!PLServer.Instance.HasMissionWithID(702))
+                    {
+                        Missions.ProtectJudge.StartMission(false);
+                    }
+                    break;
+                case 703:
+                    if (!PLServer.Instance.HasMissionWithID(703))
+                    {
+                        Missions.DeliverBiscuit.StartMission(false);
+                    }
+                    break;
+            }
+        }
+
+    }
+
 
     [HarmonyPatch(typeof(PLTraderInfo), "SellPawnItem")]
     class SellIntergalatic
@@ -70,7 +108,7 @@ namespace Exotic_Components
             }
         }
     }
-    
+
     [HarmonyPatch(typeof(PLTraderInfo), "ServerAddWare")]
     class SellItem
     {
@@ -94,20 +132,12 @@ namespace Exotic_Components
             }
         }
     }
+
     [HarmonyPatch(typeof(PLServer), "StartPlayer")]
-    class CreateStoreAndMissions
+    class CreateStoreMissions
     {
-        static void Postfix(int inID)
+        static void Postfix(PLServer __instance)
         {
-            PLPlayer player = PLServer.Instance.GetPlayerFromPlayerID(inID);
-            if (player != null && player == PLNetworkManager.Instance.LocalPlayer)
-            {
-                PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.RecoverCPU.Missiondata);
-                PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.KillTaitor.Missiondata);
-                PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.ProtectJudge.Missiondata);
-                PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.DeliverBiscuit.Missiondata);
-                PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(Missions.Testa.Missiondata);
-            }
             foreach (PLSectorInfo sectors in PLGlobal.Instance.Galaxy.AllSectorInfos.Values)
             {
                 if (sectors.Name == "The Core(MOD)") return;
@@ -128,6 +158,52 @@ namespace Exotic_Components
             plsectorInfo3.Name = "The Core(MOD)";
         }
     }
+
+    [HarmonyPatch(typeof(PLCampaignIO), "GetMissionOfTypeID")]
+    class CreateMissions
+    {
+        static void Postfix(PLCampaignIO __instance, int inID, ref MissionData __result)
+        {
+            if (__result == null)
+            {
+                PickupMissionData data = null;
+                switch (inID)
+                {
+                    case 700:
+                        data = Missions.RecoverCPU.Missiondata;
+                        PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(data);
+                        PLCampaignIO.Instance.m_CampaignData.PickupMissionTypes.Add(data);
+                        __result = data;
+                        break;
+                    case 701:
+                        data = Missions.KillTaitor.Missiondata;
+                        PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(data);
+                        PLCampaignIO.Instance.m_CampaignData.PickupMissionTypes.Add(data);
+                        __result = data;
+                        break;
+                    case 702:
+                        data = Missions.ProtectJudge.Missiondata;
+                        PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(data);
+                        PLCampaignIO.Instance.m_CampaignData.PickupMissionTypes.Add(data);
+                        __result = data;
+                        break;
+                    case 703:
+                        data = Missions.DeliverBiscuit.Missiondata;
+                        PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(data);
+                        PLCampaignIO.Instance.m_CampaignData.PickupMissionTypes.Add(data);
+                        __result = data;
+                        break;
+                    case 704:
+                        data = Missions.Testa.Missiondata;
+                        PLCampaignIO.Instance.m_CampaignData.MissionTypes.Add(data);
+                        PLCampaignIO.Instance.m_CampaignData.PickupMissionTypes.Add(data);
+                        __result = data;
+                        break;
+                }
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(PLTraderInfo), "Update")]
     class KeepStock
     {
@@ -339,9 +415,9 @@ namespace Exotic_Components
             keep.Name = "Davey";
             keep.ActorInstance.DisplayName = "Davey";
             List<PLTeleportationLocationInstance> teleporters = PLEncounterManager.Instance.PlayerShip.GetAllTeleporterLocationInstances();
-            foreach(PLTeleportationLocationInstance teleporter in teleporters) 
+            foreach (PLTeleportationLocationInstance teleporter in teleporters)
             {
-                if (teleporter.TeleporterLocationName == "Sylvassi Shop") 
+                if (teleporter.TeleporterLocationName == "Sylvassi Shop")
                 {
                     teleporter.TeleporterLocationName = "Davey's Shop";
                 }
@@ -364,6 +440,7 @@ namespace Exotic_Components
 
     class TheCoreComms : PLHailTarget_ExoticShop
     {
+        private float LastMissionUpdate = Time.time;
         private bool showingDeliver = false;
         private int missionID = -1;
         private float LastAdded = Time.time;
@@ -385,15 +462,6 @@ namespace Exotic_Components
                     this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Deliver Jump Processor", new PLHailChoiceDelegate(this.DeliverCPU)));
                     showingDeliver = true;
                 }
-            }
-        }
-        public override void Update()
-        {
-            base.Update();
-            if (showingDeliver && PLServer.Instance.HasCompletedMissionWithID(700)) 
-            {
-                this.m_AllChoices.RemoveAt(m_AllChoices.Count - 1);
-                showingDeliver = false;
             }
         }
         private void UpdateText()
@@ -475,7 +543,54 @@ namespace Exotic_Components
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Why did you set your shop in the core of the galaxy?", new PLHailChoiceDelegate(this.WhyCore)));
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("What is that store I can teleport to?", new PLHailChoiceDelegate(this.WhyStore)));
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Will you search the Lost Colony?", new PLHailChoiceDelegate(this.Colony)));
-                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Nevermind, just want to go back to buying", new PLHailChoiceDelegate(this.BackToBuy)));
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Nevermind, go back to buying", new PLHailChoiceDelegate(this.BackToBuy)));
+            }
+        }
+        public override void Update()
+        {
+            base.Update();
+            if (showingDeliver && PLServer.Instance.HasCompletedMissionWithID(700))
+            {
+                this.m_AllChoices.RemoveAt(m_AllChoices.Count - 1);
+                showingDeliver = false;
+            }
+            if (Time.time - LastMissionUpdate > 1)
+            {
+                bool onMission = false;
+                int count = 0;
+                foreach (PLHailChoice choise in this.m_AllChoices)
+                {
+                    count++;
+                    if (choise.GetText() == "Nevermind, just want to go back to buying")
+                    {
+                        onMission = true;
+                    }
+                }
+                LastMissionUpdate = Time.time;
+                if (onMission)
+                {
+                    int actualCount = 1;
+                    if (!PLServer.Instance.HasMissionWithID(700))
+                    {
+                        actualCount++;
+                    }
+                    if (!PLServer.Instance.HasMissionWithID(701))
+                    {
+                        actualCount++;
+                    }
+                    if (!PLServer.Instance.HasMissionWithID(702))
+                    {
+                        actualCount++;
+                    }
+                    if (!PLServer.Instance.HasMissionWithID(703))
+                    {
+                        actualCount++;
+                    }
+                    if (actualCount != count)
+                    {
+                        Mission(false, true);
+                    }
+                }
             }
         }
         private void Mission(bool authority, bool local)
@@ -568,33 +683,7 @@ namespace Exotic_Components
         {
             if (local)
             {
-                switch (missionID)
-                {
-                    case 700:
-                        if (!PLServer.Instance.HasMissionWithID(700))
-                        {
-                            Missions.RecoverCPU.StartMission();
-                        }
-                        break;
-                    case 701:
-                        if (!PLServer.Instance.HasMissionWithID(701))
-                        {
-                            Missions.KillTaitor.StartMission();
-                        }
-                        break;
-                    case 702:
-                        if (!PLServer.Instance.HasMissionWithID(702))
-                        {
-                            Missions.ProtectJudge.StartMission();
-                        }
-                        break;
-                    case 703:
-                        if (!PLServer.Instance.HasMissionWithID(703))
-                        {
-                            Missions.DeliverBiscuit.StartMission();
-                        }
-                        break;
-                }
+                ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.StartExoticMission", PhotonTargets.MasterClient, new object[] { missionID });
                 Mission(authority, local);
             }
         }
@@ -665,7 +754,7 @@ namespace Exotic_Components
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Install Ship Components", false), new PLHailChoiceDelegate(this.OnSelectInstallComp)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Tell me more about you", new PLHailChoiceDelegate(this.OnTalkWith)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Missions", new PLHailChoiceDelegate(this.Mission)));
-            if (PLServer.Instance.HasActiveMissionWithID(700)) 
+            if (PLServer.Instance.HasActiveMissionWithID(700))
             {
                 PLMissionBase mission = PLServer.Instance.GetActiveMissionWithID(700);
                 if (mission.Objectives[0].IsCompleted)
@@ -676,13 +765,13 @@ namespace Exotic_Components
             }
             UpdateText();
         }
-        private void DeliverCPU(bool authority, bool local) 
+        private void DeliverCPU(bool authority, bool local)
         {
             showingDeliver = false;
             currentText = "Nicely done, you have no idea how important this processor is for me, so you have my deepest gratitude, and for your success you will recieve the promissed processor, this one will make research every time you jump to a new sector, ins't that nifty?";
             ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.DeliverProcessor", PhotonTargets.MasterClient, new object[0]);
             UpdateText();
-            this.m_AllChoices.RemoveAt(m_AllChoices.Count-1);
+            this.m_AllChoices.RemoveAt(m_AllChoices.Count - 1);
         }
 
         public override string GetName()

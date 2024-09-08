@@ -5,6 +5,12 @@ using System.Collections.Generic;
 using System;
 namespace Exotic_Components
 {
+    /*
+     * Issues:
+     * Not sharing missions with clients
+     * Layered Shield first Tick exception
+     * Tweaked machine gun not showing on scan
+    */
     public class Missions
     {
         public class RecoverCPU
@@ -79,13 +85,6 @@ namespace Exotic_Components
             {
                 if (!loading)
                 {
-                    PLServer.Instance.photonView.RPC("AddCrewWarning", PhotonTargets.All, new object[]
-                        {
-                        "NEW MISSION ACCEPTED",
-                        Color.yellow,
-                        0,
-                        "MSN"
-                        });
                 }
                 GameObject gameObject = PhotonNetwork.Instantiate("NetworkPrefabs/Missions/PickupMission", Vector3.zero, Quaternion.identity, 0, null);
                 PLPickupMissionBase mission = gameObject.GetComponent<PLPickupMissionBase>();
@@ -143,14 +142,10 @@ namespace Exotic_Components
                                 plsectorInfo.ID,
                                 plsectorInfo.MissionSpecificID
                         });
-                        if (PhotonNetwork.isMasterClient)
-                        {
-                            PLPersistantShipInfo ship = new PLPersistantShipInfo(EShipType.E_OUTRIDER, 1, plsectorInfo, 0, false, false, true);
-                            ship.ShipName = "The Retriver";
-
-                            ship.CompOverrides.Add(data);
-                            PLServer.Instance.AllPSIs.Add(ship);
-                        }
+                        PLPersistantShipInfo ship = new PLPersistantShipInfo(EShipType.E_OUTRIDER, 1, plsectorInfo, 0, false, false, true);
+                        ship.ShipName = "The Retriver";
+                        ship.CompOverrides.Add(data);
+                        PLServer.Instance.AllPSIs.Add(ship);
                     }
                 }
                 PLServer.Instance.AllMissions.Add(mission);
@@ -181,7 +176,7 @@ namespace Exotic_Components
                     LongRangeDialogueActorID = "Exotic_1",
                     LongRangeDialogueDisplayName = "The Core (Long Comms)",
                     LongRangeDialogueDisplayNameOriginal = "The Core (Long Comms)",
-            };
+                };
                 List<RewardData> rewards = new List<RewardData>
             {
                 new RewardData()
@@ -330,7 +325,7 @@ namespace Exotic_Components
                                 plsectorInfo.MissionSpecificID
                         });
                         PLPersistantShipInfo ship = new PLPersistantShipInfo(EShipType.E_OUTRIDER, 1, plsectorInfo, 0, false, false, true);
-                        ship.ShipName = "The Retriver";
+                        ship.ShipName = "The Test";
 
                         ship.CompOverrides.Add(data);
                         PLServer.Instance.AllPSIs.Add(ship);

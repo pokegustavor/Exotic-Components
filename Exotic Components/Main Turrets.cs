@@ -95,6 +95,7 @@ namespace Exotic_Components
 			this.IsMainTurret = true;
 			this.HasTrackingMissileCapability = true;
 			this.HasPulseLaser = true;
+			this.Experimental = true;
 		}
 	}
 	class TweakedMachineGunTurret : PLMegaTurret_Proj
@@ -120,6 +121,7 @@ namespace Exotic_Components
 			this.IsMainTurret = true;
 			this.HasTrackingMissileCapability = true;
 			this.HasPulseLaser = true;
+			this.Experimental = true;
 		}
 	}
 	class SilentDeath : PLMegaTurret_RapidFire

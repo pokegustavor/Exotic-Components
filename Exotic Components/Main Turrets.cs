@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using PulsarModLoader;
 namespace Exotic_Components
 {
 	public class Main_Turrets
@@ -593,7 +594,7 @@ namespace Exotic_Components
 				}
 			}
 		}
-		protected override bool AutoAimTrackingIsEnabled()
+        protected override bool AutoAimTrackingIsEnabled()
 		{
 			PLPlayer playerFromPlayerID = PLServer.Instance.GetPlayerFromPlayerID(base.ShipStats.Ship.GetCurrentTurretControllerPlayerID(this.TurretID));
 			bool flag = false;
@@ -710,25 +711,6 @@ namespace Exotic_Components
 		}
 		protected virtual void ChargeComplete(int inProjID, Vector3 dir)
 		{
-			/*
-			if (base.ShipStats.Ship.GetCurrentTurretControllerPlayerID(this.TurretID) != -1)
-			{
-				PulsarModLoader.Utilities.Messaging.Notification("Damage before math: " + this.m_Damage,PLNetworkManager.Instance.LocalPlayer,default,20000,default);
-				PulsarModLoader.Utilities.Messaging.Notification("Reactor maxt temp: " + (0.01f * this.ShipStats.ReactorTempMax), PLNetworkManager.Instance.LocalPlayer, default, 20000, default);
-				PulsarModLoader.Utilities.Messaging.Notification("Reactor maxt power: " + (0.001f * this.ShipStats.ReactorBoostedOutputMax), PLNetworkManager.Instance.LocalPlayer, default, 20000, default);
-				PulsarModLoader.Utilities.Messaging.Notification("Reactor current instability: " + (this.ShipStats.Ship.CoreInstability), PLNetworkManager.Instance.LocalPlayer, default, 20000, default);
-				PulsarModLoader.Utilities.Messaging.Notification("Reactor initial instability: " + (this.initialInstability), PLNetworkManager.Instance.LocalPlayer, default, 20000, default);
-				PulsarModLoader.Utilities.Messaging.Notification("Damage multiplication: " + ((0.01f * this.ShipStats.ReactorTempMax + 0.001f * this.ShipStats.ReactorBoostedOutputMax) / (((1.07f + this.initialInstability) - (this.ShipStats.Ship.CoreInstability)))), PLNetworkManager.Instance.LocalPlayer, default, 20000, default);
-				PulsarModLoader.Utilities.Logger.Info("Damage before math: " + this.m_Damage);
-				PulsarModLoader.Utilities.Logger.Info("Reactor maxt temp: " + (0.01f * this.ShipStats.ReactorTempMax));
-				PulsarModLoader.Utilities.Logger.Info("Reactor maxt power: " + (0.001f * this.ShipStats.ReactorBoostedOutputMax));
-				PulsarModLoader.Utilities.Logger.Info("Reactor current instability: " + (this.ShipStats.Ship.CoreInstability));
-				PulsarModLoader.Utilities.Logger.Info("Reactor initial instability: " + (this.initialInstability));
-				PulsarModLoader.Utilities.Logger.Info("Reactor Factor: " + ((this.ShipStats.ReactorTempMax + this.ShipStats.ReactorBoostedOutputMax / 10)/10));
-				PulsarModLoader.Utilities.Logger.Info("Damage multiplication: " + ((0.01f * this.ShipStats.ReactorTempMax + 0.001f * this.ShipStats.ReactorBoostedOutputMax) / (((1.07f + this.initialInstability) - (this.ShipStats.Ship.CoreInstability)))));
-				
-			}
-			*/
 			float reactorFactor = (this.ShipStats.ReactorTempMax + this.ShipStats.ReactorBoostedOutputMax / 10)/10;
 			this.m_Damage = reactorFactor * Mathf.Pow(5, stabilityCharge) * LevelMultiplier(0.1f, 1f);
 			if (stabilityCharge > 0.5f && ShipStats.Ship is PLShipInfo)
@@ -748,7 +730,6 @@ namespace Exotic_Components
 					}
 				}
 			}
-			//this.m_Damage = this.m_Damage * ((0.01f * this.ShipStats.ReactorTempMax + 0.001f * this.ShipStats.ReactorBoostedOutputMax) / (((1.07f + this.initialInstability) - (this.ShipStats.Ship.CoreInstability))));
 			this.LastFireTime = Time.time;
 			if (this.TurretInstance == null)
 			{
@@ -910,22 +891,8 @@ namespace Exotic_Components
 			this.m_ChargeLevel = 0f;
 			this.m_VisibleChargeLevel = 0f;
 			stabilityCharge = 0;
-			/*
-			if (base.ShipStats.Ship.GetCurrentTurretControllerPlayerID(this.TurretID) != -1)
-			{
-				PulsarModLoader.Utilities.Messaging.Notification("Damage before reset: " + this.m_Damage, PLNetworkManager.Instance.LocalPlayer, default, 20000, default);
-				PulsarModLoader.Utilities.Logger.Info("Damage before reset: " + this.m_Damage);
-			}
-			this.m_Damage = this.baseDamage;
-			if (base.ShipStats.Ship.GetCurrentTurretControllerPlayerID(this.TurretID) != -1)
-			{
-				PulsarModLoader.Utilities.Messaging.Notification("Damage after reset: " + this.m_Damage, PLNetworkManager.Instance.LocalPlayer, default, 20000, default);
-				PulsarModLoader.Utilities.Logger.Info("Damage after reset: " + this.m_Damage);
-			}
-			*/
 
 		}
-
 		public float GetBaseTimeDiff()
 		{
 			float num = 0.97f;
@@ -986,14 +953,24 @@ namespace Exotic_Components
 				{
 					this.m_IsCharging = true;
 					stabilityCharge = 0;
-				}
+                    ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.SetFiringInstabilityTurret", PhotonTargets.Others, new object[]
+                    {
+                    this.ShipStats.Ship.ShipID,
+					true
+                    });
+                }
 				else if ((this.m_IsCharging && PLNetworkManager.Instance.LocalPlayerID == base.ShipStats.Ship.GetCurrentTurretControllerPlayerID(this.TurretID) && !PLInput.Instance.GetButton(PLInputBase.EInputActionName.fire)) || (base.ShipStats.Ship.GetCurrentTurretControllerPlayerID(this.TurretID) == -1 && this.m_IsCharging))
 				{
 					this.m_IsCharging = false;
 					this.m_IsVisiblyCharging = false;
 					this.m_VisibleChargeLevel = 0.1f;
-					this.ChargeComplete(this.m_StoredProjID, this.TurretInstance.RefJoint.transform.forward);
-				}
+					PerformChargeComplete();
+                    ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.SetFiringInstabilityTurret", PhotonTargets.Others, new object[]
+                    {
+                    this.ShipStats.Ship.ShipID,
+                    false
+                    });
+                }
 				else if (this.m_IsCharging)
 				{
 					this.ShipStats.Ship.CoreInstability += Time.deltaTime * 0.1f;
@@ -1094,6 +1071,11 @@ namespace Exotic_Components
 			}
 		}
 
+		public void PerformChargeComplete() 
+		{
+            this.ChargeComplete(this.m_StoredProjID, this.TurretInstance.RefJoint.transform.forward);
+        }
+
 		public float ChargeLevel
 		{
 			get
@@ -1127,7 +1109,6 @@ namespace Exotic_Components
 				this.m_VisibleChargeLevel = value;
 			}
 		}
-
 		public bool IsVisiblyCharging
 		{
 			get
@@ -1431,7 +1412,6 @@ namespace Exotic_Components
                                 });
                                 PLServer.Instance.MegaTurretExplosion(hitInfo.point, plshipInfoBase.ShipID, this.MegaTurretExplosionID);
                                 this.TriggerMegaTurretDamage(plshipInfoBase, flag, hitInfo, this.m_VisibleChargeLevel);
-                                PulsarModLoader.Utilities.Messaging.Notification("Hits: " + plshipInfoBase.ShipNameValue);
                                 hit = true;
                             }
                         }
@@ -1606,7 +1586,7 @@ namespace Exotic_Components
 			}
 		}
 	}
-	class InstabilityTurretDamage : PulsarModLoader.ModMessage
+	class InstabilityTurretDamage : ModMessage
 	{
 		public override void HandleRPC(object[] arguments, PhotonMessageInfo sender)
 		{
@@ -1630,7 +1610,6 @@ namespace Exotic_Components
 						bottomHit = true;
 					}
 					shipFromID.TakeDamage(damage, bottomHit, plmegaTurret.DamageType, randomNum, -1, shipFromID2, turretID);
-					PulsarModLoader.Utilities.Messaging.Notification("Stability Charge: " + stabilityCharge);
 					if(stabilityCharge > 0.7f && shipFromID is PLShipInfo) 
 					{
 						foreach(PLPlayer player in PLServer.Instance.AllPlayers) 
@@ -1645,7 +1624,24 @@ namespace Exotic_Components
 			}
 		}
 	}
-	/*
+
+    class SetFiringInstabilityTurret : ModMessage
+    {
+        public override void HandleRPC(object[] arguments, PhotonMessageInfo sender)
+        {
+			int shipID = (int)arguments[0];
+            bool charging = (bool)arguments[1];
+			PLShipInfoBase ship = PLEncounterManager.Instance.GetShipFromID(shipID);
+            (ship.GetTurretAtID(0) as InstabilityTurret).IsCharging = charging;
+            if (!charging) 
+			{
+                (ship.GetTurretAtID(0) as InstabilityTurret).PerformChargeComplete();
+            }
+
+        }
+    }
+
+    /*
 	 * Tool for checking main turret not doing damage
 	[HarmonyLib.HarmonyPatch(typeof(PLServer), "MegaTurretDamage")]
 	class turretlasertest 

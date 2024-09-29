@@ -243,7 +243,7 @@ namespace Exotic_Components
         {
             public override string Name => "The Absortion Field";
 
-            public override string Description => "This \"Shield Generator\" doesn't actually block incoming damage, instead using a special system connected with the ship reactor, this field will absorve up to 75% of the incoming damage, but for that a percentage of your reactor power is needed!";
+            public override string Description => "This \"Shield Generator\" doesn't actually block incoming damage, instead using a special system connected with the ship reactor, this field will absorve up to 75% of the incoming damage, but for that a percentage of your reactor power is needed, also it doesn't have quantum shields!";
 
             public override int MarketPrice => 45000;
 
@@ -253,7 +253,7 @@ namespace Exotic_Components
 
             public override float ChargeRateMax => 1;
 
-            public override float MinIntegrityPercentForQuantumShield => 0.5f;
+            public override float MinIntegrityPercentForQuantumShield => 2f;
 
             public override float MaxPowerUsage_Watts => 0;
 
@@ -267,8 +267,6 @@ namespace Exotic_Components
                 {
                     PLLocalize.Localize("Damage Reduction", false),
                     "\n",
-                    PLLocalize.Localize("Min Pow for QT Shields", false),
-                    "\n",
                     PLLocalize.Localize("Reactor Power Percent: ", false)
                 });
             }
@@ -278,8 +276,6 @@ namespace Exotic_Components
                 return string.Concat(new string[]
                 {
                     (InComp as PLShieldGenerator).IsEquipped ? ((InComp as PLShieldGenerator).GetPowerPercentInput() * 75).ToString("N1") + "%" : "?%" ,
-                    "\n",
-                    "50%",
                     "\n",
                     $"{50-InComp.Level}%"
                 });
@@ -297,7 +293,7 @@ namespace Exotic_Components
                     shieldGenerator.MinIntegrityForBubble = 0f;
                     shieldGenerator.MinIntegrityToCreateBubble = 0;
                     float Power = shieldGenerator.GetPowerPercentInput();
-                    shieldGenerator.ShipStats.Ship.IsQuantumShieldActive = Power >= 0.5f;
+                    shieldGenerator.ShipStats.Ship.IsQuantumShieldActive = false;
                 }
             }
 

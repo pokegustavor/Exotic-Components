@@ -249,6 +249,8 @@ namespace Exotic_Components
 
             public override bool Experimental => true;
 
+            public override Texture2D IconTexture => (Texture2D)Resources.Load("Icons/41_Sheilds");
+
             public override float ShieldMax => 1;
 
             public override float ChargeRateMax => 1;

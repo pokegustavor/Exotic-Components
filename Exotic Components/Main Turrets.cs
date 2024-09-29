@@ -539,7 +539,7 @@ namespace Exotic_Components
 		{
 			this.Name = "Anti-Matter Lance";
 			this.Desc = "Banned for tampering with core safety protocols, this highly unstable prototype harnesses the high energy particles ejected by ship cores during overheating. Damage has been observed to scale with cores closer to meltdown. It also may periodically damage the weapons system, and explode screens";
-			this.m_IconTexture = (Texture2D)Resources.Load("Icons/8_Weapons");
+			this.m_IconTexture = (Texture2D)Resources.Load("Icons/9_Weapons");
 			this.m_Damage = 80f;
 			this.baseDamage = 80f;
 			this.SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("InstabilityTurret");
@@ -560,7 +560,7 @@ namespace Exotic_Components
 			base.SysInstConduit = 10;
 			this.CanHitMissiles = true;
 			this.DamageType = EDamageType.E_PHYSICAL;
-		}
+    }
 
 		protected override bool ShouldLookForMissilesToShoot()
 		{

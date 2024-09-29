@@ -201,7 +201,7 @@ namespace Exotic_Components
                 {
                 (me.ChargeSpeed * me.LevelMultiplier(0.25f, 1f)).ToString("0"),
                 "\n",
-                "Galaxy",
+                (me.WarpRange * 100f * me.LevelMultiplier(0.2f, 1f)).ToString("0"),
                 "\n",
                 me.NumberOfChargingNodes.ToString("0")
                 });

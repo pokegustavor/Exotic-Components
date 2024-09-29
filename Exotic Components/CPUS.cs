@@ -31,7 +31,7 @@ namespace Exotic_Components
 
             public override bool Contraband => true;
 
-            public override Texture2D IconTexture => base.IconTexture;
+            public override Texture2D IconTexture => (Texture2D)Resources.Load("Icons/51_Processer");
 
             public override float MaxPowerUsage_Watts => 7500f;
 

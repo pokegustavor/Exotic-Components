@@ -18,6 +18,10 @@ namespace Exotic_Components
 
             public override float Armor => 0.17f;
 
+            public override bool Experimental => true;
+
+            public override Texture2D IconTexture => (Texture2D)Resources.Load("Icons/23_Hull");
+
             public override void Tick(PLShipComponent InComp)
             {
                 base.Tick(InComp);

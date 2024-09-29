@@ -3,6 +3,7 @@ using System.Collections;
 using System;
 using System.Linq;
 using UnityEngine;
+using HarmonyLib;
 namespace Exotic_Components
 {
     [HarmonyLib.HarmonyPatch(typeof(PLShipInfo),"Update")]
@@ -102,9 +103,19 @@ namespace Exotic_Components
                         }
                     }
                 }
-                if(__instance.MyWarpDrive != null && PLInput.Instance.GetButtonUp(PLInputBase.EInputActionName.pilot_ability) && __instance.MyWarpDrive.Name == "The Phase Drive" && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10f && (!(__instance is PLOldWarsShip_Sylvassi) || (__instance is PLOldWarsShip_Sylvassi && (__instance as PLOldWarsShip_Sylvassi).SlicerFiredInThisSector)) && __instance.GetCurrentShipControllerPlayerID() == PLNetworkManager.Instance.LocalPlayerID) 
+                if(PLInput.Instance.GetButtonUp(PLInputBase.EInputActionName.pilot_ability) && (!(__instance is PLOldWarsShip_Sylvassi) || (__instance is PLOldWarsShip_Sylvassi && (__instance as PLOldWarsShip_Sylvassi).SlicerFiredInThisSector)) && __instance.GetCurrentShipControllerPlayerID() == PLNetworkManager.Instance.LocalPlayerID) 
                 {
-                    PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.RecivePhase", PhotonTargets.All, new object[0]);
+                    if (__instance.MyWarpDrive != null && __instance.MyWarpDrive.Name == "The Phase Drive" && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10f) 
+                    {
+                        PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.RecivePhase", PhotonTargets.All, new object[0]);
+                    }
+                    else if (__instance.MyShieldGenerator != null && __instance.MyShieldGenerator.Name == "Electric Wall" && __instance.MyStats.ShieldsCurrent / __instance.MyStats.ShieldsMax >= 0.9f)
+                    {
+                        PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.EMPPulse", PhotonTargets.All, new object[] 
+                        {
+                            __instance.ShipID
+                        });
+                    }
                 }
                 if (Time.time - Warp_Drive.PhaseDrive.LastPhase < 1f && __instance.HullPlatingRenderers != null && Warp_Drive.PhaseDrive.Phasing) 
                 {
@@ -189,12 +200,11 @@ namespace Exotic_Components
             catch { }
         }
     }
-    [HarmonyLib.HarmonyPatch(typeof(PLShipStats), "ClearStats")]
+    [HarmonyPatch(typeof(PLShipStats), "ClearStats")]
     class ResetStatus
     {
         static void Postfix(PLShipStats __instance)
         {
-            CPUS.ThermoBoost.MaxHeat = 1.1f;
             switch (__instance.Ship.ShipTypeID)
             {
                 default:
@@ -261,6 +271,56 @@ namespace Exotic_Components
                 case EShipType.E_DESTROYER:
                     __instance.Mass = 750f;
                     break;
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(PLShipInfoBase), "HasPilotAbilityToDisplay")]
+    internal class ShouldShowAbility
+    {
+        internal static void Postfix(PLShipInfoBase __instance, ref bool __result)
+        {
+            if (__instance.MyWarpDrive != null && __instance.MyWarpDrive.Name == "The Phase Drive" && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10f)
+            {
+                __result = true;
+            }
+            else if (__instance.MyShieldGenerator != null && __instance.MyShieldGenerator.Name == "Electric Wall" && __instance.MyStats.ShieldsCurrent / __instance.MyStats.ShieldsMax >= 0.9f)
+            {
+                __result = true;
+            }
+        }
+    }
+    [HarmonyPatch(typeof(PLOldWarsShip_Sylvassi), "HasPilotAbilityToDisplay")]
+    class ShouldShowAbilitySwordShip
+    {
+        static void Postfix(PLOldWarsShip_Sylvassi __instance, ref bool __result)
+        {
+            ShouldShowAbility.Postfix(__instance, ref __result);
+        }
+    }
+    [HarmonyPatch(typeof(PLShipInfoBase), "GetPilotAbilityText")]
+    internal class AbilityName
+    {
+        internal static void Postfix(PLShipInfoBase __instance, ref string __result)
+        {
+            if (__instance.MyWarpDrive != null && __instance.MyWarpDrive.Name == "The Phase Drive" && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10f)
+            {
+                __result = "Phase Drive";
+            }
+            else if (__instance.MyShieldGenerator != null && __instance.MyShieldGenerator.Name == "Electric Wall" && __instance.MyStats.ShieldsCurrent / __instance.MyStats.ShieldsMax >= 0.9f)
+            {
+                __result = "Electric Wall";
+            }
+        }
+    }
+    [HarmonyPatch(typeof(PLOldWarsShip_Sylvassi), "GetPilotAbilityText")]
+    class AbilityNameSwordShip
+    {
+        static void Postfix(PLOldWarsShip_Sylvassi __instance, ref string __result)
+        {
+            if (__instance.SlicerFiredInThisSector)
+            {
+                AbilityName.Postfix(__instance, ref __result);
             }
         }
     }

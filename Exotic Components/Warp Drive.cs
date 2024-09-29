@@ -615,49 +615,4 @@ namespace Exotic_Components
             }
         }
     }
-
-    [HarmonyPatch(typeof(PLShipInfoBase), "HasPilotAbilityToDisplay")]
-    class ShouldShowAbility
-    {
-        static void Postfix(PLShipInfoBase __instance, ref bool __result)
-        {
-            if (__instance.MyWarpDrive != null && __instance.MyWarpDrive.Name == "The Phase Drive" && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10f)
-            {
-                __result = true;
-            }
-        }
-    }
-    [HarmonyPatch(typeof(PLOldWarsShip_Sylvassi), "HasPilotAbilityToDisplay")]
-    class ShouldShowAbilitySwordShip
-    {
-        static void Postfix(PLOldWarsShip_Sylvassi __instance, ref bool __result)
-        {
-            if (__instance.MyWarpDrive != null && __instance.MyWarpDrive.Name == "The Phase Drive" && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10f)
-            {
-                __result = true;
-            }
-        }
-    }
-    [HarmonyPatch(typeof(PLShipInfoBase), "GetPilotAbilityText")]
-    class AbilityName
-    {
-        static void Postfix(PLShipInfoBase __instance, ref string __result)
-        {
-            if (__instance.MyWarpDrive != null && __instance.MyWarpDrive.Name == "The Phase Drive" && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10f && (!(__instance is PLOldWarsShip_Sylvassi) || (__instance is PLOldWarsShip_Sylvassi && (__instance as PLOldWarsShip_Sylvassi).SlicerFiredInThisSector)))
-            {
-                __result = "Phase Drive";
-            }
-        }
-    }
-    [HarmonyPatch(typeof(PLOldWarsShip_Sylvassi), "GetPilotAbilityText")]
-    class AbilityNameSwordShip
-    {
-        static void Postfix(PLOldWarsShip_Sylvassi __instance, ref string __result)
-        {
-            if (__instance.MyWarpDrive != null && __instance.MyWarpDrive.Name == "The Phase Drive" && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10f && __instance.SlicerFiredInThisSector)
-            {
-                __result = "Phase Drive";
-            }
-        }
-    }
 }

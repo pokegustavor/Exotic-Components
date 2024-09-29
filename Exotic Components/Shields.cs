@@ -2,6 +2,9 @@
 using UnityEngine;
 using System.Collections.Generic;
 using HarmonyLib;
+using PulsarModLoader;
+using static UnityEngine.TouchScreenKeyboard;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 namespace Exotic_Components
 {
     public class Shields
@@ -35,10 +38,8 @@ namespace Exotic_Components
             public override void Tick(PLShipComponent InComp)
             {
                 PLShieldGenerator me = InComp as PLShieldGenerator;
-                if (me != null && me.ShipStats != null && me.ShipStats.Ship.MyShieldGenerator.Name == "Layered Shield")
+                if (me != null && me.ShipStats != null && me.ShipStats.Ship.MyShieldGenerator != null && me.ShipStats.Ship.MyShieldGenerator.Name == "Layered Shield")
                 {
-                    me.Deflection = (2.8f - Mathf.Clamp01(me.ShipStats.ShieldsCurrent / me.ShipStats.ShieldsMax) * 4.2f);
-                    if (me.Deflection < 0.6f) me.Deflection = 0.6f;
                     float multiplier = (1 / Mathf.Clamp01(me.ShipStats.ShieldsCurrent / me.ShipStats.ShieldsMax));
                     if (multiplier > 5f) multiplier = 5f;
                     me.CalculatedMaxPowerUsage_Watts = Mathf.RoundToInt(MaxPowerUsage_Watts * multiplier);
@@ -49,7 +50,7 @@ namespace Exotic_Components
         {
             public override string Name => "Electric Wall";
 
-            public override string Description => "A modified version of the Second Hull that not only has 10% resistance against energy attacks, it also can emit an EMP pulse if turned off while above 90% integrity, just be careful with the recoil. It was marked as contraband because of this.";
+            public override string Description => "A modified version of the Second Hull that not only has 10% resistance against energy attacks, it also allows your pilot to emit an EMP pulse if the integrity is above 90%, just be careful with the recoil. It was marked as contraband because of this.";
 
             public override int MarketPrice => 18000;
 
@@ -195,6 +196,7 @@ namespace Exotic_Components
                 base.Tick(InComp);
                 PLShieldGenerator shield = InComp as PLShieldGenerator;
                 shield.MinIntegrityAfterDamage = Mathf.RoundToInt(shield.CurrentMax) - 5;
+                shield.MinIntegrityAfterDamageScaled = shield.MinIntegrityAfterDamage;
                 shield.RecoveryRate = shield.CurrentMax / 3;
             }
 
@@ -241,7 +243,7 @@ namespace Exotic_Components
         {
             public override string Name => "The Absortion Field";
 
-            public override string Description => "This \"Shield Generator\" doesn't actually block incoming damage, instead using a special system connected with the ship reactor, this field will absorve up to 75% of the incoming damage, but for that half of the reactor power is needed!";
+            public override string Description => "This \"Shield Generator\" doesn't actually block incoming damage, instead using a special system connected with the ship reactor, this field will absorve up to 75% of the incoming damage, but for that a percentage of your reactor power is needed!";
 
             public override int MarketPrice => 45000;
 
@@ -257,13 +259,17 @@ namespace Exotic_Components
 
             public override int MinIntegrityAfterDamage => 0;
 
+            public override float Price_LevelMultiplierExponent => 1.6f;
+
             public override string GetStatLineLeft(PLShipComponent InComp)
             {
                 return string.Concat(new string[]
                 {
                     PLLocalize.Localize("Damage Reduction", false),
                     "\n",
-                    PLLocalize.Localize("Min Pow for QT Shields", false)
+                    PLLocalize.Localize("Min Pow for QT Shields", false),
+                    "\n",
+                    PLLocalize.Localize("Reactor Power Percent: ", false)
                 });
             }
 
@@ -273,7 +279,9 @@ namespace Exotic_Components
                 {
                     (InComp as PLShieldGenerator).IsEquipped ? ((InComp as PLShieldGenerator).GetPowerPercentInput() * 75).ToString("N1") + "%" : "?%" ,
                     "\n",
-                    "50%"
+                    "50%",
+                    "\n",
+                    $"{50-InComp.Level}%"
                 });
             }
 
@@ -284,7 +292,7 @@ namespace Exotic_Components
                 if (shieldGenerator.IsEquipped)
                 {
                     shieldGenerator.IsPowerActive = true;
-                    shieldGenerator.m_MaxPowerUsage_Watts = Mathf.Round(shieldGenerator.ShipStats.ReactorBoostedOutputMax) / 2;
+                    shieldGenerator.m_MaxPowerUsage_Watts = Mathf.Max(Mathf.Round(shieldGenerator.ShipStats.ReactorBoostedOutputMax * (0.5f - 0.01f * shieldGenerator.Level)), Mathf.Round(shieldGenerator.ShipStats.ReactorBoostedOutputMax * 0.25f));
                     shieldGenerator.RequestPowerUsage_Percent = 1f;
                     shieldGenerator.MinIntegrityForBubble = 0f;
                     shieldGenerator.MinIntegrityToCreateBubble = 0;
@@ -352,7 +360,7 @@ namespace Exotic_Components
             {
                 inDmg *= 0.7f;
             }
-            if (shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("Eletric Wall"))
+            if (!PLShipInfoBase.IsDamageTypePhysical(dmgType) && shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("Electric Wall"))
             {
                 inDmg *= 0.9f;
             }
@@ -378,7 +386,7 @@ namespace Exotic_Components
                     return true;
                 }
             }
-            else if (shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("The Absortion Field")) 
+            else if (shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("The Absortion Field"))
             {
                 __result = inDmg - inDmg * (shipComponent.GetPowerPercentInput() * 0.75f);
                 return false;
@@ -386,27 +394,28 @@ namespace Exotic_Components
             return true;
         }
     }
-    [HarmonyPatch(typeof(PLServer), "SetStartupSwitchStatus")]
-    class EMPPulse
+
+    class EMPPulse : ModMessage
     {
-        static void Postfix(int shipID, bool status)
+        public override void HandleRPC(object[] arguments, PhotonMessageInfo sender)
         {
+            int shipID = (int)arguments[0];
             PLShipStats mystats = PLEncounterManager.Instance.GetShipFromID(shipID).MyStats;
-            if (PLEncounterManager.Instance.GetShipFromID(shipID).MyShieldGenerator.Name == "Eletric Wall" && !status && mystats.ShieldsCurrent / mystats.ShieldsMax >= 0.9f)
+            PLShipInfo Targetship = PLEncounterManager.Instance.GetShipFromID(shipID) as PLShipInfo;
+            Object.Instantiate(PLGlobal.Instance.EMPExplosionPrefab, Targetship.Exterior.transform.position, Quaternion.identity);
+            if (PhotonNetwork.isMasterClient)
             {
-                Object.Instantiate(PLGlobal.Instance.EMPExplosionPrefab, PLEncounterManager.Instance.PlayerShip.Exterior.transform.position, Quaternion.identity);
-                if (!PhotonNetwork.isMasterClient) return;
                 foreach (PLShipInfoBase ship in Object.FindObjectsOfType(typeof(PLShipInfoBase)))
                 {
-                    if (!ship.GetIsPlayerShip()) ship.photonView.RPC("Overcharged", PhotonTargets.All, new object[0]);
+                    if (ship != Targetship) ship.photonView.RPC("Overcharged", PhotonTargets.All, new object[0]);
                 }
-                PLEncounterManager.Instance.PlayerShip.EngineeringSystem.TakeDamage(Random.Range(0, 20));
-                PLEncounterManager.Instance.PlayerShip.ComputerSystem.TakeDamage(Random.Range(0, 20));
-                PLEncounterManager.Instance.PlayerShip.WeaponsSystem.TakeDamage(Random.Range(0, 20));
-                PLEncounterManager.Instance.PlayerShip.LifeSupportSystem.TakeDamage(Random.Range(0, 20));
-                PLEncounterManager.Instance.GetShipFromID(shipID).MyShieldGenerator.Current = 0f;
-                if (Random.Range(0, 20) == 4) PLEncounterManager.Instance.PlayerShip.photonView.RPC("Overcharged", PhotonTargets.All, new object[0]);
             }
+            Targetship.EngineeringSystem.TakeDamage(Random.Range(0, 20));
+            Targetship.ComputerSystem.TakeDamage(Random.Range(0, 20));
+            Targetship.WeaponsSystem.TakeDamage(Random.Range(0, 20));
+            Targetship.LifeSupportSystem.TakeDamage(Random.Range(0, 20));
+            Targetship.MyShieldGenerator.Current = 0f;
+            if (Random.Range(0, 20) == 4 && PhotonNetwork.isMasterClient) Targetship.photonView.RPC("Overcharged", PhotonTargets.All, new object[0]);
         }
     }
 }

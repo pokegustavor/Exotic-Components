@@ -4,9 +4,12 @@ using PulsarModLoader.MPModChecks;
 [assembly: System.Runtime.CompilerServices.IgnoresAccessChecksTo("Assembly-CSharp")]
 namespace Exotic_Components
 {
+    /* TODO
+     * Add biscuit effects to biscuit reactor
+     */
     public class Mod : PulsarMod
     {
-        public override string Version => "4.3";
+        public override string Version => "4.4";
 
         public override string Author => "pokegustavo (with suggestions from EngBot, TheShribe and Kani)";
 

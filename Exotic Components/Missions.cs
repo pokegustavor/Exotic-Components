@@ -7,9 +7,11 @@ namespace Exotic_Components
 {
     /*
      * Issues:
-     * Not sharing missions with clients
-     * Layered Shield first Tick exception
-     * Tweaked machine gun not showing on scan
+     * Layered Shield first Tick exception (random)
+     * Coil gun and sub not showing on scan
+     * Coil Gun and sub proj not working (random)
+     * RegenerationShield not regenerating to max health
+     * Absortion field don't change with level up
     */
     public class Missions
     {

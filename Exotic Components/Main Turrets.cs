@@ -496,17 +496,25 @@ namespace Exotic_Components
 			FireDelay = 30f;
 			m_MarketPrice = 39000;
 			HeatGeneratedOnFire = 0.05f;
-			CoolingRateModifier *= 0.5f;
+			CoolingRateModifier = 0.5f;
 			SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("FakeKeeperBeamTurret");
 			BeamActiveTime = 50000f;
 		}
         public override void Tick()
         {
 			if (IsOverheated || ShipStats.Ship.IsReactorOverheated()) IsBeamActive = false;
+			float baseDamage = m_Damage;
+			m_Damage *= GetPowerPercentInput();
 			base.Tick();
+			m_Damage = baseDamage;
 			if (IsBeamActive)
 			{
+				CoolingRateModifier = 0;
 				ChargeAmount = 0f;
+			}
+			else 
+			{
+				CoolingRateModifier = 0.5f;
 			}
 		}
 		public override void UpdateMaxPowerUsageWatts()

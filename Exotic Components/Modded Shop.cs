@@ -750,7 +750,7 @@ namespace Exotic_Components
 
             m_AllChoices.Clear();
             currentText = defaultText;
-            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Browse Goods", false), new PLHailChoiceDelegate(this.OnSelectBrowseGoods)));
+            this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Browse Exotic Goods", false), new PLHailChoiceDelegate(this.OnSelectBrowseGoods)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Install Ship Components", false), new PLHailChoiceDelegate(this.OnSelectInstallComp)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Tell me more about you", new PLHailChoiceDelegate(this.OnTalkWith)));
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Missions", new PLHailChoiceDelegate(this.Mission)));

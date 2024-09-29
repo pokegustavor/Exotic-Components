@@ -109,6 +109,14 @@ namespace Exotic_Components
                     PLLocalize.Localize("Output", false),
                 });
             }
+
+            public override void FinalLateAddStats(PLShipComponent InComp)
+            {
+                PLReactor reactor = InComp as PLReactor;
+                float multiplier = Mathf.Clamp(reactor.ShipStats.ReactorTempCurrent * 2f / reactor.ShipStats.ReactorTempMax, 1f, 1.5f);
+                reactor.ShipStats.ThrustOutputCurrent *= multiplier;
+                reactor.ShipStats.ThrustOutputMax *= multiplier;
+            }
         }
         class DoomReactor : ReactorMod
         {
@@ -208,12 +216,20 @@ namespace Exotic_Components
             public override void Tick(PLShipComponent InComp)
             {
                 PLReactor me = InComp as PLReactor;
-                me.EnergyOutputMax = me.OriginalEnergyOutputMax * Mathf.Clamp(BiscuitBoost / 5f + 1f, 1f, 4f);
+                me.EnergyOutputMax = me.OriginalEnergyOutputMax * ((BiscuitBoost / 5f) + 1);
             }
 
             public override void OnWarp(PLShipComponent InComp)
             {
-                BiscuitBoost = Mathf.Clamp(BiscuitBoost - 5f, 0f, 20f);
+                if (BiscuitBoost <= 20)
+                {
+                    BiscuitBoost -= 5;
+                }
+                else 
+                {
+                    BiscuitBoost *= 0.8f;
+                }
+                if (BiscuitBoost < 0) { BiscuitBoost = 0; }
             }
 
             public override string GetStatLineRight(PLShipComponent InComp)
@@ -227,7 +243,7 @@ namespace Exotic_Components
                     " sec\n",
                     (me.GetDisplayedEnergyOutputMax() * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
                     " MW\n",
-                    (Mathf.Clamp(BiscuitBoost/5f, 0f, 3f) * 100).ToString("0"),
+                    (BiscuitBoost/5f * 100).ToString("0"),
                     " %"
                 });
             }
@@ -265,7 +281,7 @@ namespace Exotic_Components
             public override void Tick(PLShipComponent InComp)
             {
                 PLReactor me = InComp as PLReactor;
-                me.HeatOutput = Mathf.Clamp(me.ShipStats.HullCurrent / me.ShipStats.HullMax, 0.65f, 1f);
+                me.HeatOutput = Mathf.Clamp(me.ShipStats.HullCurrent / me.ShipStats.HullMax * 1.5f, 0.65f, 1f);
             }
             public override string GetStatLineRight(PLShipComponent InComp)
             {
@@ -290,14 +306,6 @@ namespace Exotic_Components
                     "\n",
                     PLLocalize.Localize("Output", false),
                 });
-            }
-
-            public override void FinalLateAddStats(PLShipComponent InComp)
-            {
-                PLReactor reactor = InComp as PLReactor;
-                float multiplier = Mathf.Clamp(reactor.ShipStats.ReactorTempCurrent * 2f / reactor.ShipStats.ReactorTempMax, 1f, 1.5f);
-                reactor.ShipStats.ThrustOutputCurrent *= multiplier;
-                reactor.ShipStats.ThrustOutputMax *= multiplier;
             }
         }
         class Thermopoint : ReactorMod
@@ -507,9 +515,7 @@ namespace Exotic_Components
                 if (me.IsEquipped)
                 {
                     me.HeatOutput = Reactors.BaseHeat - me.ShipStats.ReactorTotalUsagePercent * Reactors.MaxCool;
-                    //float minTemp = -0.5f;
-                    //if (me.HeatOutput < minTemp) me.HeatOutput = minTemp;
-                    if (me.ShipStats.ReactorTotalUsagePercent < 10 && !me.ShipStats.Ship.IsReactorOverheated()) me.ShipStats.ReactorTempCurrent += 200 * Time.deltaTime;
+                    if (me.ShipStats.ReactorTotalUsagePercent < 10 && !me.ShipStats.Ship.IsReactorOverheated() && !me.ShipStats.Ship.IsAbandoned()) me.ShipStats.ReactorTempCurrent += 200 * Time.deltaTime;
                 }
             }
             public override string GetStatLineRight(PLShipComponent InComp)
@@ -886,9 +892,9 @@ namespace Exotic_Components
             {
                 foreach (PLPawnItem plpawnItem in PLServer.Instance.ResearchLockerInventory.AllItems)
                 {
-                    if (plpawnItem.GetItemName(true).Contains("Biscuit"))
+                    if (plpawnItem.GetItemName(true).Contains("Biscuit") && PLEncounterManager.Instance.PlayerShip != null && PLEncounterManager.Instance.PlayerShip.MyReactor != null && PLEncounterManager.Instance.PlayerShip.MyReactor.Name == "Ultimate Fluffy Biscuit Reactor")
                     {
-                        BiscuitReactor.BiscuitBoost = Mathf.Clamp(BiscuitReactor.BiscuitBoost + 1f, 0f, 20f);
+                        BiscuitReactor.BiscuitBoost += 1;
                     }
                 }
             }

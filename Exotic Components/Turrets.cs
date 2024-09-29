@@ -274,7 +274,7 @@ namespace Exotic_Components
             m_Damage = original;
         }
     }
-    class Defender2Turret : PLDefenderTurret
+    public class Defender2Turret : PLDefenderTurret
     {
         private Vector3[] Offsets_ProjArray;
         public Defender2Turret(int inLevel = 0, int inSubTypeData = 0) : base(inLevel, inSubTypeData)

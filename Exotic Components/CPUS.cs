@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using CodeStage.AntiCheat.ObscuredTypes;
 using System.Reflection.Emit;
+using PulsarModLoader.Patches;
+using static PulsarModLoader.Patches.HarmonyHelpers;
 namespace Exotic_Components
 {
     public class CPUS
@@ -51,7 +53,19 @@ namespace Exotic_Components
         }
         public class ThermoBoost : CPUMod 
         {
-            public static float MaxHeat = 1.1f;
+
+            public static float GetMaxHeat(PLShipInfoBase ship) 
+            {
+                float maxHeat = 1.1f;
+                foreach(PLCPU cpu in ship.MyStats.GetComponentsOfType(ESlotType.E_COMP_CPU).Cast<PLCPU>()) 
+                {
+                    if(cpu.SubType == CPUModManager.Instance.GetCPUIDFromName("Turret Thermo Boost")) 
+                    {
+                        maxHeat += 0.3f * cpu.LevelMultiplier(0.31f, 1);
+                    }
+                }
+                return maxHeat;
+            }
 
             public override string Name => "Turret Thermo Boost";
 
@@ -72,11 +86,6 @@ namespace Exotic_Components
             {
                 PLCPU me = InComp as PLCPU;
                 return (0.3f * InComp.LevelMultiplier(0.31f, 1) * 100) + " %";
-            }
-
-            public override void AddStats(PLShipComponent InComp)
-            {
-                MaxHeat += 0.3f * InComp.LevelMultiplier(0.31f, 1);
             }
         }
         public class Researcher : CPUMod
@@ -154,7 +163,7 @@ namespace Exotic_Components
         {
             public override string Name => "Triple Combo Processor";
 
-            public override string Description => "This processor adds cyberdefence, jump calculation and shield charge boost, while not having a absurd energy consumption!";
+            public override string Description => "This processor adds cyberdefence, jump calculation and shield charge boost, while not having an absurd energy consumption!";
 
             public override int MarketPrice => 20000;
 
@@ -206,7 +215,14 @@ namespace Exotic_Components
                 if (me.IsEquipped)
                 {
                     me.IsPowerActive = true;
-                    me.m_RequestPowerUsage_Percent = 1f;
+                    if(me.ShipStats == null || me.ShipStats.Ship == null || (me.ShipStats.Ship.WarpChargeStage == EWarpChargeStage.E_WCS_PREPPING && me.ShipStats.Ship.WarpChargeState_Levels[0] < 1f)) 
+                    {
+                        me.m_RequestPowerUsage_Percent = 1f;
+                    }
+                    else 
+                    {
+                        me.m_RequestPowerUsage_Percent = 0.5f;
+                    }
                 }
             }
         }
@@ -387,14 +403,54 @@ namespace Exotic_Components
     [HarmonyPatch(typeof(PLTurret),"Tick")]
     class HeatMax 
     {
-        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> Instructions)
+        static void Prefix(PLTurret __instance) 
         {
-            List<CodeInstruction> instructionsList = Instructions.ToList();
-            instructionsList[105].opcode = OpCodes.Ldsfld;
-            instructionsList[105].operand = AccessTools.Field(typeof(CPUS.ThermoBoost), "MaxHeat");
-            instructionsList[166].opcode = OpCodes.Ldsfld;
-            instructionsList[166].operand = AccessTools.Field(typeof(CPUS.ThermoBoost), "MaxHeat");
-            return instructionsList.AsEnumerable();
+            float thermoBoost = CPUS.ThermoBoost.GetMaxHeat(__instance.ShipStats.Ship);
+            if (__instance.Heat >= thermoBoost) 
+            {
+                __instance.IsOverheated = true;
+                if (__instance.SubType == 15)
+                {
+                    PLMusic.PostEvent("play_ship_generic_external_weapon_biohazard_overheat", __instance.TurretInstance.gameObject);
+                }
+                else
+                {
+                    PLMusic.PostEvent("play_ship_generic_external_weapon_flamelance_overheat", __instance.TurretInstance.gameObject);
+                }
+            }
+            __instance.Heat = Mathf.Clamp(__instance.Heat, 0, thermoBoost);
+        }
+
+        private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            List<CodeInstruction> targetSequence = new List<CodeInstruction>
+            {
+                new CodeInstruction(OpCodes.Ldfld,AccessTools.Field(typeof(PLTurret),"Heat")),
+                new CodeInstruction(OpCodes.Ldc_R4, 0f),
+                new CodeInstruction(OpCodes.Ldc_R4, 1.1f),
+            };
+            List<CodeInstruction> patchSequence = new List<CodeInstruction>
+            {
+                new CodeInstruction(OpCodes.Ldfld,AccessTools.Field(typeof(PLTurret),"Heat")),
+                new CodeInstruction(OpCodes.Ldc_R4, 0f),
+                new CodeInstruction(OpCodes.Ldc_R4, 1000f),
+            };
+            instructions = HarmonyHelpers.PatchBySequence(instructions, targetSequence, patchSequence, HarmonyHelpers.PatchMode.REPLACE, HarmonyHelpers.CheckMode.NONNULL, false);
+
+            targetSequence = new List<CodeInstruction>
+            {
+                new CodeInstruction(OpCodes.Ldarg_0),
+                new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PLTurret),"Heat")),
+                new CodeInstruction(OpCodes.Ldc_R4, 1.1f),
+            };
+            patchSequence = new List<CodeInstruction>
+            {
+                new CodeInstruction(OpCodes.Ldarg_0),
+                new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(PLTurret),"Heat")),
+                new CodeInstruction(OpCodes.Ldc_R4, 1000f),
+            };
+            patchSequence[0].labels = instructions.ToList()[FindSequence(instructions, targetSequence, CheckMode.NONNULL) - 3].labels;
+            return HarmonyHelpers.PatchBySequence(instructions, targetSequence, patchSequence, HarmonyHelpers.PatchMode.REPLACE, HarmonyHelpers.CheckMode.NONNULL, false);
         }
     }
    [HarmonyPatch(typeof(PLUITurretUI),"Update")]
@@ -432,7 +488,7 @@ namespace Exotic_Components
             }
             if (plturret != null) 
             {
-                float value = plturret.Heat / CPUS.ThermoBoost.MaxHeat;
+                float value = plturret.Heat / CPUS.ThermoBoost.GetMaxHeat(plturret.ShipStats.Ship);
                 __instance.RightUI_Fill.fillAmount = value * 0.25f;
                 __instance.RightUI_FillOut.fillAmount = value * 0.25f;
             }

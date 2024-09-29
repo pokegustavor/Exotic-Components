@@ -29,7 +29,7 @@ namespace Exotic_Components
         }
         public static bool WasMissileDamage(float damage, PLTurret turret, EDamageType damageType)
         {
-            if (turret != null && turret.ShipStats != null && turret.ShipStats.Ship != null && turret.GetHasTrackingMissileCapability()) 
+            if (turret != null && turret.ShipStats != null && turret.ShipStats.Ship != null && turret.GetHasTrackingMissileCapability() && turret.ShipStats.Ship.SelectedMissileLauncher != null) 
             {
                 if(damage != turret.ShipStats.Ship.SelectedMissileLauncher.Damage) 
                 {
@@ -57,7 +57,7 @@ namespace Exotic_Components
             {
                 PLTurret turret = null;
                 if(attackingShip != null) { turret = attackingShip.GetTurretAtID(turretID); }
-                if (WasMissileDamage(dmg, turret, dmgType) && attackingShip.SelectedMissileLauncher.SubType == MissileModManager.Instance.GetMissileIDFromName("Armor Denial"))
+                if (turret != null && attackingShip.SelectedMissileLauncher != null && (WasMissileDamage(dmg, turret, dmgType) || turret is Defender2Turret) && attackingShip.SelectedMissileLauncher.SubType == MissileModManager.Instance.GetMissileIDFromName("Armor Denial"))
                 {
                     __instance.MyStats.HullArmor = 0;
                 }

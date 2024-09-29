@@ -2,6 +2,8 @@
 using PulsarModLoader.Content.Components.WarpDriveProgram;
 using UnityEngine;
 using HarmonyLib;
+using System.Linq;
+using PulsarModLoader;
 
 namespace Exotic_Components
 {
@@ -25,15 +27,15 @@ namespace Exotic_Components
 
             public override void Execute(PLWarpDriveProgram InWarpDriveProgram)
             {
-                if (!PhotonNetwork.isMasterClient) return;
                 if (InWarpDriveProgram.MaxLevelCharges < -3) return;
                 foreach (PLPlayer player in PLServer.Instance.AllPlayers)
                 {
+                    if (!PhotonNetwork.isMasterClient) break;
                     if (player != null && player.GetPawn() != null && !player.GetPawn().IsDead && player.RaceID != 2)
                     {
                         player.GetPawn().photonView.RPC("TakeDamage", PhotonTargets.All, new object[]
                         {
-                            500000,
+                            5000000f,
                             false,
                             -1
                         });
@@ -89,7 +91,7 @@ namespace Exotic_Components
 
             public override bool Experimental => true;
 
-            public override int MaxLevelCharges => 6;
+            public override int MaxLevelCharges => 5;
 
             public override bool IsVirus => true;
 
@@ -154,7 +156,7 @@ namespace Exotic_Components
 
             public override float ActiveTime => 0.1f;
 
-            public override int MaxLevelCharges => 6;
+            public override int MaxLevelCharges => 5;
 
             public override void Execute(PLWarpDriveProgram InWarpDriveProgram)
             {
@@ -223,6 +225,46 @@ namespace Exotic_Components
                 Used = false;
             }
         }
+        class Rebound : WarpDriveProgramMod
+        {
+            public override string Name => "The Rebound";
+
+            public override string Description => "This program will create a copy of any virus infecting you and will send it back to their sender.";
+
+            public override int MarketPrice => 25000;
+
+            public override bool Experimental => true;
+
+            public override int MaxLevelCharges => 5;
+
+            public override string ShortName => "RB";
+
+            public override float ActiveTime => 0f;
+
+            public override void Execute(PLWarpDriveProgram InWarpDriveProgram)
+            {
+                if (!PhotonNetwork.isMasterClient) return;
+                foreach(PLVirus virus in InWarpDriveProgram.ShipStats.GetComponentsOfType(ESlotType.E_COMP_VIRUS).Cast<PLVirus>()) 
+                {
+                    PLVirus plvirus = new PLVirus((EVirusType)virus.SubType, 0, 0)
+                    {
+                        Sender = InWarpDriveProgram.ShipStats.Ship,
+                        InitialTime = PLServer.Instance.GetEstimatedServerMs()
+                    };
+                    plvirus.InfectionCompletedOnShips.Add(virus.Sender.ShipID);
+                    PLShipComponent plshipComponent = virus.Sender.MyStats.AddShipComponent(plvirus, -1, ESlotType.E_COMP_NONE);
+                    PLServer.Instance.photonView.RPC("SetupSelfInfectedVirus", PhotonTargets.All, new object[]
+                    {
+                            virus.Sender.ShipID,
+                            plshipComponent.NetID,
+                            PLServer.Instance.GetEstimatedServerMs()
+                    });
+                }
+            }
+        }
+
+
+
         class DoorStuckVirus : VirusMod
         {
             public override string Name => "Door Stuck";

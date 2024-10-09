@@ -5,14 +5,6 @@ using System.Collections.Generic;
 using System;
 namespace Exotic_Components
 {
-    /*
-     * Issues:
-     * Layered Shield first Tick exception (random)
-     * Coil gun and sub not showing on scan
-     * Coil Gun and sub proj not working (random)
-     * RegenerationShield not regenerating to max health
-     * Absortion field don't change with level up
-    */
     public class Missions
     {
         public class RecoverCPU
@@ -80,13 +72,17 @@ namespace Exotic_Components
                 missionData.Objectives.AddRange(objectivesData);
                 return missionData;
             }
-            //public static PLMissionObjective_PickupComponent objective = new PLMissionObjective_PickupComponent(ESlotType.E_COMP_MISSION_COMPONENT, MissionShipComponentModManager.Instance.GetMissionShipComponentIDFromName("Intergalatic Jump Processor Core"), "Intergalatic Jump Processor Core") { RawCustomText = ""};
-            //public static PLMissionObjective_CompleteWithinJumpCount objective2 = new PLMissionObjective_CompleteWithinJumpCount(14) { RawCustomText = "" };
-            //public static PLMissionObjective_Custom objective3 = new PLMissionObjective_Custom() { CustomTextOriginal = "Sell processor to The Core", RawCustomText = "Sell processor to The Core" };
             public static void StartMission(bool loading = false)
             {
                 if (!loading)
                 {
+                    PLServer.Instance.photonView.RPC("AddCrewWarning", PhotonTargets.All, new object[]
+                            {
+                        "NEW MISSION ACCEPTED",
+                        Color.yellow,
+                        0,
+                        "MSN"
+                            });
                 }
                 GameObject gameObject = PhotonNetwork.Instantiate("NetworkPrefabs/Missions/PickupMission", Vector3.zero, Quaternion.identity, 0, null);
                 PLPickupMissionBase mission = gameObject.GetComponent<PLPickupMissionBase>();
@@ -109,9 +105,6 @@ namespace Exotic_Components
                 mission.MyData = missionDataBlock;
                 mission.MyMissionData = missionData;
                 mission.MissionTypeID = 700;
-                //mission.Objectives.Add(objective);
-                //mission.Objectives.Add(objective2);
-                //mission.Objectives.Add(objective3);
                 mission.Objectives.AddRange(objectives);
                 if (!loading)
                 {
@@ -127,7 +120,7 @@ namespace Exotic_Components
                         plsectorInfo.FactionStrength = 0.5f;
                         plsectorInfo.VisualIndication = ESectorVisualIndication.BLACKHOLE;
                         plsectorInfo.MySPI.Faction = 5;
-                        plsectorInfo.Position = PLServer.GetSectorPositionAtDistance(10);
+                        plsectorInfo.Position = PLServer.GetSectorPositionAtDistance(8);
                         plsectorInfo.MissionSpecificID = 700;
                         PLServer.Instance.photonView.RPC("ClientInitialGetSectorData", PhotonTargets.Others, new object[]
                                 {
@@ -426,7 +419,7 @@ namespace Exotic_Components
                         plsectorInfo.FactionStrength = 0.5f;
                         plsectorInfo.VisualIndication = ESectorVisualIndication.NONE;
                         plsectorInfo.MySPI.Faction = 5;
-                        plsectorInfo.Position = PLServer.GetSectorPositionAtDistance(UnityEngine.Random.Range(7, 15));
+                        plsectorInfo.Position = PLServer.GetSectorPositionAtDistance(UnityEngine.Random.Range(4, 7));
                         plsectorInfo.MissionSpecificID = 701;
                         PLServer.Instance.photonView.RPC("ClientInitialGetSectorData", PhotonTargets.Others, new object[]
                                 {

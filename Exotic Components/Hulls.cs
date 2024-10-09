@@ -24,10 +24,9 @@ namespace Exotic_Components
 
             public override void Tick(PLShipComponent InComp)
             {
-                base.Tick(InComp);
                 PLHull me = InComp as PLHull;
                 PLShipStats myStats = me.ShipStats;
-                if (myStats != null && me != null && myStats.Ship.MyHull.Name == "Nano Active MK2" && me.Current < myStats.HullMax) 
+                if (myStats != null && me != null && myStats.Ship != null && me.IsEquipped && me.Current < myStats.HullMax) 
                 {
                     me.Current += myStats.HullMax / 5000;
                     if (me.Current > myStats.HullMax) me.Current = myStats.HullMax;
@@ -81,7 +80,7 @@ namespace Exotic_Components
             {
                 base.Tick(InComp);
                 PLHull me = InComp as PLHull;
-                if (me != null && me.ShipStats != null && me.ShipStats.HullCurrent != 0 && me.ShipStats.Ship.MyHull.Name == "Toxic Wall")
+                if (me != null && me.ShipStats != null && me.ShipStats.Ship != null && me.ShipStats.HullCurrent != 0 && me.IsEquipped)
                 {
                     me.ShipStats.Ship.MyHull.Armor = (me.ShipStats.HullCurrent*0.8f) / me.ShipStats.HullMax ;
                     if (me.ShipStats.HullCurrent < me.ShipStats.HullMax * 0.75f)
@@ -251,6 +250,11 @@ namespace Exotic_Components
             {
                 PLHull shipComponent = __instance.GetShipComponent<PLHull>(ESlotType.E_COMP_HULL, false);
                 PLHullPlating plating = __instance.GetShipComponent<PLHullPlating>(ESlotType.E_COMP_HULLPLATING, false);
+                if (turret != null && turret is SuperchargeBeam)
+                {
+                    float discargeAMT = Mathf.Clamp(inDmg * 0.1f, 0, 0.5f);
+                    __instance.Ship.DischargeAmount += discargeAMT;
+                }
                 if (inDmgType == EDamageType.E_INFECTED && inDmg == 10 && HullModManager.Instance.GetHullIDFromName("Anti-Infected Hull") == shipComponent.SubType) 
                 {
                     return false;

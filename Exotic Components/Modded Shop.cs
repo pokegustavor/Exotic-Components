@@ -20,6 +20,10 @@ namespace Exotic_Components
                     comms.GetHailTargetID()
                 });
             }
+            else if (PhotonNetwork.isMasterClient && PLServer.GetCurrentSector().Name == "The Core(MOD)") 
+            {
+                InitialStore.UpdateCore();
+            }
         }
 
         public static void CreateCore(int ID)
@@ -45,10 +49,10 @@ namespace Exotic_Components
     {
         public override void HandleRPC(object[] arguments, PhotonMessageInfo sender)
         {
-            completeMission();
+            CompleteMission();
         }
 
-        void completeMission()
+        void CompleteMission()
         {
             PLMissionBase mission = PLServer.Instance.GetActiveMissionWithID(700);
             if (mission != null && PhotonNetwork.isMasterClient)
@@ -134,7 +138,7 @@ namespace Exotic_Components
     }
 
     [HarmonyPatch(typeof(PLServer), "StartPlayer")]
-    class CreateStoreMissions
+    class CreateStore
     {
         static void Postfix(PLServer __instance)
         {
@@ -156,6 +160,7 @@ namespace Exotic_Components
             plsectorInfo3.Position = new Vector3(0, 0, 0.0001f);
             plsectorInfo3.FactionStrength = 0.5f;
             plsectorInfo3.Name = "The Core(MOD)";
+            Gauntlet.CreateGauntlet();
         }
     }
 
@@ -446,6 +451,7 @@ namespace Exotic_Components
         private float LastAdded = Time.time;
         public static bool soldIntergalatic = false;
         private string defaultText = "Welcome to the core, not sure how you found me in here, but doesn't matter. I have the most exotic components of all the galaxy, the other shops have no chance against me. Also ignore the big shiny center of the galaxy and buy something!";
+        private string currentText;
         public override void Start()
         {
             base.Start();
@@ -747,7 +753,6 @@ namespace Exotic_Components
         }
         private void BackToBuy(bool authority, bool local)
         {
-
             m_AllChoices.Clear();
             currentText = defaultText;
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Browse Exotic Goods", false), new PLHailChoiceDelegate(this.OnSelectBrowseGoods)));
@@ -799,8 +804,5 @@ namespace Exotic_Components
             if (currentText == null) currentText = defaultText;
             return PLDialogueActorInstance.AddNewLinesToText(currentText, false, 70, true);
         }
-
-
-        private string currentText;
     }
 }

@@ -1550,6 +1550,7 @@ namespace Exotic_Components
                                new ComponentOverrideData() { CompType = 11, CompSubType = PulsarModLoader.Content.Components.MegaTurret.MegaTurretModManager.Instance.GetMegaTurretIDFromName("SilentDeath"), ReplaceExistingComp = true, CompLevel = round, IsCargo = false, CompTypeToReplace = 11, SlotNumberToReplace = 0},
                                new ComponentOverrideData() { CompType = 10, CompSubType = 14, ReplaceExistingComp = true, CompLevel = round, IsCargo = false, CompTypeToReplace = 10, SlotNumberToReplace = 0},
                                new ComponentOverrideData() { CompType = 10, CompSubType = 15, ReplaceExistingComp = true, CompLevel = round, IsCargo = false, CompTypeToReplace = 10, SlotNumberToReplace = 1},
+                               new ComponentOverrideData() { CompType = 5, CompSubType = 0, ReplaceExistingComp = true, CompLevel = 7, IsCargo = false, CompTypeToReplace = 5, SlotNumberToReplace = 0},
                                new ComponentOverrideData() { CompType = 2, CompSubType = PulsarModLoader.Content.Components.WarpDrive.WarpDriveModManager.Instance.GetWarpDriveIDFromName("The Recharger"), ReplaceExistingComp = true, CompLevel = round, IsCargo = false, CompTypeToReplace = 2, SlotNumberToReplace = 0},
                             };
                             plpersistantShipInfo.CompOverrides.AddRange(overrides);

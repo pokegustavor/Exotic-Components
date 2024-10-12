@@ -323,7 +323,7 @@ namespace Exotic_Components
                 }
                 foreach (PulsarModLoader.Content.Components.CPU.CPUMod CPU in PulsarModLoader.Content.Components.CPU.CPUModManager.Instance.CPUTypes)
                 {
-                    if (CPU is CPUS.Researcher || CPU is CPUS.CreditLaundering) continue;
+                    if (CPU is CPUS.Researcher || CPU is CPUS.CreditLaundering || CPU is CPUS.Upgrader) continue;
                     PLShipComponent component = PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(7, PulsarModLoader.Content.Components.CPU.CPUModManager.Instance.GetCPUIDFromName(CPU.Name), 0, 0, 12), null);
                     component.NetID = inPDE.ServerWareIDCounter;
                     inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
@@ -358,14 +358,17 @@ namespace Exotic_Components
                     inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
                     inPDE.ServerWareIDCounter++;
                 }
-                for (int i = 0; i < 4; i++)
+                if (PLEncounterManager.Instance.PlayerShip.MyStats.GetSlot(ESlotType.E_COMP_AUTO_TURRET).MaxItems > 0)
                 {
-                    foreach (PulsarModLoader.Content.Components.AutoTurret.AutoTurretMod AutoTurret in PulsarModLoader.Content.Components.AutoTurret.AutoTurretModManager.Instance.AutoTurretTypes)
+                    for (int i = 0; i < PLEncounterManager.Instance.PlayerShip.MyStats.GetSlot(ESlotType.E_COMP_AUTO_TURRET).MaxItems; i++)
                     {
-                        PLShipComponent component = PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(24, PulsarModLoader.Content.Components.AutoTurret.AutoTurretModManager.Instance.GetAutoTurretIDFromName(AutoTurret.Name), 0, 0, 12), null);
-                        component.NetID = inPDE.ServerWareIDCounter;
-                        inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
-                        inPDE.ServerWareIDCounter++;
+                        foreach (PulsarModLoader.Content.Components.AutoTurret.AutoTurretMod AutoTurret in PulsarModLoader.Content.Components.AutoTurret.AutoTurretModManager.Instance.AutoTurretTypes)
+                        {
+                            PLShipComponent component = PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(24, PulsarModLoader.Content.Components.AutoTurret.AutoTurretModManager.Instance.GetAutoTurretIDFromName(AutoTurret.Name), 0, 0, 12), null);
+                            component.NetID = inPDE.ServerWareIDCounter;
+                            inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
+                            inPDE.ServerWareIDCounter++;
+                        }
                     }
                 }
                 for (int i = 0; i < 2; i++)

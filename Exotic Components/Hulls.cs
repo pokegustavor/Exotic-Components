@@ -213,7 +213,7 @@ namespace Exotic_Components
 
             public override bool CanBeDroppedOnShipDeath => false;
 
-            public override float HullMax => 150f;
+            public override float HullMax => 500f;
 
             public override float Armor => 4.5f;
 

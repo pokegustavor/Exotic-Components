@@ -6,6 +6,8 @@ using PulsarModLoader;
 using static Exotic_Components.Gauntlet.Patches;
 using System.Collections;
 using System.Web;
+using System.ComponentModel;
+using PulsarModLoader.Content.Components.CPU;
 namespace Exotic_Components
 {
     public class StartTrial : ModMessage
@@ -403,7 +405,7 @@ namespace Exotic_Components
                     case 3:
                         return "I hope you have a strong attack, this next round will be composed of heavily armored ships.";
                     case 4:
-                        return "Preprare your dodging skills, the ships here are specialized in ignoring most of your defenses.";
+                        return "Preprare your dodging skills, the ships here are specialized in ignoring most of your defenses. Also you will recieve an early reward for completing this round.";
                     case 5:
                         return "Lets test your hull strengh, this next challange will make your shields \"non-existent\", and your ship may overcharge...";
                     case 6:
@@ -1396,6 +1398,7 @@ namespace Exotic_Components
                             case 5:
                                 PLServer.Instance.CurrentCrewCredits += 80000;
                                 PLServer.Instance.CurrentUpgradeMats += 55;
+                                PLEncounterManager.Instance.PlayerShip.MyStats.AddShipComponent(PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(7, CPUModManager.Instance.GetCPUIDFromName("The Upgrader"), 0, 0, 12), null), -1, ESlotType.E_COMP_CARGO);
                                 break;
                             case 6:
                                 PLServer.Instance.CurrentCrewCredits += 100000;

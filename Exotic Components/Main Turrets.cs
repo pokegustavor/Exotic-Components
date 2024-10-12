@@ -1143,7 +1143,7 @@ namespace Exotic_Components
             this.m_Damage = 320f;
             this.SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("PhaseShieldTurret");
             this.m_MarketPrice = 26000;
-            this.FireDelay = 3f;
+            this.FireDelay = 4f;
             this.m_MaxPowerUsage_Watts = 17000f;
             base.CargoVisualPrefabID = 5;
             this.TurretRange = 12000f;

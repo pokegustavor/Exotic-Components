@@ -396,7 +396,6 @@ namespace Exotic_Components
 
             public override float MaxPowerUsage_Watts => 4001;
         }
-
         public class Imortality : CPUMod
         {
             public override string Name => "Imortality Processor";
@@ -408,6 +407,35 @@ namespace Exotic_Components
             public override bool Contraband => true;
 
             public override float MaxPowerUsage_Watts => 1;
+        }
+        public class Upgrader : CPUMod
+        {
+            public override string Name => "The Upgrader";
+
+            public override string Description => "This processor increases the max level to components and itens upgrades.";
+
+            public override int MarketPrice => 65000;
+
+            public override bool Experimental => true;
+
+            public override float MaxPowerUsage_Watts => 1;
+
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return "Max level increase: ";
+            }
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                return $"{Mathf.RoundToInt((InComp.Level+1)*2.2f)}";
+            }
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                PLCPU me = (PLCPU)InComp;
+                me.MaxCompUpgradeLevelBoost = Mathf.RoundToInt((InComp.Level + 1) * 2.2f);
+                me.MaxPawnItemUpgradeLevelBoost = Mathf.RoundToInt((InComp.Level + 1) * 2.2f);
+            }
         }
 
     }

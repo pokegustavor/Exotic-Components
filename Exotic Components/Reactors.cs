@@ -196,12 +196,20 @@ namespace Exotic_Components
 
                 if ((Time.time - LastHeal > 1) && (effects.ContainsKey((int)EPawnStatusEffectType.HEARTY) || effects.ContainsKey((int)EPawnStatusEffectType.HEALTH_REGEN) || effects.ContainsKey((int)EPawnStatusEffectType.HEAL_TEAM)))
                 {
+                    int count = 0;
+                    foreach (int effect in effects.Keys) 
+                    {
+                        if (effect == (int)EPawnStatusEffectType.HEARTY || effect == (int)EPawnStatusEffectType.HEALTH_REGEN || effect == (int)EPawnStatusEffectType.HEAL_TEAM)
+                        {
+                            count++;
+                        }
+                    }
                     LastHeal = Time.time;
                     foreach (PLPlayer player in PLServer.Instance.AllPlayers)
                     {
                         if (player.TeamID == 0 && player.GetPawn() != null && !player.GetPawn().IsDead && player.GetPawn().MyCurrentTLI == InComp.ShipStats.Ship.MyTLI)
                         {
-                            player.GetPawn().Health += 5;
+                            player.GetPawn().Health += 5 * count;
                             player.GetPawn().Health = Mathf.Min(player.GetPawn().Health, player.GetPawn().MaxHealth);
                         }
                     }

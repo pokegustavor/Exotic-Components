@@ -95,7 +95,6 @@ namespace Exotic_Components
             }
         }
     }
-
     class AntiShield : PLLaserTurret
     {
         public AntiShield(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)

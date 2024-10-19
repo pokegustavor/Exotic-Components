@@ -4,16 +4,19 @@ using System;
 using System.Linq;
 using UnityEngine;
 using HarmonyLib;
+using PulsarModLoader.Content.Components.CPU;
+using static Exotic_Components.Reactors;
 namespace Exotic_Components
 {
     [HarmonyLib.HarmonyPatch(typeof(PLShipInfo),"Update")]
     internal class Update
     {
+        static float LastDamage = Time.time;
         static void Postfix(PLShipInfo __instance)
         {
             try
             {
-                if (__instance.MyWarpDrive != null && (__instance.MyWarpDrive.Name == "Ultimate Explorer" || __instance.MyWarpDrive.Name == "Ultimate Explorer MK2") && PLServer.Instance.m_ShipCourseGoals.Count > 0)
+                if (__instance.MyWarpDrive != null && (__instance.MyWarpDrive.Name == "Ultimate Explorer" || __instance.MyWarpDrive.Name == "Ultimate Explorer MK2" || __instance.MyWarpDrive.Name == "\'The travaler\'") && PLServer.Instance.m_ShipCourseGoals.Count > 0)
                 {
                     PLSectorInfo plsectorInfo3 = PLGlobal.Instance.Galaxy.AllSectorInfos[PLServer.Instance.GetCurrentHubID()];
                     PLSectorInfo plsectorInfo4 = PLGlobal.Instance.Galaxy.AllSectorInfos[PLServer.Instance.m_ShipCourseGoals[0]];
@@ -56,6 +59,27 @@ namespace Exotic_Components
                     }
                 }
 
+                if (PhotonNetwork.isMasterClient && Time.time - LastDamage > 1 && Reactors.BiscuitReactor.effects.ContainsKey((int)EPawnStatusEffectType.MOLTEN) && __instance.MyReactor != null && __instance.MyReactor.Name == "Ultimate Fluffy Biscuit Reactor") 
+                {
+                    LastDamage = Time.time;
+                    foreach(PLShipInfoBase ship in PLEncounterManager.Instance.AllShips.Values) 
+                    {
+                        if(ship != null && ship != __instance && Vector3.Distance(ship.Exterior.transform.position,__instance.Exterior.transform.position) < 500) 
+                        {
+                            PLServer.Instance.photonView.RPC("ClientShipTakeDamage", PhotonTargets.All, new object[]
+                            {
+                                ship.ShipID,
+                                50f,
+                                false,
+                                (int)EDamageType.E_FIRE,
+                                UnityEngine.Random.Range(0f, 1f),
+                                -1,
+                                __instance.ShipID,
+                                -1
+                            });
+                        }
+                    }
+                }
 
                 if (!__instance.GetIsPlayerShip()) return;
                 if (PLServer.GetCurrentSector().Name == "The Core(MOD)" && !PLEncounterManager.Instance.PlayerShip.Get_IsInWarpMode())
@@ -63,18 +87,6 @@ namespace Exotic_Components
                     InitialStore.UpdateCore();
                 }
                 bool found = false;
-                /*
-                foreach(PLCPU cpu in PLEncounterManager.Instance.PlayerShip.MyStats.GetComponentsOfType(ESlotType.E_COMP_CPU,false)) 
-                {
-                    if (cpu.Name == "Turret Thermo Boost")
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) CPUS.ThermoBoost.MaxHeat = 1.1f;
-                found = false;
-                */
                 if(PLServer.GetCurrentSector().MissionSpecificID == 702) 
                 {
                     PLShipInfo judge = null;
@@ -134,7 +146,7 @@ namespace Exotic_Components
                         __instance.ExteriorMeshRenderer.enabled = false;
                     }
                 }
-                if (__instance.MyReactor != null && __instance.MyReactor.GetItemName() != "" && __instance.Exterior.GetComponent<PLSpaceHeatVolume>() != null) 
+                if (__instance.MyReactor != null && __instance.MyReactor.GetItemName() != "ThermoPoint Reactor" && __instance.Exterior.GetComponent<PLSpaceHeatVolume>() != null) 
                 {
                     PLSpaceHeatVolume heatVolume = __instance.Exterior.GetComponent<PLSpaceHeatVolume>();
                     heatVolume.MyPS.enableEmission = false;
@@ -322,6 +334,44 @@ namespace Exotic_Components
             {
                 AbilityName.Postfix(__instance, ref __result);
             }
+        }
+    }
+
+    [HarmonyPatch(typeof(PLShipInfoBase), "TakeDamage")]
+    class TakeAnyDamage 
+    {
+        static void Postfix(PLShipInfoBase attackingShip, float dmg) 
+        {
+            if(attackingShip != null && attackingShip.MyReactor != null && attackingShip.MyReactor.Name == "Ultimate Fluffy Biscuit Reactor" && attackingShip.MyShieldGenerator != null && Reactors.BiscuitReactor.effects.ContainsKey((int)EPawnStatusEffectType.LIFESTEAL)) 
+            {
+                attackingShip.MyShieldGenerator.Current += dmg * 0.2f;
+            }
+        }
+    }
+    [HarmonyPatch(typeof(PLPawn), "OnDeath")]
+    class PreventDeath
+    {
+        static bool Prefix(PLPawn __instance)
+        {
+            if (!__instance.IsDead && BiscuitReactor.effects.ContainsKey((int)EPawnStatusEffectType.REVIVAL))
+            {
+                BiscuitReactor.effects.Remove((int)EPawnStatusEffectType.REVIVAL);
+                __instance.Health = 50;
+                return false;
+            }
+            if (__instance.MyPlayer != null && __instance.MyPlayer.StartingShip != null)
+            {
+                List<PLShipComponent> CPUs = __instance.MyPlayer.StartingShip.MyStats.GetComponentsOfType(ESlotType.E_COMP_CPU, false);
+                foreach (PLShipComponent plshipComponent in CPUs)
+                {
+                    if (plshipComponent != null && plshipComponent.SubType == CPUModManager.Instance.GetCPUIDFromName("Imortality Processor") && plshipComponent.IsEquipped)
+                    {
+                        __instance.Health = __instance.MaxHealth;
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
     }
 }

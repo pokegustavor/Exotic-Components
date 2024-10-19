@@ -38,7 +38,7 @@ namespace Exotic_Components
             public override void Tick(PLShipComponent InComp)
             {
                 PLShieldGenerator me = InComp as PLShieldGenerator;
-                if (me != null && me.ShipStats != null && me.ShipStats.Ship.MyShieldGenerator != null && me.ShipStats.Ship.MyShieldGenerator.Name == "Layered Shield")
+                if (me != null && me.ShipStats != null && me.ShipStats.Ship != null && me.IsEquipped)
                 {
                     float multiplier = (1 / Mathf.Clamp01(me.ShipStats.ShieldsCurrent / me.ShipStats.ShieldsMax));
                     if (multiplier > 5f) multiplier = 5f;
@@ -118,12 +118,15 @@ namespace Exotic_Components
             public override void Tick(PLShipComponent InComp)
             {
                 PLShieldGenerator me = InComp as PLShieldGenerator;
-                me.IsPowerActive = true;
-                me.RequestPowerUsage_Percent = 1f;
-                me.CalculatedMaxPowerUsage_Watts = 8000f * me.LevelMultiplier(0.2f, 1f);
-                me.ChargeRateCurrent = me.ChargeRateMax * me.LevelMultiplier(0.5f, 1f) * (me.GetPowerPercentInput() - 0.5f) * 2;
-                if ((me.Current - me.ShipStats.ShieldsChargeRate * Time.deltaTime <= 0 && me.ChargeRateCurrent < 0) || (me.Current >= me.CurrentMax && me.ChargeRateCurrent > 0)) me.ShipStats.ShieldsChargeRate = 0f;
-                if (me.Current < 0) me.Current = 0f;
+                if (me.IsEquipped && me.ShipStats != null && me.ShipStats.Ship != null)
+                {
+                    me.IsPowerActive = true;
+                    me.RequestPowerUsage_Percent = 1f;
+                    me.CalculatedMaxPowerUsage_Watts = 8000f * me.LevelMultiplier(0.2f, 1f);
+                    me.ChargeRateCurrent = me.ChargeRateMax * me.LevelMultiplier(0.5f, 1f) * (me.GetPowerPercentInput() - 0.5f) * 2;
+                    if ((me.Current - me.ShipStats.ShieldsChargeRate * Time.deltaTime <= 0 && me.ChargeRateCurrent < 0) || (me.Current >= me.CurrentMax && me.ChargeRateCurrent > 0)) me.ShipStats.ShieldsChargeRate = 0f;
+                    if (me.Current < 0) me.Current = 0f;
+                }
             }
         }
         class AntiInfected : ShieldMod
@@ -255,7 +258,7 @@ namespace Exotic_Components
 
             public override float ChargeRateMax => 1;
 
-            public override float MinIntegrityPercentForQuantumShield => 2f;
+            public override float MinIntegrityPercentForQuantumShield => 5000f;
 
             public override float MaxPowerUsage_Watts => 0;
 
@@ -287,15 +290,13 @@ namespace Exotic_Components
             {
                 base.Tick(InComp);
                 PLShieldGenerator shieldGenerator = InComp as PLShieldGenerator;
-                if (shieldGenerator.IsEquipped)
+                if (shieldGenerator.IsEquipped && shieldGenerator.ShipStats != null)
                 {
                     shieldGenerator.IsPowerActive = true;
                     shieldGenerator.m_MaxPowerUsage_Watts = Mathf.Max(Mathf.Round(shieldGenerator.ShipStats.ReactorBoostedOutputMax * (0.5f - 0.01f * shieldGenerator.Level)), Mathf.Round(shieldGenerator.ShipStats.ReactorBoostedOutputMax * 0.25f));
                     shieldGenerator.RequestPowerUsage_Percent = 1f;
                     shieldGenerator.MinIntegrityForBubble = 0f;
                     shieldGenerator.MinIntegrityToCreateBubble = 0;
-                    float Power = shieldGenerator.GetPowerPercentInput();
-                    shieldGenerator.ShipStats.Ship.IsQuantumShieldActive = false;
                 }
             }
 
@@ -327,6 +328,11 @@ namespace Exotic_Components
     {
         static bool Prefix(ref float inDmg, EDamageType dmgType, float DT_ShieldBoost, float shieldDamageMod, PLTurret turret, ref float __result, PLShipStats __instance)
         {
+            if(turret != null && turret is SuperchargeBeam) 
+            {
+                float discargeAMT = Mathf.Clamp(inDmg * 0.15f, 0, 0.5f);
+                __instance.Ship.DischargeAmount += discargeAMT;
+            }
             if (turret != null && turret is PhaseShieldTurret)
             {
                 __result = inDmg;

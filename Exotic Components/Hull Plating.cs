@@ -94,7 +94,7 @@ namespace Exotic_Components
             {
                 base.FinalLateAddStats(inStats);
                 inStats.HullArmor *= 5;
-                inStats.TurretDamageFactor /= 2;
+                inStats.TurretDamageFactor *= 0.75f;
             }
 
             public override string GetStatLineLeft()
@@ -103,7 +103,7 @@ namespace Exotic_Components
                 {
                     "Ship hull armor 5x",
                     "\n",
-                    "<color=red>Ship turret damage halfed</color>"
+                    "<color=red>Ship turret damage decreased by 25%</color>"
                 });
             }
         }
@@ -123,14 +123,14 @@ namespace Exotic_Components
             {
                 base.FinalLateAddStats(inStats);
                 inStats.HullArmor = 0;
-                inStats.TurretDamageFactor *= 5;
+                inStats.TurretDamageFactor *= 2.5f;
             }
 
             public override string GetStatLineLeft()
             {
                 return string.Concat(new string[]
                 {
-                    "Ship turret damage 5x",
+                    "Ship turret damage 2.5x",
                     "\n",
                     "<color=red>Ship hull armor 0x</color>"
                 });

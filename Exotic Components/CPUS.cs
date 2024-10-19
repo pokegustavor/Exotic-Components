@@ -42,24 +42,24 @@ namespace Exotic_Components
 
             public override string GetStatLineRight(PLShipComponent InComp)
             {
-                if (PLServer.GetCurrentSector().VisualIndication == ESectorVisualIndication.LCWBATTLE || PLServer.GetCurrentSector().VisualIndication == ESectorVisualIndication.TOPSEC || PLServer.GetCurrentSector().VisualIndication == ESectorVisualIndication.UNSEEN_MS)
+                if (PLServer.GetCurrentSector().VisualIndication == ESectorVisualIndication.LCWBATTLE || PLServer.GetCurrentSector().VisualIndication == ESectorVisualIndication.TOPSEC || PLServer.GetCurrentSector().VisualIndication == ESectorVisualIndication.UNSEEN_MS || PLServer.GetCurrentSector().Name == "Gauntlet_Arena()")
                 {
                     lastLive = 1;
                     return "Unkown Error!";
                 }
                 if (lastLive >= 20) return "charged";
-                return ((20-lastLive)/2) + " jumps remains";
+                return ((20 - lastLive) / 2) + " jumps remains";
             }
         }
-        public class ThermoBoost : CPUMod 
+        public class ThermoBoost : CPUMod
         {
 
-            public static float GetMaxHeat(PLShipInfoBase ship) 
+            public static float GetMaxHeat(PLShipInfoBase ship)
             {
                 float maxHeat = 1.1f;
-                foreach(PLCPU cpu in ship.MyStats.GetComponentsOfType(ESlotType.E_COMP_CPU).Cast<PLCPU>()) 
+                foreach (PLCPU cpu in ship.MyStats.GetComponentsOfType(ESlotType.E_COMP_CPU).Cast<PLCPU>())
                 {
-                    if(cpu.SubType == CPUModManager.Instance.GetCPUIDFromName("Turret Thermo Boost")) 
+                    if (cpu.SubType == CPUModManager.Instance.GetCPUIDFromName("Turret Thermo Boost"))
                     {
                         maxHeat += 0.3f * cpu.LevelMultiplier(0.31f, 1);
                     }
@@ -116,11 +116,10 @@ namespace Exotic_Components
                     PLServer.Instance.ResearchMaterials[researchID]++;
                 }
             }
-            
+
         }
         public class CreditLaundering : CPUMod
         {
-            static int money = 10000;
             public override string Name => "Credits Processor";
 
             public override string Description => "A processor that gives credits when going to unvisited sectors. Don't worry about how or from where the credits comes from, also if the Colonial Union asks, I didn't give this to you.";
@@ -159,7 +158,7 @@ namespace Exotic_Components
                 return 10000 + (int)(10000 * InComp.LevelMultiplier(0.61f, 1)) + " Cr";
             }
         }
-        public class TripleCombo : CPUMod 
+        public class TripleCombo : CPUMod
         {
             public override string Name => "Triple Combo Processor";
 
@@ -183,9 +182,9 @@ namespace Exotic_Components
             public override string GetStatLineRight(PLShipComponent InComp)
             {
                 PLCPU me = InComp as PLCPU;
-                return "+" + (0.7f * me.LevelMultiplier(0.5f, 1f) * 10f).ToString("0") + "\n" 
-                    + (0.36f * me.LevelMultiplier(0.75f, 1f)).ToString("0.0") + "\n" 
-                    +(1.7f * me.LevelMultiplier(0.25f, 1f)).ToString("0");
+                return "+" + (0.7f * me.LevelMultiplier(0.5f, 1f) * 10f).ToString("0") + "\n"
+                    + (0.36f * me.LevelMultiplier(0.75f, 1f)).ToString("0.0") + "\n"
+                    + (1.7f * me.LevelMultiplier(0.25f, 1f)).ToString("0");
             }
 
             public override void AddStats(PLShipComponent InComp)
@@ -215,18 +214,18 @@ namespace Exotic_Components
                 if (me.IsEquipped)
                 {
                     me.IsPowerActive = true;
-                    if(me.ShipStats == null || me.ShipStats.Ship == null || (me.ShipStats.Ship.WarpChargeStage == EWarpChargeStage.E_WCS_PREPPING && me.ShipStats.Ship.WarpChargeState_Levels[0] < 1f)) 
+                    if (me.ShipStats == null || me.ShipStats.Ship == null || (me.ShipStats.Ship.WarpChargeStage == EWarpChargeStage.E_WCS_PREPPING && me.ShipStats.Ship.WarpChargeState_Levels[0] < 1f))
                     {
                         me.m_RequestPowerUsage_Percent = 1f;
                     }
-                    else 
+                    else
                     {
                         me.m_RequestPowerUsage_Percent = 0.5f;
                     }
                 }
             }
         }
-        public class ActiveAntiVirus : CPUMod 
+        public class ActiveAntiVirus : CPUMod
         {
             static float lastRemoval = Time.time;
             public override string Name => "Active Anti-Virus";
@@ -254,7 +253,7 @@ namespace Exotic_Components
                     if (timer < 10) timer = 10f;
                     return ((int)timer).ToString() + "s";
                 }
-                else 
+                else
                 {
                     int timer = Mathf.FloorToInt(30f - 1 * me.LevelMultiplier(2, 1));
                     if (timer < 10) timer = 10;
@@ -272,7 +271,7 @@ namespace Exotic_Components
                     if (timerequired < 10) timerequired = 10f;
                     me.IsPowerActive = true;
                     me.m_RequestPowerUsage_Percent = 1f;
-                    if(Time.time - lastRemoval > timerequired) 
+                    if (Time.time - lastRemoval > timerequired && PhotonNetwork.isMasterClient)
                     {
                         me.ShipStats.Ship.RemoveOneRandomHostileVirus();
                         lastRemoval = Time.time;
@@ -280,7 +279,7 @@ namespace Exotic_Components
                 }
             }
         }
-        public class QDI_Fix : CPUMod 
+        public class QDI_Fix : CPUMod
         {
             PLCPU me = null;
             public override string Name => "QDI-FIX-ALL";
@@ -355,7 +354,7 @@ namespace Exotic_Components
                     InComp.ShipStats.ShieldsMax += 0.2f * InComp.LevelMultiplier(0.2f, 1) * InComp.ShipStats.ShieldsMax;
                     InComp.ShipStats.ShieldsChargeRateMax += 0.05f * InComp.LevelMultiplier(0.3f, 1) * InComp.ShipStats.ShieldsChargeRateMax;
                 }
-                
+
             }
 
             public override void Tick(PLShipComponent InComp)
@@ -397,16 +396,57 @@ namespace Exotic_Components
 
             public override float MaxPowerUsage_Watts => 4001;
         }
+        public class Imortality : CPUMod
+        {
+            public override string Name => "Imortality Processor";
+
+            public override string Description => "This processor makes you and your ship literally immortals, so I hope you understand why it is worth this much, do you know how much space magic it took to create this?";
+
+            public override int MarketPrice => 100000000;
+
+            public override bool Contraband => true;
+
+            public override float MaxPowerUsage_Watts => 1;
+        }
+        public class Upgrader : CPUMod
+        {
+            public override string Name => "The Upgrader";
+
+            public override string Description => "This processor increases the max level to components and itens upgrades.";
+
+            public override int MarketPrice => 65000;
+
+            public override bool Experimental => true;
+
+            public override float MaxPowerUsage_Watts => 1;
+
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return "Max level increase: ";
+            }
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                return $"{Mathf.RoundToInt((InComp.Level+1)*2.2f)}";
+            }
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                PLCPU me = (PLCPU)InComp;
+                me.MaxCompUpgradeLevelBoost = Mathf.RoundToInt((InComp.Level + 1) * 2.2f);
+                me.MaxPawnItemUpgradeLevelBoost = Mathf.RoundToInt((InComp.Level + 1) * 2.2f);
+            }
+        }
 
     }
 
-    [HarmonyPatch(typeof(PLTurret),"Tick")]
-    class HeatMax 
+    [HarmonyPatch(typeof(PLTurret), "Tick")]
+    class HeatMax
     {
-        static void Prefix(PLTurret __instance) 
+        static void Prefix(PLTurret __instance)
         {
             float thermoBoost = CPUS.ThermoBoost.GetMaxHeat(__instance.ShipStats.Ship);
-            if (__instance.Heat >= thermoBoost) 
+            if (__instance.Heat >= thermoBoost)
             {
                 __instance.IsOverheated = true;
                 if (__instance.SubType == 15)
@@ -453,10 +493,10 @@ namespace Exotic_Components
             return HarmonyHelpers.PatchBySequence(instructions, targetSequence, patchSequence, HarmonyHelpers.PatchMode.REPLACE, HarmonyHelpers.CheckMode.NONNULL, false);
         }
     }
-   [HarmonyPatch(typeof(PLUITurretUI),"Update")]
-    class HeatUIUpdate 
+    [HarmonyPatch(typeof(PLUITurretUI), "Update")]
+    class HeatUIUpdate
     {
-        static void Postfix(PLUITurretUI __instance) 
+        static void Postfix(PLUITurretUI __instance)
         {
             PLTurret plturret = null;
             PLShipInfoBase plshipInfoBase = null;
@@ -486,7 +526,7 @@ namespace Exotic_Components
                     }
                 }
             }
-            if (plturret != null) 
+            if (plturret != null)
             {
                 float value = plturret.Heat / CPUS.ThermoBoost.GetMaxHeat(plturret.ShipStats.Ship);
                 __instance.RightUI_Fill.fillAmount = value * 0.25f;
@@ -496,9 +536,9 @@ namespace Exotic_Components
     }
 
     [HarmonyPatch(typeof(PLShipStats), "TakeHullDamage")]
-    class Inevitable 
+    class Inevitable
     {
-        static void Postfix(PLShipStats __instance, float __result) 
+        static void Postfix(PLShipStats __instance, float __result)
         {
             List<PLShipComponent> listofhulls = __instance.GetComponentsOfType(ESlotType.E_COMP_HULL, false);
             if (listofhulls.Count <= 0) return;
@@ -510,31 +550,40 @@ namespace Exotic_Components
                 bool found = false;
                 foreach (PLShipComponent plshipComponent in componentsOfType2)
                 {
-                    if (plshipComponent != null && plshipComponent.SubType == CPUModManager.Instance.GetCPUIDFromName("The Premonition") && !plshipComponent.IsFlaggedForSelfDestruction() && CPUS.The_Premonition.lastLive >= 20 &&
+                    if (plshipComponent != null && plshipComponent.SubType == CPUModManager.Instance.GetCPUIDFromName("The Premonition") && CPUS.The_Premonition.lastLive >= 20 &&
                         PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.LCWBATTLE && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.TOPSEC && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.UNSEEN_MS && plshipComponent.IsEquipped)
                     {
                         found = true;
-                        if (PhotonNetwork.isMasterClient)
+                        PLServer.Instance.photonView.RPC("AddNotification_OneString_LocalizedString", PhotonTargets.All, new object[]
                         {
-                            PLServer.Instance.photonView.RPC("AddNotification_OneString_LocalizedString", PhotonTargets.All, new object[]
-                            {
                                         "[STR0] detected a death! Ending timeline visualisation!",
                                         -1,
                                         PLServer.Instance.GetEstimatedServerMs() + 8000,
                                         true,
                                         plshipComponent.Name_NoTranslation
-                            });
-                        }
+                        });
                         CPUS.The_Premonition.lastLive = -2;
                         hull.Current = CPUS.The_Premonition.lastHull;
                         __instance.HullCurrent = CPUS.The_Premonition.lastHull;
                         List<PLShipComponent> listofshields = __instance.GetComponentsOfType(ESlotType.E_COMP_SHLD, false);
                         if (listofshields.Count <= 0) break;
                         (listofshields[0] as PLShieldGenerator).Current = __instance.ShieldsMax;
-                        break;
+                    }
+                    else if (plshipComponent != null && plshipComponent.SubType == CPUModManager.Instance.GetCPUIDFromName("Imortality Processor") && plshipComponent.IsEquipped)
+                    {
+                        PLServer.Instance.photonView.RPC("AddNotification_OneString_LocalizedString", PhotonTargets.All, new object[]
+                        {
+                                        "[STR0] prevented your death!",
+                                        -1,
+                                        PLServer.Instance.GetEstimatedServerMs() + 8000,
+                                        true,
+                                        plshipComponent.Name_NoTranslation
+                        });
+                        hull.Current = hull.Max;
+                        __instance.HullCurrent = hull.Max;
                     }
                 }
-                if (found) 
+                if (found)
                 {
                     PLShipInfo ship = PLEncounterManager.Instance.PlayerShip;
                     ship.NumberOfFuelCapsules++;
@@ -567,7 +616,7 @@ namespace Exotic_Components
                     ship.EngineeringSystem.Health = ship.EngineeringSystem.MaxHealth;
                     ship.WeaponsSystem.Health = ship.WeaponsSystem.MaxHealth;
                     ship.ComputerSystem.Health = ship.ComputerSystem.MaxHealth;
-                    if(ship.LifeSupportSystem != null)ship.LifeSupportSystem.Health = ship.LifeSupportSystem.MaxHealth;
+                    if (ship.LifeSupportSystem != null) ship.LifeSupportSystem.Health = ship.LifeSupportSystem.MaxHealth;
                     ship.NewShipController(-1);
                     ship.NewSensorDishController(-1);
                     ship.NewTurretController(0, -1);
@@ -579,9 +628,9 @@ namespace Exotic_Components
     }
 
     [HarmonyPatch(typeof(PLPersistantEncounterInstance), "SpawnEnemyShip")]
-    class StoreCrewPosition 
+    class StoreCrewPosition
     {
-        static void Postfix(PLShipInfoBase __result) 
+        static void Postfix(PLShipInfoBase __result)
         {
             if (PhotonNetwork.isMasterClient)
             {
@@ -617,15 +666,15 @@ namespace Exotic_Components
         }
     }
     [HarmonyPatch(typeof(PLUIOutsideWorldUI), "UpdateKeenUIElements")]
-    class ReasearchLocator 
+    class ReasearchLocator
     {
-        static void Postfix(PLUIOutsideWorldUI __instance) 
+        static void Postfix(PLUIOutsideWorldUI __instance)
         {
-            if(PLCameraSystem.Instance.GetModeString() == "SensorDish" && __instance.MyShipInfo != null && __instance.MyShipInfo.GetIsPlayerShip() && __instance.MyShipInfo.MyStats != null) 
+            if (PLCameraSystem.Instance.GetModeString() == "SensorDish" && __instance.MyShipInfo != null && __instance.MyShipInfo.GetIsPlayerShip() && __instance.MyShipInfo.MyStats != null)
             {
-                foreach(PLShipComponent component in PLEncounterManager.Instance.PlayerShip.MyStats.AllComponents) 
+                foreach (PLShipComponent component in PLEncounterManager.Instance.PlayerShip.MyStats.AllComponents)
                 {
-                    if(component.ActualSlotType == ESlotType.E_COMP_CPU && component.SubType == CPUModManager.Instance.GetCPUIDFromName("Research Scanner") && component.IsEquipped) 
+                    if (component.ActualSlotType == ESlotType.E_COMP_CPU && component.SubType == CPUModManager.Instance.GetCPUIDFromName("Research Scanner") && component.IsEquipped)
                     {
                         foreach (PLProbePickup pLProbePickup in Object.FindObjectsOfType<PLProbePickup>())
                         {
@@ -642,9 +691,9 @@ namespace Exotic_Components
     }
 
     [HarmonyPatch(typeof(PLShipInfoBase), "CanSwapComponentsWithoutDepot")]
-    class AssemblyAbility 
-    { 
-        static void Postfix(PLShipInfoBase __instance, ref bool __result) 
+    class AssemblyAbility
+    {
+        static void Postfix(PLShipInfoBase __instance, ref bool __result)
         {
             foreach (PLShipComponent component in PLEncounterManager.Instance.PlayerShip.MyStats.AllComponents)
             {

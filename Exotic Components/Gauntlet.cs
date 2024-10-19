@@ -54,7 +54,7 @@ namespace Exotic_Components
     {
         public override void HandleRPC(object[] arguments, PhotonMessageInfo sender)
         {
-            Gauntlet.Patches.EnsureGauntletComms.CreateGauntlet((int)arguments[0]);
+            EnsureGauntletComms.CreateGauntlet((int)arguments[0]);
         }
     }
     public class WaveTitle : ModMessage
@@ -241,7 +241,7 @@ namespace Exotic_Components
                     if (CurrentTrial < 10)
                     {
                         currentText = "The Trial is a premade sequence of rounds created with the help of Bolgath and Skarg, we want to see your combat ability tested in specific scenarios.\n" + GetTextForCurrentTrial();
-                        this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Start", new PLHailChoiceDelegate(this.StartTrial)));
+                        this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Start (Captain)", new PLHailChoiceDelegate(this.StartTrial)));
                     }
                     else
                     {
@@ -252,7 +252,7 @@ namespace Exotic_Components
             }
             private void StartTrial(bool authority, bool local)
             {
-                if (local)
+                if (local && IsCaptain())
                 {
                     ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.StartTrial", PhotonTargets.All, new object[]
                         {
@@ -280,13 +280,13 @@ namespace Exotic_Components
                     currentText = "Welcome back, feel free to prepare for the next wild round, or if you want you can cash out right now with whatever rewards you got.";
                     this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Browse Goods", false), new PLHailChoiceDelegate(this.OnSelectBrowseGoods)));
                     this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Install Ship Components", false), new PLHailChoiceDelegate(this.OnSelectInstallComp)));
-                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Continue Wild Trial", new PLHailChoiceDelegate(this.StartTrial)));
-                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Cash out", new PLHailChoiceDelegate(this.CashOut)));
+                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Continue Wild Trial (Captain)", new PLHailChoiceDelegate(this.StartTrial)));
+                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Cash out (Captain)", new PLHailChoiceDelegate(this.CashOut)));
                 }
             }
             private void CashOut(bool authority, bool local)
             {
-                if (local)
+                if (local && IsCaptain())
                 {
                     ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.StopWild", PhotonTargets.All, new object[0]);
                 }
@@ -297,13 +297,13 @@ namespace Exotic_Components
                 {
                     m_AllChoices.Clear();
                     currentText = "So you wish to leave the Gauntlet, are you sure?";
-                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Yes", new PLHailChoiceDelegate(this.WarpAway)));
+                    this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Yes (Captain)", new PLHailChoiceDelegate(this.WarpAway)));
                     this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("No", new PLHailChoiceDelegate(this.Default)));
                 }
             }
             private void WarpAway(bool authority, bool local)
             {
-                if (local)
+                if (local && IsCaptain())
                 {
                     PLSectorInfo gate = PLGlobal.Instance.Galaxy.GetSectorOfVisualIndication(ESectorVisualIndication.PT_WARP_GATE);
                     if (gate != null)
@@ -312,7 +312,7 @@ namespace Exotic_Components
                         {
                             PLEncounterManager.Instance.PlayerShip.ShipID,
                             gate.ID,
-                            PLNetworkManager.Instance.LocalPlayerID
+                            (int)PLNetworkManager.Instance.LocalPlayerID
                         });
                     }
                 }
@@ -389,6 +389,10 @@ namespace Exotic_Components
                         player.FormatNewCacheStrings();
                     }
                 }
+            }
+            private bool IsCaptain() 
+            {
+                return PLNetworkManager.Instance.LocalPlayer != null && PLNetworkManager.Instance.LocalPlayer.GetClassID() == 0;
             }
             string GetTextForCurrentTrial()
             {
@@ -476,12 +480,20 @@ namespace Exotic_Components
 
                 public static void CreateGauntlet(int ID)
                 {
+                    bool shouldCreate = true;
                     foreach (PLHailTarget target in PLHailTarget.AllHailTargets)
                     {
-                        if (target is GauntletComms) return;
+                        if (target is GauntletComms)
+                        {
+                            shouldCreate = false;
+                            break;
+                        }
                     }
-                    UpdateGauntlet();
-                    GauntletComms comms = Object.FindObjectOfType<GauntletComms>();
+                    if (shouldCreate)
+                    {
+                        UpdateGauntlet();
+                    }
+                    GauntletComms comms = UnityEngine.Object.FindObjectOfType<GauntletComms>();
                     comms.HailTargetID = ID;
                 }
 
@@ -569,9 +581,17 @@ namespace Exotic_Components
             {
                 static void Postfix() 
                 {
-                    if(PLServer.GetCurrentSector() != null && PLServer.GetCurrentSector().Name == "Gauntlet_Arena()" && PLEncounterManager.Instance.PlayerShip != null && !PLEncounterManager.Instance.PlayerShip.InWarp && PLMusic.Instance.CurrentPlayingMusicEventString != "mx_ivm_dangerousenv") 
+                    if(PLServer.GetCurrentSector() != null && PLServer.GetCurrentSector().Name == "Gauntlet_Arena()" && PLEncounterManager.Instance.PlayerShip != null && !PLEncounterManager.Instance.PlayerShip.InWarp && !PLMusic.Instance.SpecialMusicPlaying) 
                     {
-                       PLMusic.Instance.PlayMusic("mx_ivm_dangerousenv", true, false, true, true);
+                        string[] musicList = new string[]
+                        {
+                            "mx_ivm_dangerousenv",
+                            "mx_Polytechnic_Attack",
+                            "mx_AllGent_Commander",
+                            "mx_cu_commander",
+                            "mx_lostcolony_theme_three",
+                        };
+                        PLMusic.Instance.PlayMusic(musicList[Random.Range(0,musicList.Length)], true, false, true, false);
                     }
                 }
             }
@@ -1169,7 +1189,7 @@ namespace Exotic_Components
 
                                             break;
                                         case 3:
-                                            GenerateBoss(5, 6);
+                                            GenerateBoss(5, 5);
                                             break;
                                     }
                                     break;
@@ -1216,7 +1236,7 @@ namespace Exotic_Components
                                             pLShipInfoBase.CreditsLeftBehind = 0;
                                             break;
                                         case 3:
-                                            GenerateBoss(6, 8);
+                                            GenerateBoss(6, 5);
                                             break;
                                     }
                                     break;
@@ -1298,7 +1318,7 @@ namespace Exotic_Components
                                             pLShipInfoBase.CreditsLeftBehind = 0;
                                             break;
                                         case 3:
-                                            GenerateBoss(7, 8);
+                                            GenerateBoss(7, 6);
                                             break;
                                     }
                                     break;
@@ -1307,14 +1327,14 @@ namespace Exotic_Components
                                     switch (currentWave)
                                     {
                                         case 1:
-                                            GenerateBoss(0, 5);
+                                            GenerateBoss(0, 4);
 
-                                            GenerateBoss(1, 5);
+                                            GenerateBoss(1, 4);
                                             break;
                                         case 2:
-                                            GenerateBoss(2, 5);
+                                            GenerateBoss(2, 4);
 
-                                            GenerateBoss(5, 5);
+                                            GenerateBoss(5, 4);
                                             break;
                                         case 3:
                                             GenerateBoss(8, 9);
@@ -1916,15 +1936,6 @@ namespace Exotic_Components
                                 }
                                 break;
                         }
-                    }
-                    else 
-                    {
-                        List<string> list = new List<string> 
-                        {
-                            "Everything will be ok",
-                            "Your fear will consume you"
-                        };
-                        return list[RNG.Next(0, list.Count)];
                     }
                     return string.Empty;
                 }

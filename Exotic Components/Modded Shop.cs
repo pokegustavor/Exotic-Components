@@ -28,11 +28,19 @@ namespace Exotic_Components
 
         public static void CreateCore(int ID)
         {
+            bool shouldCreate = true;
             foreach (PLHailTarget target in PLHailTarget.AllHailTargets)
             {
-                if (target is TheCoreComms) return;
+                if (target is TheCoreComms) 
+                {
+                    shouldCreate = false;
+                    break;
+                }
             }
-            InitialStore.UpdateCore();
+            if (shouldCreate) 
+            {
+                InitialStore.UpdateCore();
+            }
             TheCoreComms comms = UnityEngine.Object.FindObjectOfType<TheCoreComms>();
             comms.HailTargetID = ID;
         }

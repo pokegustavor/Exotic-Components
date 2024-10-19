@@ -6,9 +6,6 @@ using System.IO;
 [assembly: System.Runtime.CompilerServices.IgnoresAccessChecksTo("Assembly-CSharp")]
 namespace Exotic_Components
 {
-    /* TODO
-     * Add biscuit effects to biscuit reactor
-     */
     public class Mod : PulsarMod
     {
         public override string Version => "5.0";

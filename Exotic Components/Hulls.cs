@@ -8,7 +8,7 @@ namespace Exotic_Components
         {
             public override string Name => "Nano Active MK2";
 
-            public override string Description => "An upgraded version of the Nano Active Hull that allows healling even during combat. However the resistence was heavily affected due to the increassed amount of nano bots";
+            public override string Description => "An upgraded version of the Nano Active Hull that allows healing even during combat. However the resistance was heavily affected due to the increased amount of nano bots.";
 
             public override int MarketPrice => 12000;
 
@@ -37,7 +37,7 @@ namespace Exotic_Components
         {
             public override string Name => "Toxic Wall";
 
-            public override string Description => "This impressive hull is said to have being made by the caustic corsair, extremely resistent, but special materials used may cause it to leak toxins when damaged, also losing armor at lower integrity";
+            public override string Description => "This impressive hull is said to have being made by the Caustic Corsair, extremely resistant, but special materials used may cause it to leak toxins when damaged, also losing armor at lower integrity.";
 
             public override int MarketPrice => 14000;
 

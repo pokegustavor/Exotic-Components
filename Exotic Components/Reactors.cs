@@ -19,7 +19,7 @@ namespace Exotic_Components
         {
             public override string Name => "CryoCore MK2";
 
-            public override string Description => "A questionable reactor by Dragon's INC that somehow makes more power the colder it is, but why question the logic behind if it works";
+            public override string Description => "A questionable reactor by Dragon's INC that somehow makes more power the colder it is, but why question the logic behind if it works.";
 
             public override int MarketPrice => 45000;
 
@@ -43,7 +43,7 @@ namespace Exotic_Components
         {
             public override string Name => "Steam Core";
 
-            public override string Description => "This steampunk looking reactor makes more energy the hotter it is, while also adding to the thrust power by releasing the core steam. Where does all that water come from? Don't ask too many questions";
+            public override string Description => "This steampunk looking reactor makes more energy the hotter it is, while also adding to the thrust power by releasing the core steam. Where does all that water come from? Don't ask too many questions.";
 
             public override int MarketPrice => 48000;
 
@@ -255,7 +255,7 @@ namespace Exotic_Components
         {
             public override string Name => "ThermoPoint Reactor";
 
-            public override string Description => "This special reactor by badteck™ may not make much energy, but it can handle massive amounts of heat, when too hot it releases some of the heat to the exterior and interior of the ship, also causing fires.";
+            public override string Description => "This special reactor by Badteck™ may not make much energy, but it can handle massive amounts of heat, when too hot it releases some of the heat to the exterior and interior of the ship, also causing fires.";
 
             public override int MarketPrice => 15000;
 
@@ -344,7 +344,7 @@ namespace Exotic_Components
         {
             public override string Name => "Internal Fusion Reactor";
 
-            public override string Description => "This strange reactor makes a decent amount of power, but it is able to make even more power the more unstable it is. Just be sure not to let stability reach 0%";
+            public override string Description => "This strange reactor makes a decent amount of power, but it is able to make even more power the more unstable it is. Just be sure not to let stability reach 0%.";
 
             public override int MarketPrice => 36000;
 
@@ -394,7 +394,7 @@ namespace Exotic_Components
         {
             public override string Name => "Mini Fusion Reactor";
 
-            public override string Description => "I will be honest with you, I got scammed with this reactor, but if you are some kind of cheap bastard, go ahead and buy it, hope you like suffering";
+            public override string Description => "I will be honest with you, I got scammed with this reactor, but if you are some kind of cheap bastard, go ahead and buy it, hope you like suffering.";
 
             public override int MarketPrice => 5000;
 
@@ -410,7 +410,7 @@ namespace Exotic_Components
         {
             public override string Name => "Flagship Reactor";
 
-            public override string Description => "This reactor was supposed to be used in a third Flagship, but with some contacts and favors, I got it from the W.D. Factory that created it. I will say, won't be cheap to install it in your ship";
+            public override string Description => "This reactor was supposed to be used in a third Flagship, but with some contacts and favors, I got it from the W.D. Factory that created it. I will say, won't be cheap to install it in your ship.";
 
             public override int MarketPrice => 1500000;
 
@@ -471,7 +471,7 @@ namespace Exotic_Components
         {
             public override string Name => "Micro Star Reactor";
 
-            public override string Description => "This small star will produce you more power the hoter it is (DON'T YOU SAY THIS IS JUST A THERMOCORE!)";
+            public override string Description => "This small star will produce you more power the hotter it is (DON'T YOU SAY THIS IS JUST A THERMOCORE!).";
 
             public override int MarketPrice => 39000;
 
@@ -557,7 +557,7 @@ namespace Exotic_Components
         {
             public override string Name => "Modified Strongpoint Reactor";
 
-            public override string Description => "This Strongpoint reactor has been modified to not lose power when systems are damaged and has even more power, however it now may... explode if you don't take care of your systems";
+            public override string Description => "This Strongpoint reactor has been modified to not lose power when systems are damaged and has even more power, however it now may... explode if you don't take care of your systems.";
 
             public override int MarketPrice => 27000;
 
@@ -603,7 +603,7 @@ namespace Exotic_Components
         {
             public override string Name => "The Overcharge";
 
-            public override string Description => "This reactor was designed to not only get improved stats based on your ship overcharge, but it will also NEVER suffer an overchage and shutdown!";
+            public override string Description => "This reactor was designed to not only get improved stats based on your ship overcharge, but it will also NEVER suffer an overcharge and shutdown!";
 
             public override int MarketPrice => 32000;
 

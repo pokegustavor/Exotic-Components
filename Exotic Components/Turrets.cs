@@ -55,8 +55,8 @@ namespace Exotic_Components
     {
         public SupremeRailGun(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
         {
-            this.Name = "Supreme RailGun";
-            this.Desc = "Recovered Ancient Human technology, this Railgun is the strongest of its kind, even if not as powerful as the original";
+            this.Name = "Supreme Railgun";
+            this.Desc = "Recovered Ancient Human technology, this Railgun is the strongest of its kind, even if not as powerful as the original.";
             this.m_Damage = 450f;
             this.m_MarketPrice = 12000;
             this.m_MaxPowerUsage_Watts = 7000f;
@@ -124,7 +124,7 @@ namespace Exotic_Components
         public TweakedAntiShield(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
         {
             this.Name = "Tweaked Anti-Shield Turret";
-            this.Desc = "A weak but special turret that fires a laser at the exact frequency to ignore the target's shield if they are on static. This version was upgraded for more damage";
+            this.Desc = "A weak but special turret that fires a laser at the exact frequency to ignore the target's shield if they are on static. This version was upgraded for more damage.";
             this.m_Damage = 69f;
             this.FireDelay = 3.1f;
             base.SubType = TurretModManager.Instance.GetTurretIDFromName("Tweaked Anti-Shield");
@@ -148,7 +148,7 @@ namespace Exotic_Components
         public InfectedTurret(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
         {
             this.Name = "Infected Turret";
-            this.Desc = "A dangerous and questionable experiment at using the infected as weapons. Just be careful of possible specimens escaping the ammo silo";
+            this.Desc = "A dangerous and questionable experiment at using the infected as weapons. Just be careful of possible specimens escaping the ammo silo.";
             this.m_Damage = 250f;
             base.SubType = TurretModManager.Instance.GetTurretIDFromName("Infected Turret");
             this.m_MarketPrice = 21000;
@@ -221,7 +221,7 @@ namespace Exotic_Components
         public HullSmasher(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
         {
             this.Name = "Hull Smasher";
-            this.Desc = "A special Railgun that deals extra damage to hulls and can ignore shields if on modulate, however it has almost no effect against static shields";
+            this.Desc = "A special Railgun that deals extra damage to hulls and can ignore shields if on modulate, however it has almost no effect against static shields.";
             this.m_Damage = 250f;
             base.SubType = TurretModManager.Instance.GetTurretIDFromName("HullSmasher");
             this.m_MarketPrice = 12000;

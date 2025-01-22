@@ -556,7 +556,7 @@ namespace Exotic_Components
                 m_AllChoices.Clear();
                 currentText = "More about me? Sure, ask away";
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Why did you come to this galaxy?", new PLHailChoiceDelegate(this.WhyMoveHere)));
-                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("How did you get all this components?", new PLHailChoiceDelegate(this.HowGotThing)));
+                this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("How did you get all these components?", new PLHailChoiceDelegate(this.HowGotThing)));
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Why did you set your shop in the core of the galaxy?", new PLHailChoiceDelegate(this.WhyCore)));
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("What is that store I can teleport to?", new PLHailChoiceDelegate(this.WhyStore)));
                 this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Will you search the Lost Colony?", new PLHailChoiceDelegate(this.Colony)));
@@ -668,7 +668,7 @@ namespace Exotic_Components
             m_AllChoices.Clear();
             if (Time.time - LastAdded > 1)
             {
-                currentText += "\n\nI am not a political guy, but you may remember that my relations with the C.U. goverment is not the best one, but I found this Matthew judge that maybe can make things a lot easier to me. Only problem is he has enemies, and I got a quick SOS before the assassins were able to block long range comms, they are not far away, so I need you to quickly go there and protect him. I will give you some money and a special pair of turrets (it would all be easier if he got that witness protection).";
+                currentText += "\n\nI am not a political guy, but you may remember that my relations with the C.U. government is not the best one, but I found this Matthew judge that maybe can make things a lot easier to me. Only problem is he has enemies, and I got a quick SOS before the assassins were able to block long range comms, they are not far away, so I need you to quickly go there and protect him. I will give you some money and a special pair of turrets (it would all be easier if he got that witness protection).";
                 LastAdded = Time.time;
             }
             UpdateText();
@@ -708,8 +708,8 @@ namespace Exotic_Components
         {
             if (Time.time - LastAdded > 1)
             {
-                currentText += "\n\nWhy did I move here? I guess it was the weather, I hearded Karattis has a good weather or something like that. Also I did cross almost all galaxies on the known universe serching for some components for my fine collection and I heard about these Infected" +
-                    " that were spreading through your sectors and thought maybe there is something useful coming from them, and I wasn't wrong! I got this cool infected turret. And with the intergalatic warp network disabled I am now stuck here (maybe I should have bought that ultimate explorer MK3)";
+                currentText += "\n\nWhy did I move here? I guess it was the weather, I heard Karattis has good weather or something like that. Also I did cross almost all galaxies on the known universe searching for some components for my fine collection and I heard about these Infected" +
+                    " that were spreading through your sectors and thought maybe there is something useful coming from them, and I wasn't wrong! I got this cool infected turret. And with the intergalactic warp network disabled I am now stuck here (maybe I should have bought that ultimate explorer MK3).";
                 LastAdded = Time.time;
             }
             UpdateText();
@@ -735,10 +735,10 @@ namespace Exotic_Components
                     currentText += "And I know you guys are a C.U crew, but I have a felling you won't report me. ";
                 }
                 currentText += "Anyway, talking about hiding, I heard the Estate is actually in this galaxy, apperently with the warp drive malfunctioning or something.";
-                if (!soldIntergalatic) currentText += " But they could be my ticket to getting out of here, just need to find them first. If you find the schematics for a flagship drive, you could bring it to me, I would pay good for it *laughs*";
+                if (!soldIntergalatic) currentText += " But they could be my ticket to getting out of here, just need to find them first. If you find the schematics for a flagship drive, you could bring it to me, I would pay good for it *laughs*.";
                 else
                 {
-                    currentText += " But since you got me the schematics somehow, I will be building my own intergalatic warpdrive soon to get out of this galaxy";
+                    currentText += " But since you got me the schematics somehow, I will be building my own intergalactic warpdrive soon to get out of this galaxy.";
                 }
             }
             UpdateText();
@@ -757,7 +757,7 @@ namespace Exotic_Components
 
             if (Time.time - LastAdded > 1)
             {
-                currentText += "\n\nThe Lost Colony? I didn't recive anything due to the Core interference....\nOh, some kind of hidden treasure and big power that could change the course of history forever? I am no treasure hunter, whatever is there, if it is something interesting I might buy it later. This galaxy of yours" + " has a lot of random shit happening, at this point I wouldn't be surprised if some alien robot army was trying to kill us all.";
+                currentText += "\n\nThe Lost Colony? I didn't receive anything due to the Core interference....\nOh, some kind of hidden treasure and big power that could change the course of history forever? I am no treasure hunter, whatever is there, if it is something interesting I might buy it later. This galaxy of yours" + " has a lot of random shit happening, at this point I wouldn't be surprised if some alien robot army was trying to kill us all.";
                 LastAdded = Time.time;
             }
             UpdateText();
@@ -784,7 +784,7 @@ namespace Exotic_Components
         private void DeliverCPU(bool authority, bool local)
         {
             showingDeliver = false;
-            currentText = "Nicely done, you have no idea how important this processor is for me, so you have my deepest gratitude, and for your success you will recieve the promissed processor, this one will make research every time you jump to a new sector, ins't that nifty?";
+            currentText = "Nicely done, you have no idea how important this processor is for me, so you have my deepest gratitude, and for your success you will recieve the promised processor, this one will make research every time you jump to a new sector, isn't that nifty?";
             ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.DeliverProcessor", PhotonTargets.MasterClient, new object[0]);
             UpdateText();
             this.m_AllChoices.RemoveAt(m_AllChoices.Count - 1);

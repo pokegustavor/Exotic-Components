@@ -16,7 +16,7 @@ namespace Exotic_Components
         {
             try
             {
-                if (__instance.MyWarpDrive != null && (__instance.MyWarpDrive.Name == "Ultimate Explorer" || __instance.MyWarpDrive.Name == "Ultimate Explorer MK2" || __instance.MyWarpDrive.Name == "\'The travaler\'") && PLServer.Instance.m_ShipCourseGoals.Count > 0)
+                if (__instance.MyWarpDrive != null && (__instance.MyWarpDrive.Name == "Ultimate Explorer" || __instance.MyWarpDrive.Name == "Ultimate Explorer MK2" || __instance.MyWarpDrive.Name == "\'The traveller\'") && PLServer.Instance.m_ShipCourseGoals.Count > 0)
                 {
                     PLSectorInfo plsectorInfo3 = PLGlobal.Instance.Galaxy.AllSectorInfos[PLServer.Instance.GetCurrentHubID()];
                     PLSectorInfo plsectorInfo4 = PLGlobal.Instance.Galaxy.AllSectorInfos[PLServer.Instance.m_ShipCourseGoals[0]];

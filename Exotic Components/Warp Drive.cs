@@ -15,7 +15,7 @@ namespace Exotic_Components
         {
             public override string Name => "Ultimate Explorer";
 
-            public override string Description => "A powerful warpdrive using a similar technology to a flagship drive. While it won't warp you outside of the galaxy, it will warp anywhere inside of it (as long as you have the coordinates)";
+            public override string Description => "A powerful warpdrive using a similar technology to a flagship drive. While it won't warp you outside of the galaxy, it will warp anywhere inside of it (as long as you have the coordinates).";
 
             public override int MarketPrice => 70000;
 
@@ -60,7 +60,7 @@ namespace Exotic_Components
         {
             public override string Name => "Ultimate Explorer MK2";
 
-            public override string Description => "An overclocked version of the Ultimate Explorer that now charges way faster and has an extra program charge (We are not responsible for any malfunction caused by this overclock)";
+            public override string Description => "An overclocked version of the Ultimate Explorer that now charges way faster and has an extra program charge (We are not responsible for any malfunction caused by this overclock).";
 
             public override int MarketPrice => 80000;
 
@@ -120,7 +120,7 @@ namespace Exotic_Components
         {
             public override string Name => "The Recharger";
 
-            public override string Description => "This special warp drive was made with focus on charges per fuel, allowing it to charge all programs at the same time. It has come with the cost of low charge rate and higher EM signature and \"decent\" range";
+            public override string Description => "This special warp drive was made with focus on charges per fuel, allowing it to charge all programs at the same time. It has come with the cost of low charge rate and higher EM signature and \"decent\" range.";
 
             public override int MarketPrice => 15000;
 
@@ -207,7 +207,7 @@ namespace Exotic_Components
 
         class Traveler : WarpDriveMod 
         {
-            public override string Name => "\'The travaler\'";
+            public override string Name => "\'The traveller\'";
 
             public override string Description => "This warp drive was developed purely for travel and exploration, allowing you to jump to any sector you have visited before no matter the distance, however it has high power usage and only 1 charge per fuel!";
 
@@ -586,7 +586,7 @@ namespace Exotic_Components
                         if (sector != null) sectorInfos.Add(sector);
                     }
                 }
-                if(inEndSector.Visited && PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "\'The travaler\'") 
+                if(inEndSector.Visited && PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "\'The traveller\'") 
                 {
                     sectorInfos.Add(inEndSector);
                 }
@@ -605,7 +605,7 @@ namespace Exotic_Components
         static void Postfix(PLSectorInfo __instance, ref bool __result)
         {
             if ((PLServer.Instance.m_ShipCourseGoals.Count > 0 && (PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "Ultimate Explorer" || PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "Ultimate Explorer MK2") && __instance.ID == PLServer.Instance.m_ShipCourseGoals[0]) 
-                || (__instance.Visited && PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "\'The travaler\'"))
+                || (__instance.Visited && PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "\'The traveller\'"))
             {
                 __result = true;
             }
@@ -621,9 +621,9 @@ namespace Exotic_Components
         }
         static void Postfix(PLUIOutsideWorldUI __instance)
         {
-            if (PLServer.Instance.m_ShipCourseGoals.Count <= 0 || (PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name != "Ultimate Explorer" && PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name != "Ultimate Explorer MK2" && PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name != "\'The travaler\'")) return;
+            if (PLServer.Instance.m_ShipCourseGoals.Count <= 0 || (PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name != "Ultimate Explorer" && PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name != "Ultimate Explorer MK2" && PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name != "\'The traveller\'")) return;
             PLGlobal.Instance.Galaxy.AllSectorInfos.TryGetValue(PLServer.Instance.m_ShipCourseGoals[0], out PLSectorInfo plsectorInfo4);
-            if (PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "\'The travaler\'" && !plsectorInfo4.Visited) return;
+            if (PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "\'The traveller\'" && !plsectorInfo4.Visited) return;
             PLSectorInfo plsectorInfo = PLServer.GetCurrentSector();
             Vector3 vector = plsectorInfo.Position;
             float num = Mathf.Clamp((PLCameraSystem.Instance.CurrentSubSystem.MainCameras[0].fieldOfView - 80f) * 0.1f, -0.4f, 2f);

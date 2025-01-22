@@ -69,7 +69,7 @@ namespace Exotic_Components
 
             public override string Name => "Turret Thermo Boost";
 
-            public override string Description => "This processor adds extra heat limit for all turrets in the ship. That is what I call efficient cooling!";
+            public override string Description => "This processor adds extra heat limit for all turrets in the ship. That's what I call efficient cooling!";
 
             public override int MarketPrice => 20000;
 
@@ -336,7 +336,7 @@ namespace Exotic_Components
         {
             public override string Name => "Shield Master";
 
-            public override string Description => "This special processor will heavily boost your shield max integrity and give a little extra charge rate, but it comes with the cost of really high power consumption, lack of power will colapse any extra shields this processor gave.";
+            public override string Description => "This special processor will heavily boost your shield max integrity and give a little extra charge rate, but it comes with the cost of really high power consumption, lack of power will collapse any extra shields this processor gave.";
 
             public override int MarketPrice => 45000;
 
@@ -412,7 +412,7 @@ namespace Exotic_Components
         {
             public override string Name => "The Upgrader";
 
-            public override string Description => "This processor increases the max level to components and itens upgrades.";
+            public override string Description => "This processor increases the max level of components and item upgrades.";
 
             public override int MarketPrice => 65000;
 

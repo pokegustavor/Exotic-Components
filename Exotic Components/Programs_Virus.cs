@@ -64,7 +64,7 @@ namespace Exotic_Components
         {
             public override string Name => "BlindFold [VIRUS]";
 
-            public override string Description => "Makes the target blind to any EMP signal for 60 seconds";
+            public override string Description => "Makes the target blind to any EMP signal for 60 seconds.";
 
             public override int MaxLevelCharges => 4;
 
@@ -85,7 +85,7 @@ namespace Exotic_Components
         {
             public override string Name => "Self Destruction [VIRUS]";
 
-            public override string Description => "If this virus is not removed in 30 seconds, the ship will self-destruct";
+            public override string Description => "If this virus is not removed in 30 seconds, the ship will self-destruct.";
 
             public override int MarketPrice => 45000;
 
@@ -127,7 +127,7 @@ namespace Exotic_Components
         {
             public override string Name => "DoorStuck [VIRUS]";
 
-            public override string Description => "Locks all doors for 15 seconds";
+            public override string Description => "Locks all doors for 15 seconds.";
 
             public override int MaxLevelCharges => 1;
 
@@ -194,7 +194,7 @@ namespace Exotic_Components
         {
             public override string Name => "Super Shield";
 
-            public override string Description => "This program will activate a shield overcharge after 1.5 seconds that will keep your ship invunerable for 10 seconds, but after that the shields will be depleated, to ensure your shields won't fry it can only be used once per sector.";
+            public override string Description => "This program will activate a shield overcharge after 1.5 seconds that will keep your ship invunerable for 10 seconds, but after that the shields will be depleted, to ensure your shields won't fry it can only be used once per sector.";
 
             public override int MarketPrice => 80000;
 
@@ -269,7 +269,7 @@ namespace Exotic_Components
         {
             public override string Name => "Door Stuck";
 
-            public override string Description => "Locks all doors for 15 seconds";
+            public override string Description => "Locks all doors for 15 seconds.";
 
             public override int InfectionTimeLimitMs => 15000;
         }
@@ -285,7 +285,7 @@ namespace Exotic_Components
         {
             public override string Name => "Self Destruction";
 
-            public override string Description => "Destroys the ship if not removed in 30 seconds";
+            public override string Description => "Destroys the ship if not removed in 30 seconds.";
 
             public override int InfectionTimeLimitMs => 45500;
 
@@ -303,7 +303,7 @@ namespace Exotic_Components
         {
             public override string Name => "Blind Fold";
 
-            public override string Description => "Disables EMP detection for 60 seconds";
+            public override string Description => "Disables EMP detection for 60 seconds.";
 
             public override int InfectionTimeLimitMs => 60000;
 

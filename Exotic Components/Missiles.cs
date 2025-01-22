@@ -9,7 +9,7 @@ namespace Exotic_Components
         {
             public override string Name => "Armor Denial";
 
-            public override string Description => "This special missiles are designed to completely ignore the target hull armor while doing significant damage, but it is extremely slow";
+            public override string Description => "This special missiles are designed to completely ignore the target hull armor while doing significant damage, but it is extremely slow.";
 
             public override int MarketPrice => 7800;
 

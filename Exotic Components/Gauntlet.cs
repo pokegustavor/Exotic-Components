@@ -172,7 +172,7 @@ namespace Exotic_Components
             bool shouldBeWild = false;
             float lastsync = Time.time;
             private string currentText;
-            private readonly string defaultText = "Welcome to the gauntlet! Here you will face challanges for a chance of winning scrap, credits and maybe even a special reward, if you can survive... I have created an atmosphere similar to a \"general shop\" to keep you comfortable.";
+            private readonly string defaultText = "Welcome to The Gauntlet! Here you will face challenges for a chance of winning scrap, credits and maybe even a special reward, if you can survive... I have created an atmosphere similar to a \"general shop\" to keep you comfortable.";
             public override void Start()
             {
                 base.Start();
@@ -227,7 +227,7 @@ namespace Exotic_Components
                 {
                     m_AllChoices.Clear();
                     shouldBeWild = false;
-                    currentText = "In the gauntlet you will be required to defeat waves of enemies non stop and a boss, if you survive you will return here and recieve your rewards for that round. This is purely a ship to ship combat, so boarding is NOT allowed.";
+                    currentText = "In the gauntlet you will be required to defeat waves of enemies non-stop and a boss, if you survive you will return here and receive your rewards for that round. This is purely a ship-to-ship combat, so boarding is NOT allowed.";
                     this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("\"The Trial\"", new PLHailChoiceDelegate(this.TheTrial)));
                     this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("\"The Wild Trial\"", new PLHailChoiceDelegate(this.TheWildTrial)));
                     this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Cancel", new PLHailChoiceDelegate(this.Default)));
@@ -245,7 +245,7 @@ namespace Exotic_Components
                     }
                     else
                     {
-                        currentText = "You have already complete our trials, we had the fun we wanted and you have your fragment, credits and scrap, but if you still need more you can always participate in the wild trials instead.";
+                        currentText = "You have already completed our trials, we had the fun we wanted and you have your fragment, credits and scrap, but if you still need more you can always participate in the wild trials instead.";
                     }
                     this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Cancel", new PLHailChoiceDelegate(this.StartGauntlet)));
                 }
@@ -266,7 +266,7 @@ namespace Exotic_Components
                 {
                     m_AllChoices.Clear();
                     shouldBeWild = true;
-                    currentText = "The wild trial is an endeless trial where the objective is to see how far you will go, each round will consist of 2 waves and a boss, in between each round you will return here for repairs and rearm. The difficulty and rewards will grow with each round, are you ready to start?";
+                    currentText = "The wild trial is an endless trial where the objective is to see how far you will go. Each round will consist of 2 waves and a boss, in between each round you will return here for repairs and rearm. The difficulty and rewards will grow with each round, are you ready to start?";
                     this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Start", new PLHailChoiceDelegate(this.StartTrial)));
                     this.m_AllChoices.Add(new PLHailChoice_SimpleCustom("Cancel", new PLHailChoiceDelegate(this.StartGauntlet)));
                 }
@@ -401,17 +401,17 @@ namespace Exotic_Components
                     default:
                         return string.Empty;
                     case 0:
-                        return "This is the first round, so lets start simple, all enemies will be using components normally found across your galaxy";
+                        return "This is the first round, so lets start simple, all enemies will be using components normally found across your galaxy.";
                     case 1:
-                        return "For this next round lets start to spice things up, the enemies will now have some exotic and expermiental components, also you may see some \"uncommon\" foes.";
+                        return "For this next round lets start to spice things up, the enemies will now have some exotic and experimental components, also you may see some \"uncommon\" foes.";
                     case 2:
                         return "You better prepare your repair guns, because this next round will \"phase\" through your ship.";
                     case 3:
                         return "I hope you have a strong attack, this next round will be composed of heavily armored ships.";
                     case 4:
-                        return "Preprare your dodging skills, the ships here are specialized in ignoring most of your defenses. Also you will recieve an early reward for completing this round.";
+                        return "Prepare your dodging skills, the ships here are specialized in ignoring most of your defenses. Also you will recieve an early reward for completing this round.";
                     case 5:
-                        return "Lets test your hull strengh, this next challange will make your shields \"non-existent\", and your ship may overcharge...";
+                        return "Let's test your hull strength, this next challenge will make your shields \"non-existent\", and your ship may overcharge...";
                     case 6:
                         return "Did you remember to upgrade your EM sensors? Because you might come to regret not doing so...";
                     case 7:
@@ -419,7 +419,7 @@ namespace Exotic_Components
                     case 8:
                         return "The challanges are coming to an end, before the final showdown lets have a final round of heavy hitters.";
                     case 9:
-                        return "This is it, if you can come out of this alive you will recieve a very special reward that will aid you in your journey. But be warned, it will be a real battle of endurance.";
+                        return "This is it, if you can come out of this alive you will receive a very special reward that will aid you in your journey. But be warned, it will be a real battle of endurance.";
                 }
             }
         }
@@ -617,7 +617,7 @@ namespace Exotic_Components
                     if(fragID == 5) 
                     {
                         fragName = "Gauntlet Fragment";
-                        fragDesc = "Decreases the upgrade cost by 50%";
+                        fragDesc = "Decreases the scrap cost of upgrades by 50%";
                     }
                     /*
                     switch (fragID)
@@ -1822,7 +1822,7 @@ namespace Exotic_Components
                                     case 1:
                                         return "Where it all starts.";
                                     case 2:
-                                        return "Now they got bigger guns!";
+                                        return "Now they've got bigger guns!";
                                     case 3:
                                         return "Time to face your teacher";
                                 }
@@ -1836,7 +1836,7 @@ namespace Exotic_Components
                                     case 2:
                                         return "The return of the forgotten.";
                                     case 3:
-                                        return "As long as we stay cold we gold.";
+                                        return "As long as we stay cold, we gold.";
                                 }
                                 break;
 
@@ -1844,9 +1844,9 @@ namespace Exotic_Components
                                 switch (wave)
                                 {
                                     case 1:
-                                        return "They jump now, so fun.";
+                                        return "They jump now, so that's fun.";
                                     case 2:
-                                        return "Those one look odd.";
+                                        return "Those ones look odd.";
                                     case 3:
                                         return "Phasing through your soul.";
                                 }
@@ -1856,11 +1856,11 @@ namespace Exotic_Components
                                 switch (wave)
                                 {
                                     case 1:
-                                        return "Just a little bit thougher.";
+                                        return "Just a little bit tougher.";
                                     case 2:
                                         return "They don't look happy.";
                                     case 3:
-                                        return "Time to meet a true imovable object.";
+                                        return "Time to meet a true immovable object.";
                                 }
                                 break;
 
@@ -1868,7 +1868,7 @@ namespace Exotic_Components
                                 switch (wave)
                                 {
                                     case 1:
-                                        return "Are those footballs?.";
+                                        return "Are those footballs?";
                                     case 2:
                                         return "RUN, and keep an eye on the little one.";
                                     case 3:
@@ -1918,7 +1918,7 @@ namespace Exotic_Components
                                     case 1:
                                         return "Watch out for those main turrets.";
                                     case 2:
-                                        return "Why are this things so strong?";
+                                        return "Why are these things so strong?";
                                     case 3:
                                         return "Imma firin' mah lazer.";
                                 }
@@ -1930,9 +1930,9 @@ namespace Exotic_Components
                                     case 1:
                                         return "Are you sure you want to be here?";
                                     case 2:
-                                        return "This is your last chance";
+                                        return "This is your last chance.";
                                     case 3:
-                                        return "The end is nigh";
+                                        return "The end is nigh.";
                                 }
                                 break;
                         }

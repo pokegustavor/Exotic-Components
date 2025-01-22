@@ -128,7 +128,7 @@ namespace Exotic_Components
         public SilentDeath(int inLevel = 0, int inSubTypeData = 1) : base(0)
         {
             this.Name = "Silent Death";
-            this.Desc = "A special Sylvassi turret made to fire without breaking the cloak of a ship. Due to the possible malicious uses, it has being marked as a contraband";
+            this.Desc = "A special Sylvassi turret made to fire without breaking the cloak of a ship. Due to the possible malicious uses, it has been marked as a contraband.";
             this.m_Damage = 280f;
             base.SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("SilentDeath");
             this.Contraband = true;
@@ -488,7 +488,7 @@ namespace Exotic_Components
         public FakeKeeper(int inLevel = 0, int inSubTypeData = 1) : base(inLevel, inSubTypeData)
         {
             Name = "Keeper Beam Prototype";
-            Desc = "This special turret was made with data collected from an alien machine called \"Keeper\", it is quite powerfull, but this prototype doesn't have an... off button. So be carefull with the power you will use, it will only stop when it overheat. Look, copying alien tech from some scans is not easy, ok.";
+            Desc = "This special turret was made with data collected from an alien machine called \"Keeper\", it is quite powerful, but this prototype doesn't have an... off button. So be carefull with the power you will use, it will only stop when it overheat. Look, copying alien tech from some scans is not easy, ok.";
             m_Damage = 100f;
             Experimental = true;
             Level = inLevel;
@@ -536,7 +536,7 @@ namespace Exotic_Components
         public InstabilityTurret(int inLevel = 0) : base(ESlotType.E_COMP_MAINTURRET)
         {
             this.Name = "Anti-Matter Lance";
-            this.Desc = "Banned for tampering with core safety protocols, this highly unstable prototype harnesses the high energy particles ejected by ship cores during overheating. Damage has been observed to scale with cores closer to meltdown. It also may periodically damage the weapons system, and explode screens";
+            this.Desc = "Banned for tampering with core safety protocols, this highly unstable prototype harnesses the high energy particles ejected by ship cores during overheating. Damage has been observed to scale with cores closer to meltdown. It also may periodically damage the weapons system, and explode screens.";
             this.m_IconTexture = (Texture2D)Resources.Load("Icons/9_Weapons");
             this.m_Damage = 80f;
             this.baseDamage = 80f;
@@ -1414,7 +1414,7 @@ namespace Exotic_Components
         public SuperchargeBeam(int inLevel = 0, int inSubTypeData = 1) : base(inLevel, inSubTypeData)
         {
             Name = "The Supercharger";
-            Desc = "This turret is designed to not only utilize any overcharge present in your ship for extra damage, it will also increase the overcharge of any ship hit by it, specially if you hit the shield.";
+            Desc = "This turret is designed to not only utilize any overcharge present in your ship for extra damage, it will also increase the overcharge of any ship hit by it, 'specially if you hit the shield.";
             Experimental = true;
             m_MarketPrice = 25000;
             FireDelay = 13f;

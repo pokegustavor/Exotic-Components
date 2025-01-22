@@ -13,7 +13,7 @@ namespace Exotic_Components
         {
             public override string Name => "Layered Shield";
 
-            public override string Description => "A special shield that overclocks whenever at low integrity, just be carefull with the higher power usage while at low integrity";
+            public override string Description => "A special shield that overclocks whenever at low integrity, just be carefull with the higher power usage while at low integrity.";
 
             public override int MarketPrice => 14000;
 
@@ -133,7 +133,7 @@ namespace Exotic_Components
         {
             public override string Name => "Anti-Infected Shield";
 
-            public override string Description => "This shield may not be one of the best, but it is able to resist the infected acid, allowing it to charge in infected space and resist their attack";
+            public override string Description => "This shield may not be one of the best, but it is able to resist the infected acid, allowing it to charge in infected space and resist their attack.";
 
             public override int MarketPrice => 15000;
 
@@ -176,7 +176,7 @@ namespace Exotic_Components
         {
             public override string Name => "Extreme Particle Shield";
 
-            public override string Description => "This shield has a very special design that allows for extremely quick reboot rate and low energy usage, at the cost of no recharge rate and low durability";
+            public override string Description => "This shield has a very special design that allows for extremely quick reboot rate and low energy usage, at the cost of no recharge rate and low durability.";
 
             public override int MarketPrice => 12000;
 
@@ -226,7 +226,7 @@ namespace Exotic_Components
         {
             public override string Name => "Quantum Shield";
 
-            public override string Description => "A shield made with top of the line technology, this shield will allow complete immunity to damage based on the shield frequency, however the counterpart damage will be multiplied in strengh. Your scientist will surely enjoy some extra work";
+            public override string Description => "A shield made with top of the line technology, this shield will allow complete immunity to damage based on the shield frequency, however the counterpart damage will be multiplied in strength. Your scientist will surely enjoy some extra work.";
 
             public override int MarketPrice => 53000;
 
@@ -244,9 +244,9 @@ namespace Exotic_Components
         }
         class AbsortionShield : ShieldMod
         {
-            public override string Name => "The Absortion Field";
+            public override string Name => "The Absorption Field";
 
-            public override string Description => "This \"Shield Generator\" doesn't actually block incoming damage, instead using a special system connected with the ship reactor, this field will absorve up to 75% of the incoming damage, but for that a percentage of your reactor power is needed, also it doesn't have quantum shields!";
+            public override string Description => "This \"Shield Generator\" doesn't actually block incoming damage, instead using a special system connected with the ship reactor, this field will absorb up to 75% of the incoming damage, but for that a percentage of your reactor power is needed, also it doesn't have quantum shields!";
 
             public override int MarketPrice => 45000;
 
@@ -390,7 +390,7 @@ namespace Exotic_Components
                     return true;
                 }
             }
-            else if (shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("The Absortion Field"))
+            else if (shipComponent.SubType == ShieldModManager.Instance.GetShieldIDFromName("The Absorption Field"))
             {
                 __result = inDmg - inDmg * (shipComponent.GetPowerPercentInput() * 0.75f);
                 return false;

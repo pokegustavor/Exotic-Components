@@ -397,11 +397,52 @@ namespace Exotic_Components
 
             public override float MaxPowerUsage_Watts => 4001;
         }
+        public class Imortality : CPUMod
+        {
+            public override string Name => "Imortality Processor";
+
+            public override string Description => "This processor makes you and your ship literally immortals, so I hope you understand why it is worth this much, do you know how much space magic it took to create this?";
+
+            public override int MarketPrice => 100000000;
+
+            public override bool Contraband => true;
+
+            public override float MaxPowerUsage_Watts => 1;
+        }
+        public class Upgrader : CPUMod
+        {
+            public override string Name => "The Upgrader";
+
+            public override string Description => "This processor increases the max level of components and item upgrades.";
+
+            public override int MarketPrice => 65000;
+
+            public override bool Experimental => true;
+
+            public override float MaxPowerUsage_Watts => 1;
+
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return "Max level increase: ";
+            }
+
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                return $"{Mathf.RoundToInt((InComp.Level+1)*2.2f)}";
+            }
+
+            public override void Tick(PLShipComponent InComp)
+            {
+                PLCPU me = (PLCPU)InComp;
+                me.MaxCompUpgradeLevelBoost = Mathf.RoundToInt((InComp.Level + 1) * 2.2f);
+                me.MaxPawnItemUpgradeLevelBoost = Mathf.RoundToInt((InComp.Level + 1) * 2.2f);
+            }
+        }
 
     }
 
-    [HarmonyPatch(typeof(PLTurret),"Tick")]
-    class HeatMax 
+    [HarmonyPatch(typeof(PLTurret), "Tick")]
+    class HeatMax
     {
         static void Prefix(PLTurret __instance) 
         {
@@ -531,7 +572,26 @@ namespace Exotic_Components
                         List<PLShipComponent> listofshields = __instance.GetComponentsOfType(ESlotType.E_COMP_SHLD, false);
                         if (listofshields.Count <= 0) break;
                         (listofshields[0] as PLShieldGenerator).Current = __instance.ShieldsMax;
-                        break;
+                    }
+                    else if (plshipComponent != null && plshipComponent.SubType == CPUModManager.Instance.GetCPUIDFromName("Imortality Processor") && plshipComponent.IsEquipped)
+                    {
+                        if (__instance.Ship.GetIsPlayerShip())
+                        {
+                            PLServer.Instance.photonView.RPC("AddNotification_OneString_LocalizedString", PhotonTargets.All, new object[]
+                            {
+                                        "[STR0] prevented your death!",
+                                        -1,
+                                        PLServer.Instance.GetEstimatedServerMs() + 8000,
+                                        true,
+                                        plshipComponent.Name_NoTranslation
+                            });
+                        }
+                        if (__instance.Ship.IsDrone) 
+                        {
+                            plshipComponent.FlagForSelfDestruction();
+                        }
+                        hull.Current = __instance.HullMax;
+                        __instance.HullCurrent = __instance.HullMax;
                     }
                 }
                 if (found) 

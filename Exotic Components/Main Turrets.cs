@@ -1305,7 +1305,7 @@ namespace Exotic_Components
         {
             this.Name = "The Matter Phaser";
             this.Desc = "This Phase Turret has been modified to work as a main turret and go through any object, including ships! It has lost some of its potential damage due to this.";
-            this.m_Damage = 105f;
+            this.m_Damage = 385f;
             base.SubType = MegaTurretModManager.Instance.GetMegaTurretIDFromName("PhaserTurret");
 			Experimental = true;
             this.m_MarketPrice = 50200;

@@ -137,11 +137,11 @@ namespace Exotic_Components
         private Vector3[] Offsets_ProjArray;
         public AutoDefender(int inLevel = 0, int inSubTypeData = 0)
         {
-            this.Name = "Auto Defender Turret";
+            this.Name = "Automated Defender Turret";
             this.Desc = "A turret that fires a barrage of missiles designed for close to medium range damage. This version doesn't require crew control.";
             this.ActualSlotType = ESlotType.E_COMP_AUTO_TURRET;
             this.m_SlotType = ESlotType.E_COMP_AUTO_TURRET;
-            this.m_Damage = 35f;
+            this.m_Damage = 38f;
             this.FireDelay = 4.2f;
             this.m_MarketPrice = 20000;
             this.m_ProjSpeed = 200f;
@@ -151,7 +151,7 @@ namespace Exotic_Components
             base.Level = inLevel;
             base.SubType = AutoTurretModManager.Instance.GetAutoTurretIDFromName("AutoDefenderTurret");
             this.AutoAimPowerUsageRequest = 1f;
-            this.m_MaxPowerUsage_Watts = 1500f;
+            this.m_MaxPowerUsage_Watts = 2500f;
             this.HeatGeneratedOnFire = 0.07f;
             float x = 0.01f;
             float y = 0.01f;
@@ -262,9 +262,9 @@ namespace Exotic_Components
         private bool beamSFXActive;
         public AutoLaser(int inLevel = 0, int inSubTypeData = 0)
         {
-            this.Name = "Auto Laser Turret";
+            this.Name = "Automated Laser Turret";
             this.Desc = "Long range laser weapon that is particularly powerful against hulls and ship systems. This is an automated version.";
-            this.m_Damage = 30f;
+            this.m_Damage = 34f;
             this.FireDelay = 2f;
             base.SubType = AutoTurretModManager.Instance.GetAutoTurretIDFromName("AutoLaserTurret");
             this.ActualSlotType = ESlotType.E_COMP_AUTO_TURRET;
@@ -313,7 +313,7 @@ namespace Exotic_Components
         }
         public virtual void UpdateMaxPowerUsageWatts()
         {
-            base.CalculatedMaxPowerUsage_Watts = 3600f * base.LevelMultiplier(0.2f, 1f);
+            base.CalculatedMaxPowerUsage_Watts = 2046f * base.LevelMultiplier(0.2f, 1f);
         }
         public override void Tick()
         {
@@ -618,9 +618,9 @@ namespace Exotic_Components
     {
         public AutoFocusedLaser(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
         {
-            this.Name = "Auto Focused Laser Turret";
+            this.Name = "Automated Focused Laser Turret";
             this.Desc = "High powered laser weapon that is particularly powerful against hulls and ship systems. It is also capable of shooting down some missiles. This is an automatic version.";
-            this.m_Damage = 70f;
+            this.m_Damage = 75f;
             this.FireDelay = 6f;
             base.SubType = AutoTurretModManager.Instance.GetAutoTurretIDFromName("AutoFocusedLaserTurret");
             this.ActualSlotType = ESlotType.E_COMP_AUTO_TURRET;
@@ -632,7 +632,7 @@ namespace Exotic_Components
         }
         public override void UpdateMaxPowerUsageWatts()
         {
-            this.m_MaxPowerUsage_Watts = 6000f * base.LevelMultiplier(0.2f, 1f);
+            this.m_MaxPowerUsage_Watts = 3960f * base.LevelMultiplier(0.2f, 1f);
         }
         protected override string GetTurretPrefabPath()
         {
@@ -644,9 +644,9 @@ namespace Exotic_Components
     {
         public AutoScrapper(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
         {
-            this.Name = "Auto Scrapper Turret";
+            this.Name = "Automated Scrapper Turret";
             this.Desc = "Laser turret that has been modified by the W.D. Corporation. It can rip off chunks of hull and create scrap that can be sold or processed. This is an automatic version.";
-            this.m_Damage = 20f;
+            this.m_Damage = 27f;
             this.FireDelay = 4f;
             base.SubType = AutoTurretModManager.Instance.GetAutoTurretIDFromName("AutoScrapperTurret");
             this.ActualSlotType = ESlotType.E_COMP_AUTO_TURRET;
@@ -676,9 +676,9 @@ namespace Exotic_Components
         private float TimeCharged;
         public AutoSentryTurret(int inLevel = 0, int inSubTypeData = 0) : base(inLevel, inSubTypeData)
         {
-            this.Name = "Auto Ancient Laser Turret";
+            this.Name = "Automated Ancient Laser Turret";
             this.Desc = "This turret was recovered from an ancient sentry... and I decided to transform into an auto turret... yeah, just remember that it breaks some laws of physics, so if reality starts to collapse... RUN!";
-            this.m_Damage = 190f;
+            this.m_Damage = 173f;
             this.m_MarketPrice = 500000;
             this.FireDelay = 5f;
             this.ActualSlotType = ESlotType.E_COMP_AUTO_TURRET;
@@ -801,9 +801,9 @@ namespace Exotic_Components
     {
         public AutoPhase(int inLevel = 0, int inSubTypeData = 0)
         {
-            this.Name = "Auto Phase Turret";
+            this.Name = "Automated Phase Turret";
             this.Desc = "Fires a beam that pierces through hull and armor to damage internal ship systems. It is not particularly effective at dealing damage to hull or shields. This is an automatic version.";
-            this.m_Damage = 190f;
+            this.m_Damage = 165f;
             base.SubType = AutoTurretModManager.Instance.GetAutoTurretIDFromName("AutoPhaseTurret");
             this.ActualSlotType = ESlotType.E_COMP_AUTO_TURRET;
             this.m_MarketPrice = 7500;
@@ -818,7 +818,7 @@ namespace Exotic_Components
         }
         public new void UpdateMaxPowerUsageWatts()
         {
-            base.CalculatedMaxPowerUsage_Watts = 7000f * base.LevelMultiplier(0.2f, 1f);
+            base.CalculatedMaxPowerUsage_Watts = 4620f * base.LevelMultiplier(0.2f, 1f);
         }
     }
 
@@ -826,13 +826,13 @@ namespace Exotic_Components
     {
         public AutoLightning(int inLevel = 0, int inSubTypeData = 0) : base(inLevel, inSubTypeData)
         {
-            this.Name = "Auto Lightning Turret";
+            this.Name = "Automated Lightning Turret";
             this.Desc = "Fires a concentrated beam of electricity that deals great damage to shields. It does not have as much of an effect against a ship’s hull, but there is a small chance that hitting the hull will force the target ship to shut down. This is an automatic version";
             this.FireDelay = 6f;
             this.laserTurretExplosionID = 1;
             this.ActualSlotType = ESlotType.E_COMP_AUTO_TURRET;
             this.m_MarketPrice = 15500;
-            this.m_Damage = 40f;
+            this.m_Damage = 60f;
             this.PlayShootSFX = "play_ship_generic_external_weapon_lightningturret_shoot";
             this.StopShootSFX = "stop_ship_generic_external_weapon_lightningturret_shoot";
             this.PlayProjSFX = "play_ship_generic_external_weapon_lightningturret_projectile";
@@ -842,7 +842,7 @@ namespace Exotic_Components
         }
         public override void UpdateMaxPowerUsageWatts()
         {
-            base.CalculatedMaxPowerUsage_Watts = 4500f * base.LevelMultiplier(0.2f, 1f);
+            base.CalculatedMaxPowerUsage_Watts = 2475f * base.LevelMultiplier(0.2f, 1f);
         }
         protected override string GetDamageTypeString()
         {
@@ -881,14 +881,14 @@ namespace Exotic_Components
     {
         public AutoPlasma(int inLevel = 0, int inSubTypeData = 0)
         {
-            this.Name = "Auto Plasma Turret";
+            this.Name = "Automated Plasma Turret";
             this.Desc = "A standard armament that can be found on many ships. It is known for its fast firing capability and high damage. This is an automated version.";
             this.ActualSlotType = ESlotType.E_COMP_AUTO_TURRET;
             this.m_SlotType = ESlotType.E_COMP_AUTO_TURRET;
-            this.m_Damage = 72f;
+            this.m_Damage = 60f;
             this.SubType = AutoTurretModManager.Instance.GetAutoTurretIDFromName("AutoPlasmaTurret");
             this.m_MarketPrice = 4500;
-            this.m_MaxPowerUsage_Watts = 4000f;
+            this.m_MaxPowerUsage_Watts = 1320f;
             this.m_ProjSpeed = 550f;
             this.FireDelay = 1.5f;
             this.TurretRange = 4000f;
@@ -902,14 +902,14 @@ namespace Exotic_Components
     {
         public AutoBurst(int inLevel = 0, int inSubTypeData = 0) : base(inLevel, inSubTypeData)
         {
-            this.Name = "Auto Burst Turret";
+            this.Name = "Automated Burst Turret";
             this.Desc = "As its name suggests, this turret fires a burst of shots at its target. Designed for medium range damage. This is an automated version.";
             this.ActualSlotType = ESlotType.E_COMP_AUTO_TURRET;
             this.m_SlotType = ESlotType.E_COMP_AUTO_TURRET;
-            this.m_Damage = 72f;
+            this.m_Damage = 60f;
             base.SubType = AutoTurretModManager.Instance.GetAutoTurretIDFromName("AutoBurstTurret");
             this.m_MarketPrice = 11000;
-            this.m_MaxPowerUsage_Watts = 6500f;
+            this.m_MaxPowerUsage_Watts = 2145f;
             this.m_ProjSpeed = 500f;
             this.FireDelay = 2.7f;
             this.TurretRange = 7000f;
@@ -928,16 +928,16 @@ namespace Exotic_Components
         private Material[] GlowingTurretBarrelMaterials;
         public AutoSpreadshot(int inLevel = 0, int inSubTypeData = 0)
         {
-            this.Name = "Auto Spreadshot Turret";
+            this.Name = "Automated Spreadshot Turret";
             this.Desc = "A turret designed for close range damage. It spews out several projectiles at a time and can cause serious damage to a nearby ship. This is an automated version.";
             this.ActualSlotType = ESlotType.E_COMP_AUTO_TURRET;
             this.m_SlotType = ESlotType.E_COMP_AUTO_TURRET;
-            this.m_Damage = 29f;
+            this.m_Damage = 24f;
             this.FireDelay = 1.7f;
             base.SubType = AutoTurretModManager.Instance.GetAutoTurretIDFromName("AutoSpreadshotTurret");
             this.m_MarketPrice = 3800;
             this.m_ProjSpeed = 700f;
-            base.CalculatedMaxPowerUsage_Watts = 3600f;
+            base.CalculatedMaxPowerUsage_Watts = 1188f;
             this.AutoAimPowerUsageRequest = 0.3f;
             this.MinFireDelay = 1f;
             this.TurretRange = 3400f;
@@ -1036,14 +1036,14 @@ namespace Exotic_Components
     {
         public AutoFlamelance(int inLevel = 0, int inSubTypeData = 0)
         {
-            this.Name = "Auto Flamelance Turret";
+            this.Name = "Automated Flamelance Turret";
             this.Desc = "An unusual weapon that uses a custom fuel mix to project a stream of fire into space. The heat applied to a target ship can start onboard fires and overheat its reactor. This is an automatic version.";
             this.ActualSlotType = ESlotType.E_COMP_AUTO_TURRET;
             this.m_SlotType = ESlotType.E_COMP_AUTO_TURRET;
-            this.m_Damage = 100f;
+            this.m_Damage = 83f;
             base.SubType = AutoTurretModManager.Instance.GetAutoTurretIDFromName("AutoFlamelanceTurret");
             this.m_MarketPrice = 27800;
-            this.m_MaxPowerUsage_Watts = 7000f;
+            this.m_MaxPowerUsage_Watts = 3300f;
             this.m_ProjSpeed = 360f;
             this.FireDelay = 2.1f;
             this.TurretRange = 2200f;
@@ -1059,14 +1059,14 @@ namespace Exotic_Components
     {
         public AutoBioHazard(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
         {
-            this.Name = "Auto Bio-Hazard Turret";
+            this.Name = "Automated Bio-Hazard Turret";
             this.Desc = "Fires an acidic stream that poisons onboard crew and reduces a ship’s armor effectiveness for a short time. This is an automated version.";
             this.ActualSlotType = ESlotType.E_COMP_AUTO_TURRET;
             this.m_SlotType = ESlotType.E_COMP_AUTO_TURRET;
-            this.m_Damage = 51f;
+            this.m_Damage = 53f;
             base.SubType = AutoTurretModManager.Instance.GetAutoTurretIDFromName("AutoBioHazardTurret");
             this.m_MarketPrice = 37800;
-            this.m_MaxPowerUsage_Watts = 6300f;
+            this.m_MaxPowerUsage_Watts = 2739f;
             this.m_ProjSpeed = 180f;
             this.FireDelay = 1.5f;
             this.TurretRange = 2200f;

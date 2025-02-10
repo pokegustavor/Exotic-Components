@@ -3,6 +3,9 @@ using PulsarModLoader.Content.Components.Shield;
 using PulsarModLoader.Content.Components.Hull;
 using UnityEngine;
 using HarmonyLib;
+using System.Collections.Generic;
+using static UILabel;
+using PulsarModLoader.Content.Components.CPU;
 namespace Exotic_Components
 {
     public class Reactors
@@ -359,35 +362,14 @@ namespace Exotic_Components
                     shape.scale = new Vector3(1, 1, 1);
                     heatVolume.MyPS.gameObject.transform.position = InComp.ShipStats.Ship.Exterior.transform.position;
                 }
-                InComp.ShipStats.Ship.MyTLI.AtmoSettings.Temperature = 1f + InComp.ShipStats.ReactorTempCurrent / InComp.ShipStats.ReactorTempMax * 1.5f;
-                if (!InComp.IsEquipped)
+                if (InComp.ShipStats.Ship.MyTLI != null && InComp.ShipStats.Ship.MyTLI.AtmoSettings != null)
                 {
-                    InComp.ShipStats.Ship.MyTLI.AtmoSettings.Temperature = 1f;
+                    InComp.ShipStats.Ship.MyTLI.AtmoSettings.Temperature = 1f + InComp.ShipStats.ReactorTempCurrent / InComp.ShipStats.ReactorTempMax * 1.5f;
+                    if (!InComp.IsEquipped)
+                    {
+                        InComp.ShipStats.Ship.MyTLI.AtmoSettings.Temperature = 1f;
+                    }
                 }
-            }
-            public override string GetStatLineRight(PLShipComponent InComp)
-            {
-                PLReactor me = InComp as PLReactor;
-                return string.Concat(new string[]
-                {
-                    (me.TempMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
-                    " kP\n",
-                    me.EmergencyCooldownTime.ToString("0.0"),
-                    " sec\n",
-                    (me.OriginalEnergyOutputMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
-                    " MW\n",
-                });
-            }
-            public override string GetStatLineLeft(PLShipComponent InComp)
-            {
-                return string.Concat(new string[]
-                {
-                   PLLocalize.Localize("Max Temp", false),
-                    "\n",
-                    PLLocalize.Localize("Emer. Cooldown", false),
-                    "\n",
-                    PLLocalize.Localize("Output", false),
-                });
             }
         }
         class StableReactor : ReactorMod
@@ -449,7 +431,7 @@ namespace Exotic_Components
         {
             public override string Name => "Internal Fusion Reactor";
 
-            public override string Description => "This strange reactor makes a decent amount of power, but it is able to make even more power the more unstable it is. Just be sure not to let stability reach 0%";
+            public override string Description => "This strange reactor makes a decent amount of power, but it is able to make even more power the more unstable it is, it also has slight resistance against instability. Just be sure not to let stability reach 0%.";
 
             public override int MarketPrice => 36000;
 
@@ -464,31 +446,11 @@ namespace Exotic_Components
             public override void Tick(PLShipComponent InComp)
             {
                 PLReactor me = InComp as PLReactor;
-                me.EnergyOutputMax = me.OriginalEnergyOutputMax * (1f + me.ShipStats.Ship.CoreInstability * 1.5f);
-            }
-            public override string GetStatLineRight(PLShipComponent InComp)
-            {
-                PLReactor me = InComp as PLReactor;
-                return string.Concat(new string[]
+                me.EnergyOutputMax = me.OriginalEnergyOutputMax * (1f + me.ShipStats.Ship.CoreInstability * 3f);
+                if(me.IsEquipped && me.ShipStats.Ship.CoreInstability > 0) 
                 {
-                    (me.TempMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
-                    " kP\n",
-                    me.EmergencyCooldownTime.ToString("0.0"),
-                    " sec\n",
-                    (me.OriginalEnergyOutputMax * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
-                    " MW\n",
-                });
-            }
-            public override string GetStatLineLeft(PLShipComponent InComp)
-            {
-                return string.Concat(new string[]
-                {
-                   PLLocalize.Localize("Max Temp", false),
-                    "\n",
-                    PLLocalize.Localize("Emer. Cooldown", false),
-                    "\n",
-                    PLLocalize.Localize("Output", false),
-                });
+                    me.ShipStats.Ship.CoreInstability -= 0.010f * Time.deltaTime;
+                }
             }
         }
         class UnstableReactor : ReactorMod
@@ -699,7 +661,7 @@ namespace Exotic_Components
         {
             public override string Name => "Micro Star Reactor";
 
-            public override string Description => "This small star will produce you more power the hoter it is (DON'T YOU SAY THIS IS JUST A THERMOCORE!)";
+            public override string Description => "This small star will produce you more power every 20% of the maximum heat it reaches (DON'T YOU SAY THIS IS JUST A THERMOCORE!).";
 
             public override int MarketPrice => 39000;
 
@@ -722,7 +684,7 @@ namespace Exotic_Components
                     " kP\n",
                     me.EmergencyCooldownTime.ToString("0.0"),
                     " sec\n",
-                    (22000f * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
+                    (32000f * me.LevelMultiplier(0.1f, 1f)).ToString("0"),
                     " MW\n",
                 });
             }
@@ -747,36 +709,39 @@ namespace Exotic_Components
                     if (Percentage < 0.2f)
                     {
                         target = Color.red;
-                        reactor.OriginalEnergyOutputMax = 14000f;
+                        reactor.OriginalEnergyOutputMax = 20000f;
                     }
                     else if (Percentage < 0.4f)
                     {
                         target = new Color(0.9686f, 0.5843f, 0f, 0.91f);
-                        reactor.OriginalEnergyOutputMax = 16000f;
+                        reactor.OriginalEnergyOutputMax = 24000f;
                     }
                     else if (Percentage < 0.6)
                     {
                         target = Color.yellow;
-                        reactor.OriginalEnergyOutputMax = 18000f;
+                        reactor.OriginalEnergyOutputMax = 28000f;
                     }
                     else if (Percentage < 0.8)
                     {
                         target = Color.white;
-                        reactor.OriginalEnergyOutputMax = 20000f;
+                        reactor.OriginalEnergyOutputMax = 30000f;
                     }
                     else
                     {
                         target = Color.blue;
-                        reactor.OriginalEnergyOutputMax = 22000f;
+                        reactor.OriginalEnergyOutputMax = 32000f;
                     }
                     reactor.EnergyOutputMax = reactor.OriginalEnergyOutputMax * reactor.LevelMultiplier(0.1f, 1f);
-                    foreach (Light light in (InComp.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<Light>())
+                    if (InComp.ShipStats.Ship is PLShipInfo)
                     {
-                        light.color = target;
-                    }
-                    foreach (ParticleSystem particle in (InComp.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<ParticleSystem>())
-                    {
-                        particle.startColor = target;
+                        foreach (Light light in (InComp.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<Light>())
+                        {
+                            light.color = target;
+                        }
+                        foreach (ParticleSystem particle in (InComp.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<ParticleSystem>())
+                        {
+                            particle.startColor = target;
+                        }
                     }
                 }
             }
@@ -929,7 +894,7 @@ namespace Exotic_Components
                     particleColor = (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentInChildren<ParticleSystem>().startColor;
                     CollectedColor = true;
                 }
-                else if (__instance.ShipStats != null && (__instance.ShipStats.Ship is PLShipInfo) && (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance != null)
+                else if (__instance.ShipStats != null && (__instance.ShipStats.Ship is PLShipInfo) && (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance != null && __instance.Name_NoTranslation != "Micro Star Reactor")
                 {
                     foreach (Light light in (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<Light>())
                     {

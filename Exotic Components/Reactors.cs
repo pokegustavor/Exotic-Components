@@ -226,7 +226,10 @@ namespace Exotic_Components
                 {
                     BiscuitBoost *= 0.8f;
                 }
-                if (BiscuitBoost < 0) { BiscuitBoost = 0; }
+                if (BiscuitBoost < 0) 
+                {
+                    BiscuitBoost = 0;
+                }
             }
         }
         class PipeReactor : ReactorMod
@@ -846,7 +849,7 @@ namespace Exotic_Components
                     particleColor = (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentInChildren<ParticleSystem>().startColor;
                     CollectedColor = true;
                 }
-                else if (__instance.ShipStats != null && (__instance.ShipStats.Ship is PLShipInfo) && (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance != null)
+                else if (__instance.ShipStats != null && (__instance.ShipStats.Ship is PLShipInfo) && (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance != null && __instance.Name != "Micro Star Reactor" && __instance.Name != "Infected Reactor")
                 {
                     foreach (Light light in (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<Light>())
                     {

@@ -364,7 +364,7 @@ namespace Exotic_Components
                 List<PLShipComponent> CPUs = __instance.MyPlayer.StartingShip.MyStats.GetComponentsOfType(ESlotType.E_COMP_CPU, false);
                 foreach (PLShipComponent plshipComponent in CPUs)
                 {
-                    if (plshipComponent != null && plshipComponent.SubType == CPUModManager.Instance.GetCPUIDFromName("Imortality Processor") && plshipComponent.IsEquipped)
+                    if (plshipComponent != null && plshipComponent.SubType == CPUModManager.Instance.GetCPUIDFromName("Immortality Processor") && plshipComponent.IsEquipped)
                     {
                         __instance.Health = __instance.MaxHealth;
                         return false;

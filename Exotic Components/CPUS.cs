@@ -396,9 +396,9 @@ namespace Exotic_Components
 
             public override float MaxPowerUsage_Watts => 4001;
         }
-        public class Imortality : CPUMod
+        public class Immortality : CPUMod
         {
-            public override string Name => "Imortality Processor";
+            public override string Name => "Immortality Processor";
 
             public override string Description => "This processor makes you and your ship literally immortals, so I hope you understand why it is worth this much, do you know how much space magic it took to create this?";
 
@@ -572,7 +572,7 @@ namespace Exotic_Components
                         if (listofshields.Count <= 0) break;
                         (listofshields[0] as PLShieldGenerator).Current = __instance.ShieldsMax;
                     }
-                    else if (plshipComponent != null && plshipComponent.SubType == CPUModManager.Instance.GetCPUIDFromName("Imortality Processor") && plshipComponent.IsEquipped)
+                    else if (plshipComponent != null && plshipComponent.SubType == CPUModManager.Instance.GetCPUIDFromName("Immortality Processor") && plshipComponent.IsEquipped && !__instance.Ship.IsAbandoned())
                     {
                         if (__instance.Ship.GetIsPlayerShip())
                         {

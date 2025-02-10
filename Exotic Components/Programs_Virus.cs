@@ -160,7 +160,7 @@ namespace Exotic_Components
 
             public override void Execute(PLWarpDriveProgram InWarpDriveProgram)
             {
-                if(PLServer.GetCurrentSector() != null && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.UNSEEN_MS && PhotonNetwork.isMasterClient && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.LCWBATTLE && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.TOPSEC && !PLServer.GetCurrentSector().IsPartOfLongRangeWarpNetwork) 
+                if(PLServer.GetCurrentSector() != null && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.UNSEEN_MS && PhotonNetwork.isMasterClient && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.LCWBATTLE && PLServer.GetCurrentSector().VisualIndication != ESectorVisualIndication.TOPSEC && !PLServer.GetCurrentSector().IsPartOfLongRangeWarpNetwork && !PLServer.GetCurrentSector().Name.Contains("Gauntlet_")) 
                 {
                     PLSectorInfo target = null;
                     foreach(PLSectorInfo sector in PLGlobal.Instance.Galaxy.AllSectorInfos.Values) 

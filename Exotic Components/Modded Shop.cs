@@ -20,15 +20,27 @@ namespace Exotic_Components
                     comms.GetHailTargetID()
                 });
             }
+            else if (PhotonNetwork.isMasterClient && PLServer.GetCurrentSector().Name == "The Core(MOD)") 
+            {
+                InitialStore.UpdateCore();
+            }
         }
 
         public static void CreateCore(int ID)
         {
+            bool shouldCreate = true;
             foreach (PLHailTarget target in PLHailTarget.AllHailTargets)
             {
-                if (target is TheCoreComms) return;
+                if (target is TheCoreComms) 
+                {
+                    shouldCreate = false;
+                    break;
+                }
             }
-            InitialStore.UpdateCore();
+            if (shouldCreate) 
+            {
+                InitialStore.UpdateCore();
+            }
             TheCoreComms comms = UnityEngine.Object.FindObjectOfType<TheCoreComms>();
             comms.HailTargetID = ID;
         }
@@ -45,10 +57,10 @@ namespace Exotic_Components
     {
         public override void HandleRPC(object[] arguments, PhotonMessageInfo sender)
         {
-            completeMission();
+            CompleteMission();
         }
 
-        void completeMission()
+        void CompleteMission()
         {
             PLMissionBase mission = PLServer.Instance.GetActiveMissionWithID(700);
             if (mission != null && PhotonNetwork.isMasterClient)
@@ -134,7 +146,7 @@ namespace Exotic_Components
     }
 
     [HarmonyPatch(typeof(PLServer), "StartPlayer")]
-    class CreateStoreMissions
+    class CreateStore
     {
         static void Postfix(PLServer __instance)
         {
@@ -156,6 +168,7 @@ namespace Exotic_Components
             plsectorInfo3.Position = new Vector3(0, 0, 0.0001f);
             plsectorInfo3.FactionStrength = 0.5f;
             plsectorInfo3.Name = "The Core(MOD)";
+            Gauntlet.CreateGauntlet();
         }
     }
 
@@ -318,7 +331,7 @@ namespace Exotic_Components
                 }
                 foreach (PulsarModLoader.Content.Components.CPU.CPUMod CPU in PulsarModLoader.Content.Components.CPU.CPUModManager.Instance.CPUTypes)
                 {
-                    if (CPU is CPUS.Researcher || CPU is CPUS.CreditLaundering) continue;
+                    if (CPU is CPUS.Researcher || CPU is CPUS.CreditLaundering || CPU is CPUS.Upgrader) continue;
                     PLShipComponent component = PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(7, PulsarModLoader.Content.Components.CPU.CPUModManager.Instance.GetCPUIDFromName(CPU.Name), 0, 0, 12), null);
                     component.NetID = inPDE.ServerWareIDCounter;
                     inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
@@ -353,14 +366,17 @@ namespace Exotic_Components
                     inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
                     inPDE.ServerWareIDCounter++;
                 }
-                for (int i = 0; i < 4; i++)
+                if (PLEncounterManager.Instance.PlayerShip.MyStats.GetSlot(ESlotType.E_COMP_AUTO_TURRET).MaxItems > 0)
                 {
-                    foreach (PulsarModLoader.Content.Components.AutoTurret.AutoTurretMod AutoTurret in PulsarModLoader.Content.Components.AutoTurret.AutoTurretModManager.Instance.AutoTurretTypes)
+                    for (int i = 0; i < PLEncounterManager.Instance.PlayerShip.MyStats.GetSlot(ESlotType.E_COMP_AUTO_TURRET).MaxItems; i++)
                     {
-                        PLShipComponent component = PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(24, PulsarModLoader.Content.Components.AutoTurret.AutoTurretModManager.Instance.GetAutoTurretIDFromName(AutoTurret.Name), 0, 0, 12), null);
-                        component.NetID = inPDE.ServerWareIDCounter;
-                        inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
-                        inPDE.ServerWareIDCounter++;
+                        foreach (PulsarModLoader.Content.Components.AutoTurret.AutoTurretMod AutoTurret in PulsarModLoader.Content.Components.AutoTurret.AutoTurretModManager.Instance.AutoTurretTypes)
+                        {
+                            PLShipComponent component = PLShipComponent.CreateShipComponentFromHash((int)PLShipComponent.createHashFromInfo(24, PulsarModLoader.Content.Components.AutoTurret.AutoTurretModManager.Instance.GetAutoTurretIDFromName(AutoTurret.Name), 0, 0, 12), null);
+                            component.NetID = inPDE.ServerWareIDCounter;
+                            inPDE.Wares.Add(inPDE.ServerWareIDCounter, component);
+                            inPDE.ServerWareIDCounter++;
+                        }
                     }
                 }
                 for (int i = 0; i < 2; i++)
@@ -446,6 +462,7 @@ namespace Exotic_Components
         private float LastAdded = Time.time;
         public static bool soldIntergalatic = false;
         private string defaultText = "Welcome to the core, not sure how you found me in here, but doesn't matter. I have the most exotic components of all the galaxy, the other shops have no chance against me. Also ignore the big shiny center of the galaxy and buy something!";
+        private string currentText;
         public override void Start()
         {
             base.Start();
@@ -747,7 +764,6 @@ namespace Exotic_Components
         }
         private void BackToBuy(bool authority, bool local)
         {
-
             m_AllChoices.Clear();
             currentText = defaultText;
             this.m_AllChoices.Add(new PLHailChoice_SimpleCustom(PLLocalize.Localize("Browse Exotic Goods", false), new PLHailChoiceDelegate(this.OnSelectBrowseGoods)));
@@ -799,8 +815,5 @@ namespace Exotic_Components
             if (currentText == null) currentText = defaultText;
             return PLDialogueActorInstance.AddNewLinesToText(currentText, false, 70, true);
         }
-
-
-        private string currentText;
     }
 }

@@ -2,7 +2,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
-using System;
+using HarmonyLib;
 namespace Exotic_Components
 {
     internal class Auto_Turrets
@@ -670,10 +670,6 @@ namespace Exotic_Components
 
     class AutoSentryTurret : AutoLaser 
     {
-        public float LastAutoAimEnabledTime;
-        public float AutoTrackOffset;
-        private bool AutoTrackOffsetSet;
-        private float TimeCharged;
         public AutoSentryTurret(int inLevel = 0, int inSubTypeData = 0) : base(inLevel, inSubTypeData)
         {
             this.Name = "Automated Ancient Laser Turret";
@@ -691,10 +687,7 @@ namespace Exotic_Components
             this.DamageChecksPerSecond = 3f;
             this.PlayShootSFX = "play_sx_ship_enemy_ancientsentry_shoot";
             this.AutoAim_CanTargetMissiles = false;
-        }
-        public override bool ApplyLeadingToAutoAimShot()
-        {
-            return true;
+            this.TurretRange = 10000f;
         }
         protected override void OnTurretInstanceCreated()
         {
@@ -704,40 +697,6 @@ namespace Exotic_Components
         public override void Tick()
         {
             base.Tick();
-            if (base.ShipStats.Ship.AlertLevel > 0)
-            {
-                this.TurretRange = 500000f;
-            }
-            else
-            {
-                this.TurretRange = 4500f;
-            }
-            if (this.ChargeAmount >= 0.999f)
-            {
-                this.TimeCharged += Time.deltaTime;
-                if (this.TimeCharged > 3f)
-                {
-                    this.ChargeAmount = 0f;
-                }
-            }
-            else
-            {
-                this.TimeCharged = 0f;
-            }
-            if (this.ChargeAmount > 0.7f || Time.time - this.LastFireTime < 1f)
-            {
-                this.TurretRotationLerpSpeed = 0f;
-            }
-            else
-            {
-                this.TurretRotationLerpSpeed = 20f;
-            }
-            if (!this.AutoTrackOffsetSet && base.NetID != -1 && PLServer.Instance != null)
-            {
-                this.AutoTrackOffsetSet = true;
-                PLRand plrand = new PLRand(base.NetID + PLServer.Instance.GalaxySeed);
-                this.AutoTrackOffset = plrand.Next(-0.5f, 0.5f);
-            }
             if (this.TurretInstance != null && this.TurretInstance.BeamObject != null)
             {
                 this.TurretInstance.BeamObject.GetComponent<Renderer>().material.SetFloat("_TimeSinceShot", Time.time);
@@ -772,16 +731,6 @@ namespace Exotic_Components
                     }
                 }
             }
-        }
-        public override Vector3 CalculateLeadingHeading(PLSpaceTarget target)
-        {
-            Vector3 a = target.GetSpaceLoc();
-            PLShipInfoBase plshipInfoBase = target as PLShipInfoBase;
-            if (plshipInfoBase != null && plshipInfoBase.ExteriorRigidbody != null)
-            {
-                a += plshipInfoBase.ExteriorRigidbody.velocity * (1f + this.AutoTrackOffset) * 2f;
-            }
-            return (a - this.TurretInstance.FiringLoc.transform.position).normalized;
         }
         protected override bool AutoAimShouldFireUpon(PLSpaceTarget ship)
         {
@@ -1073,6 +1022,23 @@ namespace Exotic_Components
             base.CargoVisualPrefabID = 3;
             base.Level = inLevel;
             this.MyDamageType = EDamageType.E_BIOHAZARD;
+        }
+    }
+
+
+    [HarmonyPatch(typeof(PLTurret),"Tick")]
+    class FixNonTargetting 
+    {
+        static void Postfix(PLTurret __instance) 
+        {
+            if (__instance.IsEquipped && __instance.TurretInstance != null)
+            {
+                Vector3 euler = __instance.targetWorldRot.eulerAngles;
+                if (float.IsNaN(euler.x) || float.IsNaN(euler.y) || float.IsNaN(euler.z))
+                {
+                    __instance.targetWorldRot.eulerAngles = new Vector3(0, 0, 0);
+                }
+            }
         }
     }
 }

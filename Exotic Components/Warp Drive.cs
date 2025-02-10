@@ -46,7 +46,6 @@ namespace Exotic_Components
             public override string GetStatLineRight(PLShipComponent InComp)
             {
                 PLWarpDrive me = InComp as PLWarpDrive;
-                me.CalculatedMaxPowerUsage_Watts = 15000f;
                 return string.Concat(new string[]
                 {
                 (me.ChargeSpeed * me.LevelMultiplier(0.25f, 1f)).ToString("0"),
@@ -92,7 +91,6 @@ namespace Exotic_Components
             public override string GetStatLineRight(PLShipComponent InComp)
             {
                 PLWarpDrive me = InComp as PLWarpDrive;
-                me.CalculatedMaxPowerUsage_Watts = 15000f;
                 return string.Concat(new string[]
                 {
                 (me.ChargeSpeed * me.LevelMultiplier(0.25f, 1f)).ToString("0"),
@@ -111,7 +109,7 @@ namespace Exotic_Components
                 PLSectorInfo destiny = PLGlobal.Instance.Galaxy.AllSectorInfos.GetValueSafe(PLEncounterManager.Instance.PlayerShip.WarpTargetID);
                 if (UnityEngine.Random.Range(0, 100) <= Mathf.Min(1000 * Vector2.Distance(current.Position, destiny.Position), 35) && Time.time - LastFailure > 50f)
                 {
-                    if (destiny.IsPartOfLongRangeWarpNetwork || destiny.VisualIndication == ESectorVisualIndication.LCWBATTLE || destiny.VisualIndication == ESectorVisualIndication.TOPSEC || destiny.VisualIndication == ESectorVisualIndication.UNSEEN_MS) return;
+                    if (destiny.IsPartOfLongRangeWarpNetwork || destiny.VisualIndication == ESectorVisualIndication.LCWBATTLE || destiny.VisualIndication == ESectorVisualIndication.TOPSEC || destiny.VisualIndication == ESectorVisualIndication.UNSEEN_MS || destiny.Name.Contains("Gauntlet")) return;
                     Heart.drivefailure(current, destiny);
                 }
             }
@@ -150,7 +148,6 @@ namespace Exotic_Components
             public override string GetStatLineRight(PLShipComponent InComp)
             {
                 PLWarpDrive me = InComp as PLWarpDrive;
-                me.CalculatedMaxPowerUsage_Watts = 15000f;
                 return string.Concat(new string[]
                 {
                 (me.ChargeSpeed * me.LevelMultiplier(0.25f, 1f)).ToString("0"),
@@ -196,12 +193,57 @@ namespace Exotic_Components
             public override string GetStatLineRight(PLShipComponent InComp)
             {
                 PLWarpDrive me = InComp as PLWarpDrive;
-                me.CalculatedMaxPowerUsage_Watts = 15000f;
                 return string.Concat(new string[]
                 {
                 (me.ChargeSpeed * me.LevelMultiplier(0.25f, 1f)).ToString("0"),
                 "\n",
                 (me.WarpRange * 100f * me.LevelMultiplier(0.2f, 1f)).ToString("0"),
+                "\n",
+                me.NumberOfChargingNodes.ToString("0")
+                });
+            }
+        }
+
+
+        class Traveler : WarpDriveMod 
+        {
+            public override string Name => "\'The travaler\'";
+
+            public override string Description => "This warp drive was developed purely for travel and exploration, allowing you to jump to any sector you have visited before no matter the distance, however it has high power usage and only 1 charge per fuel!";
+
+            public override int MarketPrice => 22000;
+
+            public override bool Experimental => true;
+
+            public override float ChargeSpeed => 5.2f;
+
+            public override float WarpRange => 0.10f;
+
+            public override float EnergySignature => 25f;
+
+            public override int NumberOfChargesPerFuel => 1;
+
+            public override float MaxPowerUsage_Watts => 22000f;
+
+            public override string GetStatLineLeft(PLShipComponent InComp)
+            {
+                return string.Concat(new string[]
+                {
+                PLLocalize.Localize("Charge Rate", false),
+                "\n",
+                PLLocalize.Localize("Range", false),
+                "\n",
+                PLLocalize.Localize("Charges Per Fuel", false)
+                });
+            }
+            public override string GetStatLineRight(PLShipComponent InComp)
+            {
+                PLWarpDrive me = InComp as PLWarpDrive;
+                return string.Concat(new string[]
+                {
+                (me.ChargeSpeed * me.LevelMultiplier(0.25f, 1f)).ToString("0"),
+                "\n",
+                (me.WarpRange * 100f * me.LevelMultiplier(0.2f, 1f)).ToString("0") + " + visited",
                 "\n",
                 me.NumberOfChargingNodes.ToString("0")
                 });
@@ -533,16 +575,26 @@ namespace Exotic_Components
     {
         static void Postfix(PLSectorInfo inStartSector, PLSectorInfo inEndSector, ref List<PLSectorInfo> __result)
         {
-            List<PLSectorInfo> sectorInfos = new List<PLSectorInfo>();
-            if (PLServer.Instance.m_ShipCourseGoals.Count > 0 && PLEncounterManager.Instance.PlayerShip != null && PLEncounterManager.Instance.PlayerShip.MyWarpDrive != null && (PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "Ultimate Explorer" || PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "Ultimate Explorer MK2"))
+            if (PLEncounterManager.Instance.PlayerShip != null && PLEncounterManager.Instance.PlayerShip.MyWarpDrive != null)
             {
-                foreach (int ID in PLServer.Instance.m_ShipCourseGoals)
+                List<PLSectorInfo> sectorInfos = new List<PLSectorInfo>();
+                if (PLServer.Instance.m_ShipCourseGoals.Count > 0 && (PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "Ultimate Explorer" || PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "Ultimate Explorer MK2"))
                 {
-                    PLSectorInfo sector = PLGlobal.Instance.Galaxy.AllSectorInfos.GetValueSafe(ID);
-                    if(sector != null) sectorInfos.Add(sector);
+                    foreach (int ID in PLServer.Instance.m_ShipCourseGoals)
+                    {
+                        PLSectorInfo sector = PLGlobal.Instance.Galaxy.AllSectorInfos.GetValueSafe(ID);
+                        if (sector != null) sectorInfos.Add(sector);
+                    }
                 }
-                __result.Clear();
-                __result.AddRange(sectorInfos);
+                if(inEndSector.Visited && PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "\'The travaler\'") 
+                {
+                    sectorInfos.Add(inEndSector);
+                }
+                if (sectorInfos.Count > 0)
+                {
+                    __result.Clear();
+                    __result.AddRange(sectorInfos);
+                }
             }
         }
     }
@@ -552,7 +604,8 @@ namespace Exotic_Components
     {
         static void Postfix(PLSectorInfo __instance, ref bool __result)
         {
-            if (PLServer.Instance.m_ShipCourseGoals.Count > 0 && (PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "Ultimate Explorer" || PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "Ultimate Explorer MK2") && __instance.ID == PLServer.Instance.m_ShipCourseGoals[0])
+            if ((PLServer.Instance.m_ShipCourseGoals.Count > 0 && (PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "Ultimate Explorer" || PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "Ultimate Explorer MK2") && __instance.ID == PLServer.Instance.m_ShipCourseGoals[0]) 
+                || (__instance.Visited && PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "\'The travaler\'"))
             {
                 __result = true;
             }
@@ -568,12 +621,12 @@ namespace Exotic_Components
         }
         static void Postfix(PLUIOutsideWorldUI __instance)
         {
-            if (PLServer.Instance.m_ShipCourseGoals.Count <= 0 || (PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name != "Ultimate Explorer" && PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name != "Ultimate Explorer MK2")) return;
+            if (PLServer.Instance.m_ShipCourseGoals.Count <= 0 || (PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name != "Ultimate Explorer" && PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name != "Ultimate Explorer MK2" && PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name != "\'The travaler\'")) return;
+            PLGlobal.Instance.Galaxy.AllSectorInfos.TryGetValue(PLServer.Instance.m_ShipCourseGoals[0], out PLSectorInfo plsectorInfo4);
+            if (PLEncounterManager.Instance.PlayerShip.MyWarpDrive.Name == "\'The travaler\'" && !plsectorInfo4.Visited) return;
             PLSectorInfo plsectorInfo = PLServer.GetCurrentSector();
             Vector3 vector = plsectorInfo.Position;
-            PLSectorInfo plsectorInfo4;
             float num = Mathf.Clamp((PLCameraSystem.Instance.CurrentSubSystem.MainCameras[0].fieldOfView - 80f) * 0.1f, -0.4f, 2f);
-            PLGlobal.Instance.Galaxy.AllSectorInfos.TryGetValue(PLServer.Instance.m_ShipCourseGoals[0], out plsectorInfo4);
             PLUIOutsideWorldUI.SectorUIElement sectorUIElementForSector = __instance.GetSectorUIElementForSector(plsectorInfo4, true);
             if (sectorUIElementForSector != null)
             {

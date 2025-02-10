@@ -430,20 +430,6 @@ namespace Exotic_Components
                 return $"{Mathf.RoundToInt((InComp.Level+1)*2.2f)}";
             }
 
-            public override bool Experimental => true;
-
-            public override float MaxPowerUsage_Watts => 1;
-
-            public override string GetStatLineLeft(PLShipComponent InComp)
-            {
-                return "Max level increase: ";
-            }
-
-            public override string GetStatLineRight(PLShipComponent InComp)
-            {
-                return $"{Mathf.RoundToInt((InComp.Level+1)*2.2f)}";
-            }
-
             public override void Tick(PLShipComponent InComp)
             {
                 PLCPU me = (PLCPU)InComp;

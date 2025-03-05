@@ -22,7 +22,7 @@ namespace Exotic_Components
                 {
                     PLServer.Instance.CPEI_HandleActivateWarpDrive(PLEncounterManager.Instance.PlayerShip.ShipID, trial.ID, player.GetPlayerID());
                     PLEncounterManager.Instance.PlayerShip.NumberOfFuelCapsules += 1;
-                    if(Gauntlet.CurrentWildTrial == 0)Gauntlet.WildSeed = Random.Range(-1000000, 1000001);
+                    if (Gauntlet.CurrentWildTrial == 0) Gauntlet.WildSeed = Random.Range(-1000000, 1000001);
                     Gauntlet.Patches.ArenaHeart.currentSeed = int.MinValue;
                 }
                 Gauntlet.WildTrial = (bool)arguments[0];
@@ -164,6 +164,10 @@ namespace Exotic_Components
                 plsectorInfo.Name = "Gauntlet_Arena()";
                 _GauntletArena = plsectorInfo;
             }
+            CurrentTrial = 0;
+            WildTrial = false;
+            CurrentWildTrial = 0;
+            WildSeed = -1;
         }
 
         class GauntletComms : PLHailTarget_CustomGeneralShop
@@ -390,7 +394,7 @@ namespace Exotic_Components
                     }
                 }
             }
-            private bool IsCaptain() 
+            private bool IsCaptain()
             {
                 return PLNetworkManager.Instance.LocalPlayer != null && PLNetworkManager.Instance.LocalPlayer.GetClassID() == 0;
             }
@@ -472,7 +476,7 @@ namespace Exotic_Components
                     comms.GetHailTargetID()
                         });
                     }
-                    else if (PhotonNetwork.isMasterClient && PLServer.GetCurrentSector().Name == "Gauntlet_Lobby()") 
+                    else if (PhotonNetwork.isMasterClient && PLServer.GetCurrentSector().Name == "Gauntlet_Lobby()")
                     {
                         UpdateGauntlet();
                     }
@@ -564,7 +568,7 @@ namespace Exotic_Components
                 }
             }
             [HarmonyPatch(typeof(PLShipInfoBase), "Ship_WarpOutNow")]
-            class DisableEnemyWarp 
+            class DisableEnemyWarp
             {
                 static bool Prefix()
                 {
@@ -577,11 +581,11 @@ namespace Exotic_Components
             }
 
             [HarmonyPatch(typeof(PLPersistantEncounterInstance), "PlayMusicBasedOnShipType")]
-            class ArenaMusic 
+            class ArenaMusic
             {
-                static void Postfix() 
+                static void Postfix()
                 {
-                    if(PLServer.GetCurrentSector() != null && PLServer.GetCurrentSector().Name == "Gauntlet_Arena()" && PLEncounterManager.Instance.PlayerShip != null && !PLEncounterManager.Instance.PlayerShip.InWarp && !PLMusic.Instance.SpecialMusicPlaying) 
+                    if (PLServer.GetCurrentSector() != null && PLServer.GetCurrentSector().Name == "Gauntlet_Arena()" && PLEncounterManager.Instance.PlayerShip != null && !PLEncounterManager.Instance.PlayerShip.InWarp && !PLMusic.Instance.SpecialMusicPlaying)
                     {
                         string[] musicList = new string[]
                         {
@@ -591,17 +595,17 @@ namespace Exotic_Components
                             "mx_cu_commander",
                             "mx_lostcolony_theme_three",
                         };
-                        PLMusic.Instance.PlayMusic(musicList[Random.Range(0,musicList.Length)], true, false, true, false);
+                        PLMusic.Instance.PlayMusic(musicList[Random.Range(0, musicList.Length)], true, false, true, false);
                     }
                 }
             }
 
-            [HarmonyPatch(typeof(PLShipInfoBase),"Update")]
-            class EnsureAggro 
+            [HarmonyPatch(typeof(PLShipInfoBase), "Update")]
+            class EnsureAggro
             {
-                static void Postfix(PLShipInfoBase __instance) 
+                static void Postfix(PLShipInfoBase __instance)
                 {
-                    if(PLServer.GetCurrentSector() != null && PLServer.GetCurrentSector().Name == "Gauntlet_Arena()" && PLEncounterManager.Instance.PlayerShip != null && __instance.TargetShip != PLEncounterManager.Instance.PlayerShip) 
+                    if (PLServer.GetCurrentSector() != null && PLServer.GetCurrentSector().Name == "Gauntlet_Arena()" && PLEncounterManager.Instance.PlayerShip != null && __instance.TargetShip != PLEncounterManager.Instance.PlayerShip)
                     {
                         __instance.TargetShip = PLEncounterManager.Instance.PlayerShip;
                     }
@@ -610,11 +614,11 @@ namespace Exotic_Components
 
             [HarmonyPatch(typeof(PLTabMenu), "GetFragmentInfo")]
 
-            class GauntletFragmentText 
+            class GauntletFragmentText
             {
-                static void Postfix(int fragID, ref string fragName, ref string fragDesc) 
+                static void Postfix(int fragID, ref string fragName, ref string fragDesc)
                 {
-                    if(fragID == 5) 
+                    if (fragID == 5)
                     {
                         fragName = "Gauntlet Fragment";
                         fragDesc = "Decreases the upgrade cost by 50%";
@@ -684,11 +688,11 @@ namespace Exotic_Components
             }
 
             [HarmonyPatch(typeof(PLShipInfo), "GetMatCostForComp")]
-            class ShipComponentsFragment 
+            class ShipComponentsFragment
             {
-                static void Postfix(ref int __result) 
+                static void Postfix(ref int __result)
                 {
-                    if (PLServer.Instance.IsFragmentCollected(5)) 
+                    if (PLServer.Instance.IsFragmentCollected(5))
                     {
                         __result /= 2;
                     }
@@ -707,12 +711,12 @@ namespace Exotic_Components
             }
 
             [HarmonyPatch(typeof(PLServer), "GetSectorPositionAtDistance")]
-            class PreventMissionsOnVoid 
+            class PreventMissionsOnVoid
             {
-                static void Postfix(ref Vector3 __result, float inDist) 
+                static void Postfix(ref Vector3 __result, float inDist)
                 {
                     PLSectorInfo plsectorInfo = PLServer.GetCurrentSector();
-                    if(plsectorInfo.Name == "Gauntlet_Arena()" || plsectorInfo.Name == "Gauntlet_Lobby()") 
+                    if (plsectorInfo.Name == "Gauntlet_Arena()" || plsectorInfo.Name == "Gauntlet_Lobby()")
                     {
                         plsectorInfo = PLGlobal.Instance.Galaxy.GetSectorOfVisualIndication(ESectorVisualIndication.PT_WARP_GATE);
                         if (PLEncounterManager.Instance.PlayerShip != null && PLEncounterManager.Instance.PlayerShip.WarpTargetID != -1 && PLGlobal.Instance.Galaxy.AllSectorInfos.ContainsKey(PLEncounterManager.Instance.PlayerShip.WarpTargetID))
@@ -746,7 +750,7 @@ namespace Exotic_Components
                 static void Postfix()
                 {
                     if (!PhotonNetwork.isMasterClient || PLServer.GetCurrentSector() == null || PLServer.GetCurrentSector().Name != "Gauntlet_Arena()" || PLEncounterManager.Instance.PlayerShip == null || PLEncounterManager.Instance.PlayerShip.InWarp) return;
-                    if(WildTrial && (currentSeed != WildSeed + CurrentWildTrial || RNG == null)) 
+                    if (WildTrial && (currentSeed != WildSeed + CurrentWildTrial || RNG == null))
                     {
                         RNG = new PLRand(WildSeed + CurrentWildTrial);
                         currentSeed = WildSeed + CurrentWildTrial;
@@ -1100,12 +1104,12 @@ namespace Exotic_Components
                                             pLShipInfoBase.CreditsLeftBehind = 0;
 
                                             int beaconID = 0;
-                                            for (int i = 0; i < 3000; i++) 
+                                            for (int i = 0; i < 3000; i++)
                                             {
                                                 PLRand random = new PLRand(i + PLServer.Instance.GalaxySeed + plpersistantShipInfo.MyCurrentSector.ID);
-                                                if (random.Next() % 18 == 13 && random.NextFloat() >= 0.05f) 
+                                                if (random.Next() % 18 == 13 && random.NextFloat() >= 0.05f)
                                                 {
-                                                    beaconID = i; 
+                                                    beaconID = i;
                                                     break;
                                                 }
                                             }
@@ -1343,15 +1347,15 @@ namespace Exotic_Components
                                     break;
                             }
                         }
-                        else 
+                        else
                         {
-                            if(currentWave == 1 || currentWave == 2) 
+                            if (currentWave == 1 || currentWave == 2)
                             {
                                 int enemyCount = 6;
                                 int bossOdds = 25;
-                                if(CurrentWildTrial/10 == 0) 
+                                if (CurrentWildTrial / 10 == 0)
                                 {
-                                    enemyCount = RNG.Next(2,5);
+                                    enemyCount = RNG.Next(2, 5);
                                     bossOdds = 5;
                                 }
                                 else if (CurrentWildTrial / 10 == 1)
@@ -1365,25 +1369,25 @@ namespace Exotic_Components
                                     bossOdds = 15;
                                 }
                                 if (currentWave == 2) enemyCount += RNG.Next(0, 2);
-                                for(int i = 0; i < enemyCount; i++) 
+                                for (int i = 0; i < enemyCount; i++)
                                 {
-                                    if(RNG.Next(0,100) <= bossOdds) 
+                                    if (RNG.Next(0, 100) <= bossOdds)
                                     {
                                         GenerateBoss(Random.Range(0, 8), CurrentWildTrial);
                                     }
-                                    else 
+                                    else
                                     {
                                         GenerateRandomDrone(CurrentWildTrial);
                                     }
                                 }
                             }
-                            else 
+                            else
                             {
-                                if(CurrentWildTrial % 10 != 0 || CurrentWildTrial == 0) 
+                                if (CurrentWildTrial % 10 != 0 || CurrentWildTrial == 0)
                                 {
                                     GenerateBoss(Random.Range(0, 8), CurrentWildTrial);
                                 }
-                                else 
+                                else
                                 {
                                     GenerateBoss(8, CurrentWildTrial);
                                 }
@@ -1446,19 +1450,19 @@ namespace Exotic_Components
                                 break;
                         }
                     }
-                    else 
+                    else
                     {
-                        PLServer.Instance.CurrentCrewCredits += Mathf.RoundToInt(15000 * Mathf.FloorToInt(1 + round * 0.75f) * Random.Range(0.75f,1.25f));
+                        PLServer.Instance.CurrentCrewCredits += Mathf.RoundToInt(15000 * Mathf.FloorToInt(1 + round * 0.75f) * Random.Range(0.75f, 1.25f));
                         PLServer.Instance.CurrentUpgradeMats += Mathf.RoundToInt(15 * Mathf.FloorToInt(1 + round * 0.75f) * Random.Range(0.75f, 1.25f));
                     }
                 }
 
-                static void GenerateBoss(int ID,int round) 
+                static void GenerateBoss(int ID, int round)
                 {
                     PLPersistantShipInfo plpersistantShipInfo;
                     PLShipInfoBase pLShipInfoBase;
                     List<ComponentOverrideData> overrides;
-                    switch (ID) 
+                    switch (ID)
                     {
                         case 0: //Temperature Critical
                             plpersistantShipInfo = new PLPersistantShipInfo(EShipType.E_OUTRIDER, 1, PLServer.GetCurrentSector(), 0, false, true, false, -1, PLEncounterManager.Instance.PlayerShip.ShipID);
@@ -1647,7 +1651,7 @@ namespace Exotic_Components
                             }
                             else
                             {
-                                overrides.Add(new ComponentOverrideData() { CompType = 6, CompSubType = PulsarModLoader.Content.Components.Hull.HullModManager.Instance.GetHullIDFromName("Flagship Hull"), ReplaceExistingComp = true, CompLevel = round/10, IsCargo = false, CompTypeToReplace = 6, SlotNumberToReplace = 0 });
+                                overrides.Add(new ComponentOverrideData() { CompType = 6, CompSubType = PulsarModLoader.Content.Components.Hull.HullModManager.Instance.GetHullIDFromName("Flagship Hull"), ReplaceExistingComp = true, CompLevel = round / 10, IsCargo = false, CompTypeToReplace = 6, SlotNumberToReplace = 0 });
                             }
                             if (round < 30)
                             {
@@ -1663,9 +1667,9 @@ namespace Exotic_Components
                             pLShipInfoBase.DropScrap = false;
                             pLShipInfoBase.CreditsLeftBehind = 0;
                             pLShipInfoBase.IsRelicHunter = true;
-                            foreach(PLShipComponent component in pLShipInfoBase.MyStats.AllComponents) 
+                            foreach (PLShipComponent component in pLShipInfoBase.MyStats.AllComponents)
                             {
-                                if(component.Name.Contains("Flagship") && component.Level > round / 10) 
+                                if (component.Name.Contains("Flagship") && component.Level > round / 10)
                                 {
                                     component.Level = round / 10;
                                 }
@@ -1674,7 +1678,7 @@ namespace Exotic_Components
                     }
                 }
 
-                static void GenerateRandomDrone(int round) 
+                static void GenerateRandomDrone(int round)
                 {
                     PLPersistantShipInfo plpersistantShipInfo;
                     PLShipInfoBase pLShipInfoBase;
@@ -1710,7 +1714,7 @@ namespace Exotic_Components
                         PulsarModLoader.Content.Components.Shield.ShieldModManager.Instance.GetShieldIDFromName("Layered Shield"),
                         PulsarModLoader.Content.Components.Shield.ShieldModManager.Instance.GetShieldIDFromName("Electric Wall"),
                     };
-                    overrides.Add(new ComponentOverrideData() { CompType = 1, CompSubType = CompFromLists(compTypes,exoticTypes,round), ReplaceExistingComp = true, CompLevel = round, IsCargo = false, CompTypeToReplace = 1, SlotNumberToReplace = 0 });
+                    overrides.Add(new ComponentOverrideData() { CompType = 1, CompSubType = CompFromLists(compTypes, exoticTypes, round), ReplaceExistingComp = true, CompLevel = round, IsCargo = false, CompTypeToReplace = 1, SlotNumberToReplace = 0 });
 
                     //Hulls
                     compTypes = new List<int>
@@ -1774,7 +1778,7 @@ namespace Exotic_Components
                         overrides.Add(new ComponentOverrideData() { CompType = 10, CompSubType = CompFromLists(compTypes, exoticTypes, round), ReplaceExistingComp = true, CompLevel = round, IsCargo = false, CompTypeToReplace = 10, SlotNumberToReplace = 0 });
                         overrides.Add(new ComponentOverrideData() { CompType = 10, CompSubType = CompFromLists(compTypes, exoticTypes, round), ReplaceExistingComp = true, CompLevel = round, IsCargo = false, CompTypeToReplace = 10, SlotNumberToReplace = 1 });
                     }
-                    else if(drone == EShipType.E_SHOCK_DRONE) 
+                    else if (drone == EShipType.E_SHOCK_DRONE)
                     {
                         overrides.Add(new ComponentOverrideData() { CompType = 10, CompSubType = 9, ReplaceExistingComp = true, CompLevel = round, IsCargo = false, CompTypeToReplace = 10, SlotNumberToReplace = 0 });
                         overrides.Add(new ComponentOverrideData() { CompType = 10, CompSubType = 9, ReplaceExistingComp = true, CompLevel = round, IsCargo = false, CompTypeToReplace = 10, SlotNumberToReplace = 1 });
@@ -1802,7 +1806,7 @@ namespace Exotic_Components
                     };
                     overrides.Add(new ComponentOverrideData() { CompType = 11, CompSubType = CompFromLists(compTypes, exoticTypes, round), ReplaceExistingComp = true, CompLevel = round, IsCargo = false, CompTypeToReplace = 11, SlotNumberToReplace = 0 });
 
-                    plpersistantShipInfo = new PLPersistantShipInfo(drone, 1, PLServer.GetCurrentSector(), RNG.Next(0,(int)EShipModifierType.MAX), false, true, false, -1, PLEncounterManager.Instance.PlayerShip.ShipID);
+                    plpersistantShipInfo = new PLPersistantShipInfo(drone, 1, PLServer.GetCurrentSector(), RNG.Next(0, (int)EShipModifierType.MAX), false, true, false, -1, PLEncounterManager.Instance.PlayerShip.ShipID);
                     overrides.Add(new ComponentOverrideData() { CompType = 3, CompSubType = 10, ReplaceExistingComp = true, CompLevel = round, IsCargo = false, CompTypeToReplace = 3, SlotNumberToReplace = 0 });
                     plpersistantShipInfo.CompOverrides.AddRange(overrides);
                     pLShipInfoBase = PLEncounterManager.Instance.GetCPEI().SpawnEnemyShip(plpersistantShipInfo.Type, plpersistantShipInfo);
@@ -1810,14 +1814,14 @@ namespace Exotic_Components
                     pLShipInfoBase.CreditsLeftBehind = 0;
                 }
 
-                static string SubTitleForWave(bool isWild, int round, int wave) 
+                static string SubTitleForWave(bool isWild, int round, int wave)
                 {
-                    if (!isWild) 
+                    if (!isWild)
                     {
-                        switch (round) 
+                        switch (round)
                         {
                             case 0:
-                                switch (wave) 
+                                switch (wave)
                                 {
                                     case 1:
                                         return "Where it all starts.";
@@ -1940,7 +1944,7 @@ namespace Exotic_Components
                     return string.Empty;
                 }
 
-                static int CompFromLists(List<int> basicList, List<int> exoticList, int round) 
+                static int CompFromLists(List<int> basicList, List<int> exoticList, int round)
                 {
                     if (round % 10 == 0)
                     {

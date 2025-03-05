@@ -168,6 +168,7 @@ namespace Exotic_Components
             plsectorInfo3.Position = new Vector3(0, 0, 0.0001f);
             plsectorInfo3.FactionStrength = 0.5f;
             plsectorInfo3.Name = "The Core(MOD)";
+            TheCoreComms.soldIntergalatic = false;
             Gauntlet.CreateGauntlet();
         }
     }

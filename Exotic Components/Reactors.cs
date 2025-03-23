@@ -6,13 +6,11 @@ using HarmonyLib;
 using System.Collections.Generic;
 using static UILabel;
 using PulsarModLoader.Content.Components.CPU;
+using static UnityEngine.GraphicsBuffer;
 namespace Exotic_Components
 {
     public class Reactors
     {
-        static public bool CollectedColor = false;
-        static public Color lightColor = Color.black;
-        static public Color particleColor = Color.black;
         static public float BaseHeat = 5f;
         static public float MaxCool = 11f;
         class ColdReactor : ReactorMod
@@ -212,6 +210,17 @@ namespace Exotic_Components
                             player.GetPawn().Health += 5 * count;
                             player.GetPawn().Health = Mathf.Min(player.GetPawn().Health, player.GetPawn().MaxHealth);
                         }
+                    }
+                }
+                if (InComp.ShipStats.Ship is PLShipInfo)
+                {
+                    foreach (Light light in (InComp.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<Light>())
+                    {
+                        light.color = new Color(0.99f,0.34f,0.67f,0.8f);
+                    }
+                    foreach (ParticleSystem particle in (InComp.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<ParticleSystem>())
+                    {
+                        particle.startColor = new Color(0.99f, 0.34f, 0.67f, 0.8f);
                     }
                 }
             }
@@ -670,7 +679,7 @@ namespace Exotic_Components
                 if (__instance.GetComponentInParent<PLShipInfo>() != null && __instance.GetComponentInParent<PLShipInfo>().MyReactor != null && __instance.GetComponentInParent<PLShipInfo>().MyReactor.GetItemName() == "ThermoPoint Reactor" && __instance.NearbyShips.Contains(__instance.GetComponentInParent<PLShipInfo>()))
                 {
                     __instance.NearbyShips.Remove(__instance.GetComponentInParent<PLShipInfo>());
-                    if (__instance.GetComponentInParent<PLShipInfo>().Exterior.GetComponentInChildren<PLIceDust>() != null && __instance.GetComponentInParent<PLShipInfo>().Exterior.GetComponentInChildren<PLIceDust>().MyPS == __instance.MyPS)
+                    if (__instance.GetComponentInParent<PLShipInfo>().Exterior.GetComponentInChildren<PLIceDust>() != null && __instance.GetComponentInParent<PLShipInfo>().Exterior.GetComponentInChildren<PLIceDust>().MyPS == __instance.MyPS && __instance.GetComponentInParent<PLShipInfo>().Exterior.GetComponentInChildren<PLIceDust>().AttachedTo_Ship == null)
                     {
                         __instance.GetComponentInParent<PLShipInfo>().Exterior.GetComponentInChildren<PLIceDust>().AttachedTo_Ship = __instance.GetComponentInParent<PLShipInfo>();
                     }
@@ -838,6 +847,7 @@ namespace Exotic_Components
                 return true;
             }
         }
+        /*
         [HarmonyPatch(typeof(PLReactor), "Tick")]
         class ManualTick
         {
@@ -858,6 +868,34 @@ namespace Exotic_Components
                     foreach (ParticleSystem particle in (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<ParticleSystem>())
                     {
                         particle.startColor = particleColor;
+                    }
+                }
+            }
+        }
+        */
+        [HarmonyPatch(typeof(PLReactor))]
+        class FixColor 
+        {
+            [HarmonyPatch("Unequip")]
+            [HarmonyPostfix]
+            static void RemoveColor(PLReactor __instance) 
+            {
+                if (__instance.ShipStats != null && __instance.ShipStats.Ship != null)
+                {
+                    if ((__instance.ShipStats.Ship as PLShipInfo).ReactorInstance != null)
+                    {
+                        foreach (Light light in (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<Light>())
+                        {
+                            light.color = new Color(0.25f, 0.7257f, 1, 1);
+                        }
+                        foreach (ParticleSystem particle in (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<ParticleSystem>())
+                        {
+                            particle.startColor = new Color(1,1,1,1);
+                        }
+                    }
+                    if (__instance.Name == "ThermoPoint Reactor" && __instance.ShipStats.Ship.MyTLI != null)
+                    {
+                        __instance.ShipStats.Ship.MyTLI.AtmoSettings.Temperature = 1f;
                     }
                 }
             }
@@ -939,6 +977,18 @@ namespace Exotic_Components
                     return false;
                 }
                 return true;
+            }
+        }
+        
+    }
+    public class ReciveBiscuitData : PulsarModLoader.ModMessage
+    {
+        public override void HandleRPC(object[] arguments, PhotonMessageInfo sender)
+        {
+            if (sender.sender.IsMasterClient)
+            {
+                Reactors.BiscuitReactor.BiscuitBoost = (int)arguments[0];
+                Reactors.BiscuitReactor.effects = (Dictionary<int, float>)arguments[1];
             }
         }
     }

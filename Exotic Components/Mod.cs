@@ -6,9 +6,10 @@ using System.IO;
 [assembly: System.Runtime.CompilerServices.IgnoresAccessChecksTo("Assembly-CSharp")]
 namespace Exotic_Components
 {
+    //Fix ultimate fluffy reactor not sharring and make it pink
     public class Mod : PulsarMod
     {
-        public override string Version => "5.1.1";
+        public override string Version => "5.2";
 
         public override string Author => "pokegustavo (with suggestions from EngBot, TheShribe and Kani)";
 

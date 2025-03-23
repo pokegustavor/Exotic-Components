@@ -11,7 +11,7 @@ namespace Exotic_Components
     [HarmonyLib.HarmonyPatch(typeof(PLShipInfo),"Update")]
     internal class Update
     {
-        static float LastDamage = Time.time;
+        static float LastUpdate = Time.time;
         static void Postfix(PLShipInfo __instance)
         {
             try
@@ -59,15 +59,22 @@ namespace Exotic_Components
                     }
                 }
 
-                if (PhotonNetwork.isMasterClient && Time.time - LastDamage > 1 && Reactors.BiscuitReactor.effects.ContainsKey((int)EPawnStatusEffectType.MOLTEN) && __instance.MyReactor != null && __instance.MyReactor.Name == "Ultimate Fluffy Biscuit Reactor") 
+                if (PhotonNetwork.isMasterClient && Time.time - LastUpdate > 1 && __instance.MyReactor != null && __instance.MyReactor.Name == "Ultimate Fluffy Biscuit Reactor") 
                 {
-                    LastDamage = Time.time;
-                    foreach(PLShipInfoBase ship in PLEncounterManager.Instance.AllShips.Values) 
+                    LastUpdate = Time.time;
+                    PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.ReciveBiscuitData", PhotonTargets.Others, new object[]
                     {
-                        if(ship != null && ship != __instance && Vector3.Distance(ship.Exterior.transform.position,__instance.Exterior.transform.position) < 500) 
+                        BiscuitReactor.BiscuitBoost,
+                        BiscuitReactor.effects
+                    });
+                    if (BiscuitReactor.effects.ContainsKey((int)EPawnStatusEffectType.MOLTEN))
+                    {
+                        foreach (PLShipInfoBase ship in PLEncounterManager.Instance.AllShips.Values)
                         {
-                            PLServer.Instance.photonView.RPC("ClientShipTakeDamage", PhotonTargets.All, new object[]
+                            if (ship != null && ship != __instance && Vector3.Distance(ship.Exterior.transform.position, __instance.Exterior.transform.position) < 500)
                             {
+                                PLServer.Instance.photonView.RPC("ClientShipTakeDamage", PhotonTargets.All, new object[]
+                                {
                                 ship.ShipID,
                                 50f,
                                 false,
@@ -76,7 +83,8 @@ namespace Exotic_Components
                                 -1,
                                 __instance.ShipID,
                                 -1
-                            });
+                                });
+                            }
                         }
                     }
                 }
@@ -154,7 +162,6 @@ namespace Exotic_Components
                     shape.radius = 0.0001f;
                     shape.scale = new Vector3(0, 0, 0);
                     heatVolume.MyPS.gameObject.transform.localPosition = __instance.Exterior.transform.localPosition - new Vector3(0, -50, 0);
-                    __instance.MyTLI.AtmoSettings.Temperature = 1f;
                 }
                 if(PLServer.Instance.HasMissionWithID(703) && !PLServer.Instance.GetMissionWithID(703).Abandoned && !PLServer.Instance.GetMissionWithID(703).Ended) 
                 {
@@ -207,6 +214,7 @@ namespace Exotic_Components
                         }
                     }
                 }
+
                 
             }
             catch { }

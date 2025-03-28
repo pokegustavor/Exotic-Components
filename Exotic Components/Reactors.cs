@@ -212,17 +212,6 @@ namespace Exotic_Components
                         }
                     }
                 }
-                if (InComp.ShipStats.Ship is PLShipInfo)
-                {
-                    foreach (Light light in (InComp.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<Light>())
-                    {
-                        light.color = new Color(0.99f,0.34f,0.67f,0.8f);
-                    }
-                    foreach (ParticleSystem particle in (InComp.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<ParticleSystem>())
-                    {
-                        particle.startColor = new Color(0.99f, 0.34f, 0.67f, 0.8f);
-                    }
-                }
             }
 
             public override void OnWarp(PLShipComponent InComp)
@@ -495,20 +484,6 @@ namespace Exotic_Components
                 if (InComp.IsEquipped && InComp.ShipStats != null)
                 {
                     InComp.ShipStats.TakeHullDamage(InComp.ShipStats.HullMax * 0.05f, EDamageType.E_INFECTED, null, null);
-                }
-            }
-            public override void Tick(PLShipComponent InComp)
-            {
-                if (InComp.IsEquipped && InComp.ShipStats != null && (InComp.ShipStats.Ship is PLShipInfo) && (InComp.ShipStats.Ship as PLShipInfo).ReactorInstance != null)
-                {
-                    foreach (Light light in (InComp.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<Light>())
-                    {
-                        light.color = Color.red;
-                    }
-                    foreach (ParticleSystem particle in (InComp.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<ParticleSystem>())
-                    {
-                        particle.startColor = Color.red;
-                    }
                 }
             }
         }
@@ -847,52 +822,67 @@ namespace Exotic_Components
                 return true;
             }
         }
-        /*
-        [HarmonyPatch(typeof(PLReactor), "Tick")]
-        class ManualTick
-        {
-            static void Postfix(PLReactor __instance)
-            {
-                if (!CollectedColor && __instance.ShipStats != null && (__instance.ShipStats.Ship is PLShipInfo) && (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance != null)
-                {
-                    lightColor = (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentInChildren<Light>().color;
-                    particleColor = (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentInChildren<ParticleSystem>().startColor;
-                    CollectedColor = true;
-                }
-                else if (__instance.ShipStats != null && (__instance.ShipStats.Ship is PLShipInfo) && (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance != null && __instance.Name != "Micro Star Reactor" && __instance.Name != "Infected Reactor")
-                {
-                    foreach (Light light in (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<Light>())
-                    {
-                        light.color = lightColor;
-                    }
-                    foreach (ParticleSystem particle in (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<ParticleSystem>())
-                    {
-                        particle.startColor = particleColor;
-                    }
-                }
-            }
-        }
-        */
         [HarmonyPatch(typeof(PLReactor))]
         class FixColor 
         {
-            [HarmonyPatch("Unequip")]
+            [HarmonyPatch("Equip")]
             [HarmonyPostfix]
-            static void RemoveColor(PLReactor __instance) 
+            static void AddColor(PLReactor __instance)
             {
+                Color targetColor = Color.white;
+                bool reset = false;
+                switch (__instance.Name) 
+                {
+                    default:
+                        reset = true;
+                        break;
+                    case "Infected Reactor":
+                        targetColor = Color.red;
+                        break;
+                    case "The Overcharge":
+                        targetColor = Color.cyan;
+                        break;
+                    case "Ultimate Fluffy Biscuit Reactor":
+                        targetColor = new Color(0.99f, 0.34f, 0.67f, 0.8f);
+                        break;
+
+                }
                 if (__instance.ShipStats != null && __instance.ShipStats.Ship != null)
                 {
-                    if ((__instance.ShipStats.Ship as PLShipInfo).ReactorInstance != null)
+                    if (__instance.ShipStats.Ship is PLShipInfo && (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance != null)
                     {
                         foreach (Light light in (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<Light>())
                         {
-                            light.color = new Color(0.25f, 0.7257f, 1, 1);
+                            if (reset)
+                            {
+                                light.color = new Color(0.25f, 0.7257f, 1, 1);
+                            }
+                            else
+                            {
+                                light.color = targetColor;
+                            }
                         }
                         foreach (ParticleSystem particle in (__instance.ShipStats.Ship as PLShipInfo).ReactorInstance.GetComponentsInChildren<ParticleSystem>())
                         {
-                            particle.startColor = new Color(1,1,1,1);
+                            if (reset)
+                            {
+                                particle.startColor = new Color(1, 1, 1, 1);
+                            }
+                            else
+                            {
+                                particle.startColor = targetColor;
+                            }
+                            
                         }
                     }
+                }
+            }
+            [HarmonyPatch("Unequip")]
+            [HarmonyPostfix]
+            static void ResetHeat(PLReactor __instance) 
+            {
+                if (__instance.ShipStats != null && __instance.ShipStats.Ship != null)
+                {
                     if (__instance.Name == "ThermoPoint Reactor" && __instance.ShipStats.Ship.MyTLI != null)
                     {
                         __instance.ShipStats.Ship.MyTLI.AtmoSettings.Temperature = 1f;

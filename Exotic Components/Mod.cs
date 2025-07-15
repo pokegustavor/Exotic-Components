@@ -11,7 +11,7 @@ namespace Exotic_Components
     {
         public override string Version => "5.4";
 
-        public override string Author => "pokegustavo (with suggestions from EngBot, TheShribe, Kani and Nacredem)";
+        public override string Author => "pokegustavo (with suggestions from EngBot, TheShribe, Kani, A Werewolf and Nacredem)";
 
         public override string ShortDescription => "Adds new components to the game, new shop and some missions";
 

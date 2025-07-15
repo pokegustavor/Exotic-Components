@@ -8,7 +8,8 @@ using PulsarModLoader.Content.Components.CPU;
 using static Exotic_Components.Reactors;
 namespace Exotic_Components
 {
-    [HarmonyLib.HarmonyPatch(typeof(PLShipInfo),"Update")]
+
+    [HarmonyLib.HarmonyPatch(typeof(PLShipInfo), "Update")]
     internal class Update
     {
         static float LastUpdate = Time.time;
@@ -59,7 +60,7 @@ namespace Exotic_Components
                     }
                 }
 
-                if (PhotonNetwork.isMasterClient && Time.time - LastUpdate > 1 && __instance.MyReactor != null && __instance.MyReactor.Name == "Ultimate Fluffy Biscuit Reactor") 
+                if (PhotonNetwork.isMasterClient && Time.time - LastUpdate > 1 && __instance.MyReactor != null && __instance.MyReactor.Name == "Ultimate Fluffy Biscuit Reactor")
                 {
                     LastUpdate = Time.time;
                     PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.ReciveBiscuitData", PhotonTargets.Others, new object[]
@@ -95,22 +96,22 @@ namespace Exotic_Components
                     InitialStore.UpdateCore();
                 }
                 bool found = false;
-                if(PLServer.GetCurrentSector().MissionSpecificID == 702) 
+                if (PLServer.GetCurrentSector().MissionSpecificID == 702)
                 {
                     PLShipInfo judge = null;
-                    foreach(PLShipInfoBase ship in PLEncounterManager.Instance.AllShips.Values) 
+                    foreach (PLShipInfoBase ship in PLEncounterManager.Instance.AllShips.Values)
                     {
-                        if(ship.ShipNameValue == "[REDACTED]" && ship.ShipTypeID == EShipType.OLDWARS_SYLVASSI && !ship.GetIsPlayerShip() && !ship.HasBeenDestroyed) 
+                        if (ship.ShipNameValue == "[REDACTED]" && ship.ShipTypeID == EShipType.OLDWARS_SYLVASSI && !ship.GetIsPlayerShip() && !ship.HasBeenDestroyed)
                         {
                             found = true;
                         }
-                        if(ship.ShipNameValue == "Run's Dead" && ship.ShipTypeID == EShipType.OLDWARS_HUMAN && !ship.GetIsPlayerShip() && !ship.HasBeenDestroyed) 
+                        if (ship.ShipNameValue == "Run's Dead" && ship.ShipTypeID == EShipType.OLDWARS_HUMAN && !ship.GetIsPlayerShip() && !ship.HasBeenDestroyed)
                         {
                             judge = ship as PLShipInfo;
                             if (judge.FactionID == -1) judge.FactionID = PLEncounterManager.Instance.PlayerShip.FactionID;
                         }
                     }
-                    if(!found && judge != null) 
+                    if (!found && judge != null)
                     {
                         judge.Ship_WarpOutNow();
                         foreach (PLMissionBase mission in PLServer.Instance.AllMissions)
@@ -123,23 +124,23 @@ namespace Exotic_Components
                         }
                     }
                 }
-                if(PLInput.Instance.GetButtonUp(PLInputBase.EInputActionName.pilot_ability) && (!(__instance is PLOldWarsShip_Sylvassi) || (__instance is PLOldWarsShip_Sylvassi && (__instance as PLOldWarsShip_Sylvassi).SlicerFiredInThisSector)) && __instance.GetCurrentShipControllerPlayerID() == PLNetworkManager.Instance.LocalPlayerID) 
+                if (PLInput.Instance.GetButtonUp(PLInputBase.EInputActionName.pilot_ability) && (!(__instance is PLOldWarsShip_Sylvassi) || (__instance is PLOldWarsShip_Sylvassi && (__instance as PLOldWarsShip_Sylvassi).SlicerFiredInThisSector)) && __instance.GetCurrentShipControllerPlayerID() == PLNetworkManager.Instance.LocalPlayerID)
                 {
-                    if (__instance.MyWarpDrive != null && __instance.MyWarpDrive.Name == "The Phase Drive" && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10f) 
+                    if (__instance.MyWarpDrive != null && __instance.MyWarpDrive.Name == "The Phase Drive" && Time.time - Warp_Drive.PhaseDrive.LastPhase > 10f)
                     {
                         PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.RecivePhase", PhotonTargets.All, new object[0]);
                     }
                     else if (__instance.MyShieldGenerator != null && __instance.MyShieldGenerator.Name == "Electric Wall" && __instance.MyStats.ShieldsCurrent / __instance.MyStats.ShieldsMax >= 0.9f)
                     {
-                        PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.EMPPulse", PhotonTargets.All, new object[] 
+                        PulsarModLoader.ModMessage.SendRPC("Pokegustavo.ExoticComponents", "Exotic_Components.EMPPulse", PhotonTargets.All, new object[]
                         {
                             __instance.ShipID
                         });
                     }
                 }
-                if (Time.time - Warp_Drive.PhaseDrive.LastPhase < 1f && __instance.HullPlatingRenderers != null && Warp_Drive.PhaseDrive.Phasing) 
+                if (Time.time - Warp_Drive.PhaseDrive.LastPhase < 1f && __instance.HullPlatingRenderers != null && Warp_Drive.PhaseDrive.Phasing)
                 {
-                    foreach(Renderer rend in __instance.HullPlatingRenderers) 
+                    foreach (Renderer rend in __instance.HullPlatingRenderers)
                     {
                         if (rend != null)
                         {
@@ -154,7 +155,7 @@ namespace Exotic_Components
                         __instance.ExteriorMeshRenderer.enabled = false;
                     }
                 }
-                if (__instance.MyReactor != null && __instance.MyReactor.GetItemName() != "ThermoPoint Reactor" && __instance.Exterior.GetComponent<PLSpaceHeatVolume>() != null) 
+                if (__instance.MyReactor != null && __instance.MyReactor.GetItemName() != "ThermoPoint Reactor" && __instance.Exterior.GetComponent<PLSpaceHeatVolume>() != null)
                 {
                     PLSpaceHeatVolume heatVolume = __instance.Exterior.GetComponent<PLSpaceHeatVolume>();
                     heatVolume.MyPS.enableEmission = false;
@@ -163,9 +164,9 @@ namespace Exotic_Components
                     shape.scale = new Vector3(0, 0, 0);
                     heatVolume.MyPS.gameObject.transform.localPosition = __instance.Exterior.transform.localPosition - new Vector3(0, -50, 0);
                 }
-                if(PLServer.Instance.HasMissionWithID(703) && !PLServer.Instance.GetMissionWithID(703).Abandoned && !PLServer.Instance.GetMissionWithID(703).Ended) 
+                if (PLServer.Instance.HasMissionWithID(703) && !PLServer.Instance.GetMissionWithID(703).Abandoned && !PLServer.Instance.GetMissionWithID(703).Ended)
                 {
-                    
+
                     PLPersistantShipInfo objective = null;
                     if (Missions.DeliverBiscuit.BiscuitShip == null)
                     {
@@ -179,11 +180,11 @@ namespace Exotic_Components
                             }
                         }
                     }
-                    else 
+                    else
                     {
                         objective = Missions.DeliverBiscuit.BiscuitShip;
                     }
-                    if(objective != null) 
+                    if (objective != null)
                     {
                         PLServer.Instance.ActiveBountyHunter_TypeID = 5;
                         PLServer.Instance.ActiveBountyHunter_SectorID = objective.MyCurrentSector.ID;
@@ -193,7 +194,7 @@ namespace Exotic_Components
                         {
                             foreach (int enemyID in PLEncounterManager.Instance.PlayerShip.HostileShips)
                             {
-                                if(enemyID != objective.ShipInstance.ShipID && !objective.ShipInstance.HostileShips.Contains(enemyID))
+                                if (enemyID != objective.ShipInstance.ShipID && !objective.ShipInstance.HostileShips.Contains(enemyID))
                                 {
                                     objective.ShipInstance.HostileShips.Add(enemyID);
                                 }
@@ -208,16 +209,65 @@ namespace Exotic_Components
                             objective.ShipInstance.HostileShips.RemoveAll((int ID) => PLEncounterManager.Instance.GetShipFromID(ID) == null || PLEncounterManager.Instance.PlayerShip.ShipID == ID);
                             PLEncounterManager.Instance.PlayerShip.HostileShips.RemoveAll((int ID) => objective.ShipInstance.ShipID == ID);
                         }
-                        else if(PLServer.Instance.ActiveBountyHunter_SectorID == PLServer.GetCurrentSector().ID && !PLEncounterManager.Instance.PlayerShip.InWarp) 
+                        else if (PLServer.Instance.ActiveBountyHunter_SectorID == PLServer.GetCurrentSector().ID && !PLEncounterManager.Instance.PlayerShip.InWarp)
                         {
                             objective.CreateShipInstance(PLEncounterManager.Instance.GetCPEI());
                         }
                     }
                 }
 
-                
+
             }
             catch { }
+        }
+
+        static void Prefix(PLShipInfo __instance)
+        {
+            if (__instance.MyReactor != null && __instance.MyStats != null && __instance.MyHull != null && __instance.MyReactor.Name == "H.A.D.E.N Prototype" && __instance.CoreInstability >= 1.03)
+            {
+                __instance.CoreInstability = 0;
+                __instance.MyStats.ReactorTempCurrent = 0;
+                GameObject explosion = UnityEngine.Object.Instantiate(PLGlobal.Instance.ProximityMineExplosionPrefab, __instance.Exterior.transform.position, __instance.Exterior.transform.rotation);
+                explosion.transform.localScale = new Vector3(1f, 1f, 1f);
+                explosion.GetComponent<PLExplosion>().MaxLifetime = 4f;
+                explosion.GetComponent<PLExplosion>().FadeSpeed = 2f;
+                foreach (ParticleSystem sys in explosion.GetComponentsInChildren<ParticleSystem>()) 
+                {
+                    sys.startColor = Color.blue;
+                }
+                foreach (PLShipInfoBase plshipInfoBase in PLEncounterManager.Instance.AllShips.Values)
+                {
+                    if (plshipInfoBase == __instance)
+                    {
+                        if (PhotonNetwork.isMasterClient)
+                        {
+                            if (__instance.MyHull.Current > __instance.MyStats.HullMax * 0.1f)
+                            {
+                                __instance.MyHull.Current -= __instance.MyStats.HullMax * 0.1f;
+                            }
+                            else
+                            {
+                                __instance.MyStats.Ship.AboutToBeDestroyed();
+                            }
+                        }
+                    }
+                    else if (plshipInfoBase != null && plshipInfoBase.Exterior != null)
+                    {
+                        Rigidbody component = plshipInfoBase.Exterior.GetComponent<Rigidbody>();
+                        if (component != null)
+                        {
+                            component.AddExplosionForce(1200f, __instance.Exterior.transform.position, 300f);
+                            float num = (plshipInfoBase.ExteriorTransformCached.position - __instance.Exterior.transform.position).magnitude * 5f;
+                            float num2 = 1f - Mathf.Clamp01(num / 300f);
+                            if (PhotonNetwork.isMasterClient)
+                            {
+                                plshipInfoBase.TakeDamage(500f * num2 * num2 * (__instance.MyReactor.Level + 1), false, EDamageType.E_PHYSICAL, UnityEngine.Random.Range(0f, 1f), -1, null, -1);
+                            }
+                        }
+                    }
+                }
+                PLMusic.PostEvent("play_space_mine_explosion", __instance.Exterior.gameObject);
+            }
         }
     }
     [HarmonyPatch(typeof(PLShipStats), "ClearStats")]
@@ -346,13 +396,29 @@ namespace Exotic_Components
     }
 
     [HarmonyPatch(typeof(PLShipInfoBase), "TakeDamage")]
-    class TakeAnyDamage 
+    public class TakeAnyDamage
     {
-        static void Postfix(PLShipInfoBase attackingShip, float dmg) 
+        static void Postfix(PLShipInfoBase attackingShip, float dmg, int turretID, PLShipInfoBase __instance)
         {
-            if(attackingShip != null && attackingShip.MyReactor != null && attackingShip.MyReactor.Name == "Ultimate Fluffy Biscuit Reactor" && attackingShip.MyShieldGenerator != null && Reactors.BiscuitReactor.effects.ContainsKey((int)EPawnStatusEffectType.LIFESTEAL)) 
+            PLTurret plturret = null;
+            if (attackingShip != null)
+            {
+                plturret = attackingShip.GetTurretAtID(turretID);
+            }
+            if (attackingShip != null && attackingShip.MyReactor != null && attackingShip.MyReactor.Name == "Ultimate Fluffy Biscuit Reactor" && attackingShip.MyShieldGenerator != null && Reactors.BiscuitReactor.effects.ContainsKey((int)EPawnStatusEffectType.LIFESTEAL))
             {
                 attackingShip.MyShieldGenerator.Current += dmg * 0.2f;
+            }
+            if (plturret != null)
+            {
+                if (plturret is OverheatPlasmaTurret)
+                {
+                    __instance.MyStats.ReactorTempCurrent += dmg * 5f;
+                }
+                else if (plturret is TractorBeamTurret)
+                {
+                    __instance.ExteriorRigidbody.AddForce((attackingShip.ExteriorRigidbody.position - __instance.ExteriorRigidbody.position).normalized * 1000f * plturret.LevelMultiplier(0.10f), ForceMode.Acceleration);
+                }
             }
         }
     }

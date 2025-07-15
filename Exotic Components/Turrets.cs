@@ -2,6 +2,7 @@
 using UnityEngine;
 using Pathfinding;
 using System.Collections;
+using System.ComponentModel;
 namespace Exotic_Components
 {
     internal class Turrets
@@ -34,20 +35,48 @@ namespace Exotic_Components
         {
             public override string Name => "Tweaked Anti-Shield";
 
-            public override PLShipComponent PLTurret => new TweakedAntiShield(); 
+            public override PLShipComponent PLTurret => new TweakedAntiShield();
         }
 
         public class RNG : TurretMod
         {
             public override string Name => "Respected Nullifier Gun";
 
-            public override PLShipComponent PLTurret => new RespectedNullifierGun(); 
+            public override PLShipComponent PLTurret => new RespectedNullifierGun();
         }
-        public class Defender2 : TurretMod 
+        public class Defender2 : TurretMod
         {
             public override string Name => "Defender Turret mk2";
 
             public override PLShipComponent PLTurret => new Defender2Turret();
+        }
+
+        public class InternalSpray : TurretMod
+        {
+            public override string Name => "Internal Corrosion Turret";
+
+            public override PLShipComponent PLTurret => new InternalSprayGun();
+        }
+
+        public class OverheatPlasma : TurretMod
+        {
+            public override string Name => "Super Plasma Turret";
+
+            public override PLShipComponent PLTurret => new OverheatPlasmaTurret();
+        }
+
+        public class TractorBeam : TurretMod
+        {
+            public override string Name => "Tractor Beam Turret";
+
+            public override PLShipComponent PLTurret => new TractorBeamTurret();
+        }
+
+        public class MineLauncher : TurretMod
+        {
+            public override string Name => "Mine Launcher Turret";
+
+            public override PLShipComponent PLTurret => new MineLauncherTurret();
         }
     }
 
@@ -169,7 +198,7 @@ namespace Exotic_Components
             if (pgeforShip != null)
             {
                 int counter = 0;
-                foreach(PLCombatTarget plcombatTarget in PLGameStatic.Instance.AllCombatTargets) 
+                foreach (PLCombatTarget plcombatTarget in PLGameStatic.Instance.AllCombatTargets)
                 {
                     if (plcombatTarget != null && plcombatTarget.GetPlayer() == null && plcombatTarget.Lifetime > 4f && plcombatTarget.ShouldShowInHUD() && !plcombatTarget.GetIsFriendly() && plcombatTarget.CurrentShip == motherShip)
                     {
@@ -179,11 +208,11 @@ namespace Exotic_Components
                 }
                 int amount = 0;
                 float random = Random.value;
-                if(random < 0.5f) 
+                if (random < 0.5f)
                 {
                     amount = 1;
                 }
-                else if(random < 0.75f) 
+                else if (random < 0.75f)
                 {
                     amount = 2;
                 }
@@ -235,7 +264,7 @@ namespace Exotic_Components
             this.FireTurretSoundSFX = "play_ship_generic_external_weapon_railgun_shoot";
         }
     }
-    class RespectedNullifierGun : PLLaserTurret 
+    class RespectedNullifierGun : PLLaserTurret
     {
         public RespectedNullifierGun(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
         {
@@ -342,15 +371,15 @@ namespace Exotic_Components
                 component.TargetShip = base.ShipStats.Ship.TargetShip;
                 component2.ExplodeOnMaxLifetime = false;
                 EDamageType eDamageType;
-                if(silo != null) 
+                if (silo != null)
                 {
                     eDamageType = silo.DamageType;
                 }
-                else 
+                else
                 {
                     eDamageType = EDamageType.E_PHYSICAL;
                 }
-                switch (eDamageType) 
+                switch (eDamageType)
                 {
                     case EDamageType.E_SHIELD_PIERCE_PHYS:
                         component.SmokeSys.startColor = Color.yellow;
@@ -381,6 +410,184 @@ namespace Exotic_Components
             yield break;
         }
     }
+
+    class InternalSprayGun : PLBioHazardTurret
+    {
+        public InternalSprayGun(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
+        {
+            this.Name = "Internal Corrosion Turret";
+            this.Desc = "This bio-hazard turret has been modified with a special corrosive fuel that while unable to damage shields or hull, it will completely ignore the hull of the target and melt away their internal components.";
+            this.m_Damage = 0.1f;
+            this.FireDelay = 5f;
+            base.SubType = TurretModManager.Instance.GetTurretIDFromName("Internal Corrosion Turret");
+            this.m_MarketPrice = 27000;
+            base.Level = inLevel;
+            base.SubTypeData = (short)inSubTypeData;
+            this.m_MaxPowerUsage_Watts = 5900f;
+            base.CargoVisualPrefabID = 3;
+            base.Experimental = true;
+            MyDamageType = EDamageType.E_SYSTEM_DAMAGE;
+        }
+        protected override string GetDamageTypeString()
+        {
+            return "SYSTEM DAMAGE";
+        }
+    }
+
+    public class OverheatPlasmaTurret : PLBasicTurret
+    {
+        public OverheatPlasmaTurret(int inLevel = 0, int inSubTypeData = 0) : base(inLevel, inSubTypeData)
+        {
+            this.Name = "Super Plasma Turret";
+            this.Desc = "This plasma turret is not as dense as a normal plasma turret, but launches a way hotter plasma, resulting in less pyhisical damage to the hull, but a lot of heat damage to the target's reactor system.";
+            this.m_Damage = 50f;
+            this.FireDelay = 1.7f;
+            base.SubType = TurretModManager.Instance.GetTurretIDFromName("Super Plasma Turret");
+            this.m_MarketPrice = 13000;
+            base.Level = inLevel;
+            base.SubTypeData = (short)inSubTypeData;
+            this.m_MaxPowerUsage_Watts = 4000f;
+            base.CargoVisualPrefabID = 3;
+            base.Experimental = true;
+            ProjSpeed = 600f;
+        }
+
+        protected override string GetDamageTypeString()
+        {
+            return "PHYSICAL (FIRE)";
+        }
+
+        public override void Fire(int inProjID, Vector3 dir)
+        {
+            base.Fire(inProjID, dir);
+            foreach (PLProjectile proj in PLServer.Instance.m_ActiveProjectiles)
+            {
+                if (proj.ProjID == inProjID)
+                {
+                    proj.MyDamageType = EDamageType.E_FIRE;
+                    break;
+                }
+            }
+        }
+    }
+
+    public class TractorBeamTurret : PLLaserTurret
+    {
+        public TractorBeamTurret(int inLevel = 0, int inSubTypeData = 0) : base(0, 0)
+        {
+            this.Name = "Tractor Beam Turret";
+            this.Desc = "A weak but special turret that fires a laser that is capable of pulling the target object towards, great for you spreadshot enjoyers!";
+            this.m_Damage = 30f;
+            this.FireDelay = 3f;
+            base.SubType = TurretModManager.Instance.GetTurretIDFromName("Tractor Beam Turret");
+            this.m_MarketPrice = 19000;
+            base.Level = inLevel;
+            base.SubTypeData = (short)inSubTypeData;
+            this.TurretRange = 8000f;
+            this.m_MaxPowerUsage_Watts = 6500f;
+            base.CargoVisualPrefabID = 3;
+            base.Experimental = true;
+            this.PlayShootSFX = "play_ship_generic_external_weapon_laser_shoot";
+            this.StopShootSFX = "";
+            this.PlayProjSFX = "play_ship_generic_external_weapon_laser_projectile";
+            this.StopProjSFX = "stop_ship_generic_external_weapon_laser_projectile";
+            this.LaserDamageType = EDamageType.E_BEAM;
+            this.UpdateMaxPowerUsageWatts();
+        }
+    }
+
+    public class MineLauncherTurret : PLTurret
+    {
+        public MineLauncherTurret(int inLevel = 0, int inSubTypeData = 0)
+        {
+            this.Name = "Mine Launcher Turret";
+            this.Desc = "This launcher eqquiped into a turret slot is capable of slowly shooting proximity mines that will explode if any ship besides yours aproaches it. Upgrade it to increase firerate.";
+            this.m_Damage = 1200f;
+            this.FireDelay = 6;
+            base.SubType = TurretModManager.Instance.GetTurretIDFromName("Mine Launcher Turret");
+            this.m_MarketPrice = 20000;
+            base.Level = inLevel;
+            base.SubTypeData = (short)inSubTypeData;
+            this.m_MaxPowerUsage_Watts = 4000f;
+            base.CargoVisualPrefabID = 3;
+            base.HeatGeneratedOnFire = 0.1f;
+            base.Experimental = true;
+            ProjSpeed = 500;
+            FireTurretSoundSFX = "play_ship_generic_external_weapon_railgun_shoot";
+        }
+
+        public override string GetStatLineRight()
+        {
+            float num = this.m_Damage;
+            float num2 = this.FireDelay / ((base.ShipStats != null) ? base.ShipStats.TurretChargeFactor : 1f);
+            return string.Concat(new string[]
+            {
+            num.ToString("0"),
+            "\n",
+            num2.ToString("0.0"),
+            "\n",
+            this.GetDamageTypeString(),
+            "\n"
+            });
+        }
+
+        public override void Fire(int inProjID, Vector3 dir)
+        {
+            this.ChargeAmount = 0f;
+            this.LastFireTime = Time.time;
+            this.Heat += this.HeatGeneratedOnFire;
+            if (this.TurretInstance == null || this.TurretInstance.FiringLoc == null || this.TurretInstance.Proj == null)
+            {
+                return;
+            }
+            GameObject gameObject = UnityEngine.Object.Instantiate<GameObject>(PLGlobal.Instance.ProximityMinePrefab, this.TurretInstance.FiringLoc.transform.position + dir*5, this.TurretInstance.FiringLoc.transform.rotation);
+            gameObject.name = $"TurretedMine({ShipStats.Ship.ShipID})";
+            gameObject.transform.localScale = Vector3.one;
+            PLSpecialEncounterNetObject.InitNewObject(gameObject.GetComponent<PLProximityMine>(), PLEncounterManager.Instance.GetCurrentPersistantEncounterInstance());
+            if (gameObject == null)
+            {
+                return;
+            }
+            gameObject.GetComponent<Rigidbody>().velocity = base.ShipStats.Ship.ExteriorRigidbody.velocity + dir * this.m_ProjSpeed;
+            if (base.ShipStats.Ship.GetExteriorMeshCollider() != null)
+            {
+                Physics.IgnoreCollision(base.ShipStats.Ship.GetExteriorMeshCollider(), gameObject.GetComponent<Collider>());
+            }
+            foreach (Collider collider in base.ShipStats.Ship.ExtraColliders)
+            {
+                if (collider != null)
+                {
+                    Physics.IgnoreCollision(collider, gameObject.GetComponent<Collider>());
+                }
+            }
+            this.CurrentCameraShake += this.OnFire_CameraShakeAmt;
+            if (this.FireTurretSoundSFX != "")
+            {
+                PLMusic.PostEvent(this.FireTurretSoundSFX, this.TurretInstance.gameObject);
+            }
+            if (Time.time - base.ShipStats.Ship.LastCloakingSystemActivatedTime > 2f)
+            {
+                base.ShipStats.Ship.SetIsCloakingSystemActive(false);
+            }
+            PLServer.Instance.m_ActiveProjectiles.Add(gameObject.GetComponent<PLProjectile>());
+            if (this.TurretInstance != null && this.TurretInstance.GetComponent<Animation>() != null)
+            {
+                this.TurretInstance.GetComponent<Animation>().Play(this.TurretInstance.FireAnimationName);
+            }
+        }
+
+        public override void Tick()
+        {
+            FireDelay = Mathf.Clamp(6f - (Level * 0.4f), 0.5f, 6);
+            base.Tick();
+        }
+
+        protected override string GetTurretPrefabPath()
+        {
+            return "NetworkPrefabs/Component_Prefabs/RailgunTurret";
+        }
+    }
+
     [HarmonyLib.HarmonyPatch(typeof(PLInfectedSporeProj), "FixedUpdate")]
     internal class SporePatch
     {
@@ -410,6 +617,70 @@ namespace Exotic_Components
                 }
             }
             ___MyRigidbody.AddRelativeForce(Vector3.forward * d);
+        }
+    }
+
+    [HarmonyLib.HarmonyPatch(typeof(PLFlamelanceTurret), "PlayFireSFX")]
+    internal class FixSpraySound
+    {
+        static void Postfix(int ID, GameObject target, PLFlamelanceTurret __instance)
+        {
+            if (ID == 1 && !__instance.playFireLoop)
+            {
+                if (__instance is InternalSprayGun)
+                {
+                    PLMusic.PostEvent("play_ship_generic_external_weapon_biohazardturret_fire", target);
+                    __instance.playFireLoop = true;
+                }
+            }
+            else if (ID == 2 && __instance.playFireLoop)
+            {
+                if (__instance is InternalSprayGun)
+                {
+                    PLMusic.PostEvent("stop_ship_generic_external_weapon_biohazardturret_fire", target);
+                    __instance.playFireLoop = false;
+                }
+            }
+        }
+    }
+    [HarmonyLib.HarmonyPatch(typeof(PLProximityMine), "Update")]
+    class FixMines
+    {
+        static bool Prefix(PLProximityMine __instance)
+        {
+            if (__instance.name.Contains("TurretedMine"))
+            {
+                __instance.GetComponent<Renderer>().enabled = !__instance.Exploded;
+                __instance.GetComponent<Collider>().enabled = !__instance.Exploded;
+                __instance.m_MySpecialEncounterNetObjectPersistantData.PersistantState = __instance.Exploded;
+                string shipIDStr = __instance.name.Split('(')[1];
+                int shipID = int.Parse(shipIDStr.Remove(shipIDStr.IndexOf(')'), 1));
+                bool nearbyShip = false;
+                __instance.EmissiveMaterial.EnableKeyword("_EMISSION");
+                foreach (PLShipInfoBase ship in PLEncounterManager.Instance.AllShips.Values)
+                {
+                    if (ship != null && ship.ShipID != shipID)
+                    {
+                        float magnitude = (ship.ExteriorTransformCached.position - __instance.transform.position).magnitude;
+                        if (!__instance.Exploded && __instance.EmissiveMaterial != null)
+                        {
+                            if (magnitude < __instance.Range * 2f)
+                            {
+                                nearbyShip = true;
+                            }
+                            if (magnitude < __instance.Range && !__instance.Exploded && PhotonNetwork.isMasterClient)
+                            {
+                                PLServer.Instance.photonView.RPC("ProximityMineExplode", PhotonTargets.All, new object[]
+                                {
+                                    __instance.EncounterNetID
+                                });
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+            return true;
         }
     }
 }

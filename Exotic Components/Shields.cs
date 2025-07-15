@@ -1,10 +1,7 @@
 ﻿using PulsarModLoader.Content.Components.Shield;
 using UnityEngine;
-using System.Collections.Generic;
 using HarmonyLib;
 using PulsarModLoader;
-using static UnityEngine.TouchScreenKeyboard;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
 namespace Exotic_Components
 {
     public class Shields
@@ -97,7 +94,7 @@ namespace Exotic_Components
         {
             public override string Name => "Gustav's Fortress";
 
-            public override string Description => "This special shield was actually of my own making, it has a extreme charge rate and not too bad of power usage, but it is a little unstable, and requires constant power to stay online, but hey, the price is not the worst.";
+            public override string Description => "This special shield was actually of my own making, it has a extreme charge rate and not too bad of power usage, but it is a little unstable, and requires constant power to stay online, but hey, the price is not the worst. It also gets overclocked the more damaged your hull is.";
 
             public override int MarketPrice => 18000;
 
@@ -126,6 +123,15 @@ namespace Exotic_Components
                     me.ChargeRateCurrent = me.ChargeRateMax * me.LevelMultiplier(0.5f, 1f) * (me.GetPowerPercentInput() - 0.5f) * 2;
                     if ((me.Current - me.ShipStats.ShieldsChargeRate * Time.deltaTime <= 0 && me.ChargeRateCurrent < 0) || (me.Current >= me.CurrentMax && me.ChargeRateCurrent > 0)) me.ShipStats.ShieldsChargeRate = 0f;
                     if (me.Current < 0) me.Current = 0f;
+                }
+            }
+
+            public override void FinalLateAddStats(PLShipComponent InComp)
+            {
+                PLShieldGenerator me = InComp as PLShieldGenerator;
+                if (me.IsEquipped && me.ShipStats != null && me.ShipStats.Ship != null && me.ShipStats.Ship.MyHull != null)
+                {
+                    me.ShipStats.ShieldsMax += me.ShipStats.ShieldsMax * 3.5f * (1 - me.ShipStats.HullCurrent / me.ShipStats.HullMax);
                 }
             }
         }

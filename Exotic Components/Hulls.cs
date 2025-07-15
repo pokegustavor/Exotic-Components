@@ -270,10 +270,21 @@ namespace Exotic_Components
                         __instance.Ship.LastServerDroppedScrapperScrap = Time.time;
                         PLServer.Instance.photonView.RPC("CreateSpaceScrapAtLocation", PhotonTargets.All, new object[]
                         {
-                        __instance.Ship.Exterior.transform.position + UnityEngine.Random.onUnitSphere,
+                        __instance.Ship.Exterior.transform.position + Random.onUnitSphere,
                         __instance.Ship.ShipID,
                         true
                         });
+                    }
+                }
+                if(turret is InternalSprayGun) 
+                {
+                    for (int i = 0; i < 4; i++)
+                    {
+                        PLMainSystem systemFromID = __instance.Ship.GetSystemFromID(i);
+                        if (systemFromID != null)
+                        {
+                            systemFromID.TakeDamage(Random.value * 0.35f * turret.LevelMultiplier(0.35f));
+                        }
                     }
                 }
                 if(plating is Hull_Plating.AntiBreach) 

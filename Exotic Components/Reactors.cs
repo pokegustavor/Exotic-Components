@@ -646,6 +646,25 @@ namespace Exotic_Components
                 }
             }
         }
+
+        class HadenReactor : ReactorMod
+        {
+            public override string Name => "H.A.D.E.N Prototype";
+
+            public override string Description => "This prototype reactor is equipped with a very special safeguard to prevent any meltdowns by releasing all the pressure build-up at once, it will damage your hull and any nearby ships, just be carefull if you ship is too damaged.";
+
+            public override int MarketPrice => 30000;
+
+            public override bool Experimental => true;
+
+            public override float EnergyOutputMax => 30000;
+
+            public override float EnergySignatureAmount => 8;
+
+            public override float MaxTemp => 2500;
+
+            public override float EmergencyCooldownTime => 5;
+        }
         [HarmonyPatch(typeof(PLSpaceHeatVolume), "Update")]
         class HeatOustide
         {
@@ -969,7 +988,17 @@ namespace Exotic_Components
                 return true;
             }
         }
-        
+        [HarmonyPatch(typeof(PLShipInfoBase), "IsReactorInMeltdown")]
+        class EnsureNoMeltdown 
+        {
+            static void Prefix(PLShipInfoBase __instance, ref bool __result) 
+            {
+                if (__instance.MyReactor != null && __instance.MyReactor.Name == "H.A.D.E.N Prototype") 
+                {
+                    __result = false;
+                }
+            }
+        }
     }
     public class ReciveBiscuitData : PulsarModLoader.ModMessage
     {
